@@ -15,6 +15,13 @@ struct Expr {
 		expr->kind = kind;
 		return expr;
 	}
+	void destroy()
+	{
+		switch (kind) {
+		case EXPR_INTEGER:
+			break;
+		}
+	}
 	char * _to_string(int indent)
 	{
 		String_Builder builder;
@@ -46,11 +53,21 @@ enum Stmt_Kind {
 struct Stmt_Let {
 	Symbol left;
 	Expr * right;
+	void destroy()
+	{
+		right->destroy();
+		free(right);
+	}
 };
 
 struct Stmt_Set {
 	Symbol left;
 	Expr * right;
+	void destroy()
+	{
+		right->destroy();
+		free(right);
+	}
 };
 
 struct Stmt {
@@ -64,6 +81,17 @@ struct Stmt {
 		Stmt * stmt = (Stmt*) malloc(sizeof(Stmt));
 		stmt->kind = kind;
 		return stmt;
+	}
+	void destroy()
+	{
+		switch (kind) {
+		case STMT_LET:
+			let.destroy();
+			break;
+		case STMT_SET:
+			set.destroy();
+			break;
+		}
 	}
 	char * _to_string(int indent)
 	{

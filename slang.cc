@@ -12,6 +12,8 @@
 #include "compiler.cc"
 #include "vm.cc"
 
+#define DEBUG false
+
 int main()
 {
 	Intern::init();
@@ -31,20 +33,31 @@ int main()
 		auto stmt = parser.parse_stmt();
 		{
 			char * s = stmt->to_string();
+			#if DEBUG
 			printf("%s\n\n", s);
+			#endif
 			free(s);
 		}
 
 		Compiler compiler;
 		compiler.init();
 		compiler.compile_stmt(stmt);
-	
+
+		stmt->destroy();
+		free(stmt);
+		
 		vm.prime(compiler.bytecode);
 		while (!vm.halted()) {
 			vm.step();
+			#if DEBUG
 			vm.print_debug_info();
-		}	
+			#endif
+		}
+
+		compiler.destroy();
 	}
+
+	vm.destroy();
 	
 	return 0;
 }
