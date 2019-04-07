@@ -32,8 +32,6 @@ struct Value {
 			return itoa(integer);
 		case TYPE_SYMBOL:
 			return strdup(symbol);
-		default:
-			fatal_internal("Incomplete switch: Value.to_string()");
 		}
 	}
 };

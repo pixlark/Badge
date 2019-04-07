@@ -28,8 +28,6 @@ struct Expr {
 			builder.append(s);
 			free(s);
 		} break;
-		default:
-			fatal_internal("Incomplete switch: Expr._to_string()");
 		}
 		
 		return builder.final_string();
@@ -42,9 +40,15 @@ struct Expr {
 
 enum Stmt_Kind {
 	STMT_LET,
+	STMT_SET,
 };
 
 struct Stmt_Let {
+	Symbol left;
+	Expr * right;
+};
+
+struct Stmt_Set {
 	Symbol left;
 	Expr * right;
 };
@@ -53,6 +57,7 @@ struct Stmt {
 	Stmt_Kind kind;
 	union {
 		Stmt_Let let;
+		Stmt_Set set;
 	};
 	static Stmt * with_kind(Stmt_Kind kind)
 	{
@@ -76,8 +81,15 @@ struct Stmt {
 			builder.append(right_s);
 			free(right_s);
 		} break;
-		default:
-			fatal_internal("Incomplete switch: Stmt._to_string()");
+		case STMT_SET: {
+			char buf[512];
+			sprintf(buf, "set %s = \n", set.left);
+			builder.append(buf);
+			
+			char * right_s = set.right->_to_string(indent + 1);
+			builder.append(right_s);
+			free(right_s);
+		} break;
 		}
 		return builder.final_string();
 	}

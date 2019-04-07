@@ -17,6 +17,7 @@ struct Parser {
 	Expr * parse_atom();
 	Expr * parse_expr();
 	Stmt * parse_let();
+	Stmt * parse_set();
 	Stmt * parse_stmt();
 };
 
@@ -57,13 +58,31 @@ Stmt * Parser::parse_let()
 	return stmt;
 }
 
+Stmt * Parser::parse_set()
+{
+	Stmt * stmt = Stmt::with_kind(STMT_SET);
+	advance();
+	
+	weak_expect(TOKEN_SYMBOL);
+	stmt->set.left = peek.values.symbol;
+	advance();
+
+	expect((Token_Kind) '=');
+
+	stmt->set.right = parse_expr();
+	
+	return stmt;	
+}
+
 Stmt * Parser::parse_stmt()
 {
 	Stmt * stmt;
 	if (is(TOKEN_LET)) {
 		stmt = parse_let();
+	} else if (is(TOKEN_SET)) {
+		stmt = parse_set();
 	} else {
-		fatal("Expected let, got %s", peek.to_string());
+		fatal("Expected let, set; got %s", peek.to_string());
 	}
 	expect((Token_Kind) ';');
 	return stmt;

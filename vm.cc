@@ -122,8 +122,6 @@ struct VM {
 			}
 			stack[offset] = new_value;
 		} break;
-		default:
-			fatal_internal("Incomplete switch: VM.step()");
 		}
 	}
 	void print_debug_info()

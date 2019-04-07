@@ -1,3 +1,3 @@
 make:
-	g++ -g slang.cc -o slang -Wswitch -Wswitch-default
+	g++ -g slang.cc -o slang -Wswitch
 

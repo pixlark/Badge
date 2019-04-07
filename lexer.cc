@@ -3,6 +3,7 @@ enum Token_Kind {
 	
 	// Reserved words
 	TOKEN_LET,
+	TOKEN_SET,
 	
 	TOKEN_SYMBOL,
 	TOKEN_INTEGER_LITERAL,
@@ -14,7 +15,7 @@ enum Token_Kind {
 #define RESERVED_WORDS_COUNT (RESERVED_WORDS_END - RESERVED_WORDS_BEGIN)
 
 static const char * reserved_words[RESERVED_WORDS_COUNT] = {
-	"let",
+	"let", "set",
 };
 
 struct Token {
