@@ -11,6 +11,12 @@ struct Scope {
 		symbols.dealloc();
 		offsets.dealloc();
 	}
+	static Scope * create_empty()
+	{
+		Scope * s = (Scope*) malloc(sizeof(Scope));
+		s->init();
+		return s;
+	}
 	int where_bound(Symbol symbol)
 	{
 		for (int i = 0; i < symbols.size; i++) {
@@ -56,16 +62,17 @@ struct Scope {
 };
 
 struct VM {
-	Scope global_scope;
 	List<Value> stack;
+	List<Scope*> scopes;
 
 	List<BC> bytecode;
 	size_t bc_pointer;
 	
 	void init()
 	{
-		global_scope.init();
 		stack.alloc();
+		scopes.alloc();
+		scopes.push(Scope::create_empty());
 	}
 	void prime(List<BC> bytecode)
 	{
@@ -74,8 +81,10 @@ struct VM {
 	}
 	void destroy()
 	{
-		global_scope.destroy();
 		stack.dealloc();
+		scopes[0]->destroy();
+		free(scopes[0]);
+		scopes.dealloc();
 	}
 	bool halted()
 	{
@@ -93,6 +102,10 @@ struct VM {
 	{
 		return stack.size - 1;
 	}
+	Scope * current_scope()
+	{
+		return scopes[scopes.size - 1];
+	}
 	void step()
 	{
 		if (halted()) {
@@ -106,7 +119,7 @@ struct VM {
 		case BC_CREATE_BINDING: {
 			auto symbol = pop();
 			symbol.assert_is(TYPE_SYMBOL);
-			bool success = global_scope.create_binding(symbol.symbol, top_offset());
+			bool success = current_scope()->create_binding(symbol.symbol, top_offset());
 			if (!success) {
 				fatal("Can't create new variable '%s' -- already bound!", symbol.symbol);
 			}
@@ -116,7 +129,7 @@ struct VM {
 			symbol.assert_is(TYPE_SYMBOL);
 			auto new_value = pop();
 			size_t offset;
-			bool success = global_scope.resolve_binding(symbol.symbol, &offset);
+			bool success = current_scope()->resolve_binding(symbol.symbol, &offset);
 			if (!success) {
 				fatal("Can't update variable '%s' -- not bound!", symbol.symbol);
 			}
@@ -126,7 +139,7 @@ struct VM {
 			auto symbol = pop();
 			symbol.assert_is(TYPE_SYMBOL);
 			size_t offset;
-			bool success = global_scope.resolve_binding(symbol.symbol, &offset);
+			bool success = current_scope()->resolve_binding(symbol.symbol, &offset);
 			if (!success) {
 				fatal("Variable '%s' is not bound", symbol.symbol);
 			}

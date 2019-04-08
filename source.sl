@@ -1,3 +1,2 @@
-let x = 12;
-set x = 1;
-print 12;
+let f = lambda (x) { print x; };
+f(2);
