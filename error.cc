@@ -15,6 +15,19 @@
 #define INVERTED(x) SET_INVERTED x RESET
 #define RED(x)  SET_RED x RESET
 
+void error(const char * fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+
+	fprintf(stderr, RED(BOLD("encountered error")) ":\n");
+	vfprintf(stderr, fmt, args);
+	printf("\n");
+
+	va_end(args);
+	abort();
+}
+
 void fatal(const char * fmt, ...)
 {
 	va_list args;

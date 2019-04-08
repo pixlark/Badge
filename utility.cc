@@ -1,4 +1,4 @@
-char * load_string_from_file(char * path)
+char * load_string_from_file(const char * path)
 {
 	FILE * file = fopen(path, "r");
 	if (file == NULL) return NULL;
