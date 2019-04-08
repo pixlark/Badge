@@ -14,13 +14,19 @@
 
 #define DEBUG false
 
-int main()
+int main(int argc, char ** argv)
 {
-	Intern::init();
+	if (argc != 2) {
+		fatal("Provide one file to execute");
+	}
 
-	const char * source =
-		"let x = 12;"
-		"set x = 11;";
+	const char * source = load_string_from_file(argv[1]);
+
+	if (!source) {
+		fatal("File does not exist");
+	}
+	
+	Intern::init();
 
 	Lexer lexer;
 	lexer.init(source);
@@ -58,6 +64,7 @@ int main()
 	}
 
 	vm.destroy();
+	free((char*) source);
 	
 	return 0;
 }

@@ -122,6 +122,12 @@ struct VM {
 			}
 			stack[offset] = new_value;
 		} break;
+		case BC_POP_AND_PRINT: {
+			auto v = pop();
+			char * s = v.to_string();
+			printf("%s\n", s);
+			free(s);
+		} break;
 		}
 	}
 	void print_debug_info()

@@ -32,6 +32,10 @@ struct Compiler {
 									 Value::raise(stmt->set.left)));
 			bytecode.push(BC::create(BC_UPDATE_BINDING));
 			break;
+		case STMT_PRINT:
+			compile_expr(stmt->print.expr);
+			bytecode.push(BC::create(BC_POP_AND_PRINT));
+			break;
 		}
 	}
 };

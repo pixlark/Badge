@@ -2,6 +2,7 @@ enum BC_Kind {
 	BC_LOAD_CONST,
 	BC_CREATE_BINDING,
 	BC_UPDATE_BINDING,
+	BC_POP_AND_PRINT,
 };
 
 struct BC {

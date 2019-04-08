@@ -48,6 +48,7 @@ struct Expr {
 enum Stmt_Kind {
 	STMT_LET,
 	STMT_SET,
+	STMT_PRINT,
 };
 
 struct Stmt_Let {
@@ -70,11 +71,21 @@ struct Stmt_Set {
 	}
 };
 
+struct Stmt_Print {
+	Expr * expr;
+	void destroy()
+	{
+		expr->destroy();
+		free(expr);
+	}
+};
+
 struct Stmt {
 	Stmt_Kind kind;
 	union {
 		Stmt_Let let;
 		Stmt_Set set;
+		Stmt_Print print;
 	};
 	static Stmt * with_kind(Stmt_Kind kind)
 	{
@@ -90,6 +101,9 @@ struct Stmt {
 			break;
 		case STMT_SET:
 			set.destroy();
+			break;
+		case STMT_PRINT:
+			print.destroy();
 			break;
 		}
 	}
@@ -117,6 +131,12 @@ struct Stmt {
 			char * right_s = set.right->_to_string(indent + 1);
 			builder.append(right_s);
 			free(right_s);
+		} break;
+		case STMT_PRINT: {
+			builder.append("print\n");
+			char * expr_s = print.expr->_to_string(indent + 1);
+			builder.append(expr_s);
+			free(expr_s);
 		} break;
 		}
 		return builder.final_string();
