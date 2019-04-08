@@ -1,2 +1,2 @@
-let f = lambda (x) { print x; };
-f(2);
+let f = lambda (a, b, c) { print x; };
+print f;

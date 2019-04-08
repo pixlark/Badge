@@ -20,6 +20,16 @@ struct Compiler {
 									 Value::raise(expr->variable)));
 			bytecode.push(BC::create(BC_RESOLVE_BINDING));
 			break;
+		case EXPR_LAMBDA: {
+			auto params = expr->lambda.parameters;
+			for (int i = 0; i < params.size; i++) {
+				bytecode.push(BC::create(BC_LOAD_CONST,
+										 Value::raise(params[i])));
+			}
+			bytecode.push(BC::create(BC_LOAD_CONST,
+									 Value::raise(params.size)));
+			bytecode.push(BC::create(BC_NEW_FUNCTION));
+		} break;
 		}
 	}
 	void compile_stmt(Stmt * stmt)

@@ -143,6 +143,7 @@ struct VM {
 			if (!success) {
 				fatal("Variable '%s' is not bound", symbol.symbol);
 			}
+			assert(offset < stack.size);
 			push(stack[offset]);
 		} break;
 		case BC_POP_AND_PRINT: {
@@ -157,6 +158,12 @@ struct VM {
 	{
 		printf("--- Frame ---\n");
 		const int width = 13;
+		if (bc_pointer > 0) {
+			char * s = bytecode[bc_pointer - 1].to_string();
+			printf("%s\n", s);
+			free(s);
+		}
+		printf(".............\n");
 		printf("    Stack\n");
 		for (int i = top_offset(); i >= 0; i--) {
 			char * s = stack[i].to_string();
@@ -171,6 +178,18 @@ struct VM {
 
 			printf("%s\n", s);
 			free(s);
+		}
+		printf(".............\n");
+		printf("    Vars\n");
+		for (int i = scopes.size - 1; i >= 0; i--) {
+			auto scope = scopes[i];
+			assert(scope->symbols.size == scope->offsets.size);
+			for (int j = 0; j < scope->symbols.size; j++) {
+				printf("  %s: %d\n", scope->symbols[j], scope->offsets[j]);
+			}
+			if (i < scopes.size - 1) {
+				printf("      .\n");
+			}
 		}
 		printf("-------------\n\n");
 	}

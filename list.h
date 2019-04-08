@@ -8,6 +8,9 @@
 #include <string.h>
 
 template <typename T>
+struct List;
+
+template <typename T>
 struct List {
 	T * arr;
 	size_t size;

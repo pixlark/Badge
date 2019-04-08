@@ -12,7 +12,7 @@
 #include "compiler.cc"
 #include "vm.cc"
 
-#define DEBUG false
+#define DEBUG true
 
 void work_from_source(const char * path)
 {

@@ -14,8 +14,17 @@ struct Parser {
 	void advance();
 	bool match(Token_Kind type);
 
+	// char overloads
+	bool is(char c)           { return is((Token_Kind) c); }
+	Token expect(char c)      { return expect((Token_Kind) c); }
+	Token weak_expect(char c) { return weak_expect((Token_Kind) c); }
+	bool match(char c)        { return match((Token_Kind) c); }
+
 	Expr * parse_atom();
+	List<Symbol> parse_symbol_list();
+	Expr * parse_lambda();
 	Expr * parse_expr();
+	
 	Stmt * parse_let();
 	Stmt * parse_set();
 	Stmt * parse_print();
@@ -44,9 +53,45 @@ Expr * Parser::parse_atom()
 	}
 }
 
+List<Symbol> Parser::parse_symbol_list()
+{
+	expect('(');
+	List<Symbol> list;
+	list.alloc();
+	while (true) {
+		if (match(')')) {
+			break;
+		}
+		weak_expect(TOKEN_SYMBOL);
+		list.push(peek.values.symbol);
+		advance();
+		if (!match(',')) {
+			expect(')');
+			break;
+		}
+	}
+	return list;
+}
+
+Expr * Parser::parse_lambda()
+{
+	if (match(TOKEN_LAMBDA)) {
+		auto lambda = Expr::with_kind(EXPR_LAMBDA);
+		lambda->lambda.parameters = parse_symbol_list();
+		expect('{');
+		lambda->lambda.body.alloc();
+		while (!match('}')) {
+			lambda->lambda.body.push(parse_stmt());
+		}
+		return lambda;
+	} else {
+		return parse_atom();
+	}
+}
+
 Expr * Parser::parse_expr()
 {
-	return parse_atom();
+	return parse_lambda();
 }
 
 Stmt * Parser::parse_let()
@@ -58,7 +103,7 @@ Stmt * Parser::parse_let()
 	stmt->let.left = peek.values.symbol;
 	advance();
 
-	expect((Token_Kind) '=');
+	expect('=');
 
 	stmt->let.right = parse_expr();
 	
@@ -74,7 +119,7 @@ Stmt * Parser::parse_set()
 	stmt->set.left = peek.values.symbol;
 	advance();
 
-	expect((Token_Kind) '=');
+	expect('=');
 
 	stmt->set.right = parse_expr();
 	
@@ -101,7 +146,7 @@ Stmt * Parser::parse_stmt()
 	} else {
 		fatal("Expected let, set; got %s", peek.to_string());
 	}
-	expect((Token_Kind) ';');
+	expect(';');
 	return stmt;
 }
 
