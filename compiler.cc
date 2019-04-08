@@ -15,6 +15,11 @@ struct Compiler {
 			bytecode.push(BC::create(BC_LOAD_CONST,
 									 Value::raise(expr->integer)));
 			break;
+		case EXPR_VARIABLE:
+			bytecode.push(BC::create(BC_LOAD_CONST,
+									 Value::raise(expr->variable)));
+			bytecode.push(BC::create(BC_RESOLVE_BINDING));
+			break;
 		}
 	}
 	void compile_stmt(Stmt * stmt)

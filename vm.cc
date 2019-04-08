@@ -122,6 +122,16 @@ struct VM {
 			}
 			stack[offset] = new_value;
 		} break;
+		case BC_RESOLVE_BINDING: {
+			auto symbol = pop();
+			symbol.assert_is(TYPE_SYMBOL);
+			size_t offset;
+			bool success = global_scope.resolve_binding(symbol.symbol, &offset);
+			if (!success) {
+				fatal("Variable '%s' is not bound", symbol.symbol);
+			}
+			push(stack[offset]);
+		} break;
 		case BC_POP_AND_PRINT: {
 			auto v = pop();
 			char * s = v.to_string();

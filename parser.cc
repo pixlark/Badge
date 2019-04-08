@@ -33,8 +33,14 @@ Expr * Parser::parse_atom()
 		advance();
 		return atom;
 	} break;
+	case TOKEN_SYMBOL: {
+		Expr * atom = Expr::with_kind(EXPR_VARIABLE);
+		atom->variable = peek.values.symbol;
+		advance();
+		return atom;
+	} break;
 	default:
-		fatal("Expected <int>, got %s", peek.to_string());
+		fatal("Expected <int>, <symbol>; got %s", peek.to_string());
 	}
 }
 

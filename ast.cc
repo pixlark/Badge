@@ -2,12 +2,14 @@
 
 enum Expr_Kind {
 	EXPR_INTEGER,
+	EXPR_VARIABLE,
 };
 
 struct Expr {
 	Expr_Kind kind;
 	union {
 		int integer;
+		Symbol variable;
 	};
 	static Expr * with_kind(Expr_Kind kind)
 	{
@@ -19,6 +21,8 @@ struct Expr {
 	{
 		switch (kind) {
 		case EXPR_INTEGER:
+			break;
+		case EXPR_VARIABLE:
 			break;
 		}
 	}
@@ -34,6 +38,9 @@ struct Expr {
 			char * s = itoa(integer);
 			builder.append(s);
 			free(s);
+		} break;
+		case EXPR_VARIABLE: {
+			builder.append(variable);
 		} break;
 		}
 		
