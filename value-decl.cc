@@ -34,4 +34,5 @@ struct Value {
 		assert(this->type == type);
 	}
 	char * to_string();
+	void gc_mark();
 };

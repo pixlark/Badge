@@ -1,8 +1,20 @@
 struct Compiler {
 	List<BC> bytecode;
-	void init()
+	Blocks * blocks;
+	int block_reference;
+	void init(Blocks * blocks)
 	{
 		bytecode.alloc();
+		this->blocks = blocks;
+		block_reference = blocks->make_block();
+	}
+	void finalize()
+	{
+		BC * final_bc = (BC*) malloc(sizeof(BC) * bytecode.size);
+		for (int i = 0; i < bytecode.size; i++) {
+			final_bc[i] = bytecode[i];
+		}
+		blocks->finalize_block(block_reference, final_bc, bytecode.size);
 	}
 	void destroy()
 	{
@@ -29,17 +41,16 @@ struct Compiler {
 			bytecode.push(BC::create(BC_LOAD_CONST,
 									 Value::raise(params.size)));
 			Compiler compiler;
-			compiler.init();
+			compiler.init(blocks);
 			auto body = expr->lambda.body;
 			for (int i = 0; i < body.size; i++) {
 				compiler.compile_stmt(body[i]);
 			}
-			// WARNING: We never clean up `compiler` because all it
-			// has is `bytecode` and we want that to stick around
-			// anyway... in the future if other stuff is added to
-			// `Compiler` this could be dangerous.
+			compiler.finalize();
+			compiler.destroy();
+			
 			bytecode.push(BC::create(BC_CONSTRUCT_FUNCTION,
-									 compiler.bytecode));
+									 compiler.block_reference));
 		} break;
 		}
 	}

@@ -21,7 +21,7 @@ struct BC {
 	union {
 		Value value;
 		int integer;
-		List<BC> bytecode;
+		size_t block_reference;
 	} arg;
 	static BC create(BC_Kind kind)
 	{
@@ -43,11 +43,11 @@ struct BC {
 		bc.arg.integer = arg;
 		return bc;
 	}
-	static BC create(BC_Kind kind, List<BC> arg)
+	static BC create(BC_Kind kind, size_t arg)
 	{
 		BC bc;
 		bc.kind = kind;
-		bc.arg.bytecode = arg;
+		bc.arg.block_reference = arg;
 		return bc;
 	}
 	char * to_string()

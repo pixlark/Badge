@@ -62,22 +62,27 @@ struct Scope {
 };
 
 struct VM {
+	Blocks * blocks;
+	
 	List<Value> stack;
 	List<Scope*> scopes;
 
-	List<BC> bytecode;
+	BC * bytecode;
 	size_t bc_pointer;
+	size_t bc_length;
 	
-	void init()
+	void init(Blocks * blocks)
 	{
+		this->blocks = blocks;
 		stack.alloc();
 		scopes.alloc();
 		scopes.push(Scope::create_empty());
 	}
-	void prime(List<BC> bytecode)
+	void prime(size_t block_reference)
 	{
-		this->bytecode = bytecode;
+		bytecode = blocks->retrieve_block(block_reference);
 		bc_pointer = 0;
+		bc_length = blocks->size_block(block_reference);
 	}
 	void destroy()
 	{
@@ -88,7 +93,7 @@ struct VM {
 	}
 	bool halted()
 	{
-		return bc_pointer >= bytecode.size;
+		return bc_pointer >= bc_length;
 	}
 	void push(Value v)
 	{
@@ -106,8 +111,14 @@ struct VM {
 	{
 		return scopes[scopes.size - 1];
 	}
-	void step()
+	void mark_reachable()
 	{
+		for (int i = 0; i < stack.size; i++) {
+			stack[i].gc_mark();
+		}
+	}
+	void step()
+	{	
 		if (halted()) {
 			return;
 		}
@@ -157,7 +168,7 @@ struct VM {
 			count.assert_is(TYPE_INTEGER);
 			
 			Function * func =  (Function*) GC::alloc(sizeof(Function));
-			func->bytecode = &bc.arg.bytecode;
+			func->block_reference = bc.arg.block_reference;
 			
 			func->parameter_count = count.integer;
 			func->parameters = (Symbol*) GC::alloc(sizeof(Symbol) * count.integer);
@@ -172,6 +183,10 @@ struct VM {
 			push(value);
 		} break;
 		}
+
+		GC::unmark_all();
+		mark_reachable();
+		GC::free_unmarked();
 	}
 	void print_debug_info()
 	{
