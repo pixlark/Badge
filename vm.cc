@@ -65,7 +65,7 @@ struct VM {
 	List<Value> stack;
 	List<Scope*> scopes;
 
-	List<BC> bytecode;
+	GC_List<BC> bytecode;
 	size_t bc_pointer;
 	
 	void init()
@@ -74,7 +74,7 @@ struct VM {
 		scopes.alloc();
 		scopes.push(Scope::create_empty());
 	}
-	void prime(List<BC> bytecode)
+	void prime(GC_List<BC> bytecode)
 	{
 		this->bytecode = bytecode;
 		bc_pointer = 0;
@@ -106,8 +106,17 @@ struct VM {
 	{
 		return scopes[scopes.size - 1];
 	}
+	void mark_reachable()
+	{
+		
+	}
 	void step()
 	{
+		// Garbage collection
+		GC::unmark_all();
+		mark_reachable();
+		GC::free_unmarked();
+		
 		if (halted()) {
 			return;
 		}
@@ -151,6 +160,17 @@ struct VM {
 			char * s = v.to_string();
 			printf("%s\n", s);
 			free(s);
+		} break;
+		case BC_CONSTRUCT_FUNCTION: {
+			auto value_bytecode = pop();
+			value_bytecode.assert_is(TYPE_BYTECODE);
+			auto param_count = pop();
+			param_count.assert_is(TYPE_INTEGER);
+			List<Value> symbols;
+			symbols.alloc();
+			for (int i = 0; i < param_count.integer; i++) {
+				symbols.push(
+			}
 		} break;
 		}
 	}

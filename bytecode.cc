@@ -4,6 +4,7 @@ enum BC_Kind {
 	BC_UPDATE_BINDING,
 	BC_RESOLVE_BINDING,
 	BC_POP_AND_PRINT,
+	BC_CONSTRUCT_FUNCTION,
 };
 
 static const char * BC_Kind_names[] = {
@@ -12,11 +13,14 @@ static const char * BC_Kind_names[] = {
 	"UPDATE_BINDING",
 	"RESOLVE_BINDING",
 	"POP_AND_PRINT",
+	"CONSTRUCT_FUNCTION",
 };
 
 struct BC {
 	BC_Kind kind;
-	Value arg;
+	union {
+		Value arg;
+	};
 	static BC create(BC_Kind kind)
 	{
 		BC bc;

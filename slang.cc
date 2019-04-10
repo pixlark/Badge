@@ -7,12 +7,15 @@
 #include "lexer.cc"
 #include "ast.cc"
 #include "parser.cc"
-#include "value.cc"
+#include "gc.cc"
+#include "gc-structs.cc"
+#include "value-decl.cc"
 #include "bytecode.cc"
+#include "value-def.cc"
 #include "compiler.cc"
 #include "vm.cc"
 
-#define DEBUG true
+#define DEBUG false
 
 void work_from_source(const char * path)
 {
@@ -53,8 +56,6 @@ void work_from_source(const char * path)
 			vm.print_debug_info();
 			#endif
 		}
-
-		compiler.destroy();
 	}
 
 	vm.destroy();
@@ -100,8 +101,6 @@ void repl()
 				vm.print_debug_info();
 				#endif
 			}
-
-			compiler.destroy();
 		}
 	}
 	
@@ -121,12 +120,16 @@ int main(int argc, char ** argv)
 	}
 
 	Intern::init();
+	GC::init();
 	
 	if (is_repl) {
 		repl();
 	} else {
 		work_from_source(argv[1]);
-	}	
+	}
+
+	GC::destroy();
+	Intern::destroy();
 	
 	return 0;
 }

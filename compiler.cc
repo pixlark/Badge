@@ -1,12 +1,8 @@
 struct Compiler {
-	List<BC> bytecode;
+	GC_List<BC> bytecode;
 	void init()
 	{
-		bytecode.alloc();
-	}
-	void destroy()
-	{
-		bytecode.dealloc();
+		bytecode.make();
 	}
 	void compile_expr(Expr * expr)
 	{
@@ -28,7 +24,18 @@ struct Compiler {
 			}
 			bytecode.push(BC::create(BC_LOAD_CONST,
 									 Value::raise(params.size)));
-			bytecode.push(BC::create(BC_NEW_FUNCTION));
+			auto body = expr->lambda.body;
+			Compiler compiler;
+			compiler.init();
+			for (int i = 0; i < body.size; i++) {
+				compiler.compile_stmt(body[i]);
+			}
+			Value_Bytecode * value_bytecode =
+				(Value_Bytecode*) GC::alloc(sizeof(Value_Bytecode));
+			value_bytecode->bytecode = compiler.bytecode;
+			bytecode.push(BC::create(BC_LOAD_CONST,
+									 Value::raise(value_bytecode)));
+			bytecode.push(BC::create(BC_CONSTRUCT_FUNCTION));
 		} break;
 		}
 	}
