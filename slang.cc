@@ -30,19 +30,19 @@ void work_from_source(const char * path)
 	Parser parser;
 	parser.init(&lexer);
 
-	/// `Blocks` stores all compiled bytecode in reverse dependent
-	/// order. This is for freeing/serialization, as well as
-	/// references from the VM.
+	// `Blocks` stores all compiled bytecode in reverse dependent
+	// order. This is for freeing/serialization, as well as
+	// references from the VM.
 	Blocks blocks;
 	blocks.init();
 
-	/// Our main compiler; will have `block_reference` of 0
+	// Our main compiler; will have `block_reference` of 0
 	Compiler compiler;
 	compiler.init(&blocks);
 
 	while (!parser.is(TOKEN_EOF)) {
-		/// The parser feeds from the lexer and returns one
-		/// statement's worth of abstract syntax tree
+		// The parser feeds from the lexer and returns one
+		// statement's worth of abstract syntax tree
 		auto stmt = parser.parse_stmt();
 		{
 			char * s = stmt->to_string();
@@ -52,30 +52,32 @@ void work_from_source(const char * path)
 			free(s);
 		}
 
-		/// Here we generate bytecode from our abstract syntax tree
-		/// (one statement's worth)
+		// Here we generate bytecode from our abstract syntax tree
+		// (one statement's worth)
 		compiler.compile_stmt(stmt);
 
-		/// Abstract syntax tree gets freed
+		// Abstract syntax tree gets freed
 		stmt->destroy();
 		free(stmt);
 	}
 
-	/// Finalize our zeroth block and clean up compiler
+	// Finalize our zeroth block and clean up compiler
 	compiler.finalize();
 	compiler.destroy();
 	
-	/// Finally, just run our bytecode through the VM, starting with
-	/// `block_reference` 0
+	// Finally, just run our bytecode through the VM, starting with
+	// `block_reference` 0
 	VM vm;
-	vm.init(&blocks);
-	vm.prime(0);
+	vm.init(&blocks, 0);
 	while (!vm.halted()) {
 		vm.step();
 		#if DEBUG
 		vm.print_debug_info();
 		#endif
 	}
+	#if DEBUG
+	vm.print_debug_info();
+	#endif
 	
 	blocks.destroy();
 	vm.destroy();

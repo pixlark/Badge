@@ -6,6 +6,8 @@ enum Stmt_Kind {
 	STMT_LET,
 	STMT_SET,
 	STMT_PRINT,
+	STMT_RETURN,
+	STMT_EXPR,
 };
 
 struct Stmt_Let {
@@ -25,12 +27,19 @@ struct Stmt_Print {
 	void destroy();
 };
 
+struct Stmt_Return {
+	Expr * expr;
+	void destroy();
+};
+
 struct Stmt {
 	Stmt_Kind kind;
 	union {
 		Stmt_Let let;
 		Stmt_Set set;
 		Stmt_Print print;
+		Stmt_Return _return;
+		Expr * expr;
 	};
 	static Stmt * with_kind(Stmt_Kind kind);
 	void destroy();
@@ -46,11 +55,17 @@ enum Expr_Kind {
 	EXPR_INTEGER,
 	EXPR_VARIABLE,
 	EXPR_LAMBDA,
+	EXPR_FUNCALL,
 };
 
 struct Expr_Lambda {
 	List<Symbol> parameters;
 	List<Stmt*> body;
+};
+
+struct Expr_Funcall {
+	Expr * func;
+	List<Expr*> args;
 };
 
 struct Expr {
@@ -59,6 +74,7 @@ struct Expr {
 		int integer;
 		Symbol variable;
 		Expr_Lambda lambda;
+		Expr_Funcall funcall;
 	};
 	static Expr * with_kind(Expr_Kind kind)
 	{
@@ -80,6 +96,15 @@ struct Expr {
 				free(lambda.body[i]);
 			}
 			lambda.body.dealloc();
+			break;
+		case EXPR_FUNCALL:
+			funcall.func->destroy();
+			free(funcall.func);
+			for (int i = 0; i < funcall.args.size; i++) {
+				funcall.args[i]->destroy();
+				free(funcall.args[i]);
+			}
+			funcall.args.dealloc();
 			break;
 		}
 	}
@@ -115,6 +140,22 @@ struct Expr {
 			}
 			builder.append(" }\n");
 		} break;
+		case EXPR_FUNCALL: {
+			builder.append("(");
+			char * s = funcall.func->_to_string(indent);
+			builder.append(s);
+			free(s);
+			builder.append(") on (\n");
+			for (int i = 0; i < funcall.args.size; i++) {
+				char * s = funcall.args[i]->_to_string(indent + 1);
+				builder.append(s);
+				free(s);
+				if (i < funcall.args.size - 1) {
+					builder.append(",\n");
+				}
+			}
+			builder.append(") ");
+		};
 		}
 		
 		return builder.final_string();
@@ -148,6 +189,12 @@ void Stmt_Print::destroy()
 	free(expr);
 }
 
+void Stmt_Return::destroy()
+{
+	expr->destroy();
+	free(expr);
+}
+
 /*
  * Stmt
  */
@@ -170,6 +217,13 @@ void Stmt::destroy()
 		break;
 	case STMT_PRINT:
 		print.destroy();
+		break;
+	case STMT_RETURN:
+		_return.destroy();
+		break;
+	case STMT_EXPR:
+		expr->destroy();
+		free(expr);
 		break;
 	}
 }
@@ -203,6 +257,17 @@ char * Stmt::_to_string(int indent)
 		char * expr_s = print.expr->_to_string(indent + 1);
 		builder.append(expr_s);
 		free(expr_s);
+	} break;
+	case STMT_RETURN: {
+		builder.append("return\n");
+		char * expr_s = _return.expr->_to_string(indent + 1);
+		builder.append(expr_s);
+		free(expr_s);
+	} break;		
+	case STMT_EXPR: {
+		char * s = expr->_to_string(indent);
+		builder.append(s);
+		free(s);
 	} break;
 	}
 	return builder.final_string();

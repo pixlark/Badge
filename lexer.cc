@@ -6,6 +6,7 @@ enum Token_Kind {
 	TOKEN_SET,
 	TOKEN_PRINT,
 	TOKEN_LAMBDA,
+	TOKEN_RETURN,
 	
 	TOKEN_SYMBOL,
 	TOKEN_INTEGER_LITERAL,
@@ -17,7 +18,7 @@ enum Token_Kind {
 #define RESERVED_WORDS_COUNT (RESERVED_WORDS_END - RESERVED_WORDS_BEGIN)
 
 static const char * reserved_words[RESERVED_WORDS_COUNT] = {
-	"let", "set", "print", "lambda",
+	"let", "set", "print", "lambda", "return", 
 };
 
 struct Token {
@@ -65,6 +66,7 @@ char * Token::type_to_string(Token_Kind type)
 	default:
 		fatal("Token::type_to_string() switch incomplete");
 	}
+	return NULL; // @linter
 }
 
 char * Token::to_string()
@@ -212,6 +214,7 @@ Token Lexer::next_token()
 	default:
 		fatal("Misplaced character %c (%d)", peek(), peek());
 	}
+	return (Token) {}; // @linter
 }
 
 Token_Kind Lexer::read_double_token(char left, char right, Token_Kind double_type)

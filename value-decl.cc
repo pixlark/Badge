@@ -1,4 +1,5 @@
 enum Type {
+	TYPE_NOTHING,
 	TYPE_INTEGER,
 	TYPE_SYMBOL,
 	TYPE_FUNCTION,
@@ -16,6 +17,10 @@ struct Value {
 	static Value create(Type type)
 	{
 		return (Value) { type };
+	}
+	static Value nothing()
+	{
+		return (Value) { TYPE_NOTHING };
 	}
 	static Value raise(int integer)
 	{

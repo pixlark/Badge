@@ -11,7 +11,7 @@ struct Scope {
 		symbols.dealloc();
 		offsets.dealloc();
 	}
-	static Scope * create_empty()
+	static Scope * alloc_empty()
 	{
 		Scope * s = (Scope*) malloc(sizeof(Scope));
 		s->init();
@@ -55,9 +55,30 @@ struct Scope {
 		scope.create_binding(Intern::intern("test"), 13);
 		size_t ret;
 		scope.resolve_binding(Intern::intern("test"), &ret);
-		printf("%d\n", ret);
+		printf("%zu\n", ret);
 		
 		scope.destroy();
+	}
+};
+
+struct Call_Frame {
+	size_t scope_depth;
+	size_t block_reference;
+	
+	BC * bytecode;
+	size_t bc_pointer;
+	size_t bc_length;
+	static Call_Frame create(Blocks * blocks, size_t block_reference)
+	{
+		Call_Frame frame;
+		frame.block_reference = block_reference;
+
+		frame.bytecode = blocks->retrieve_block(block_reference);
+		frame.bc_pointer = 0;
+		frame.bc_length = blocks->size_block(block_reference);
+		
+		frame.scope_depth = 1;
+		return frame;
 	}
 };
 
@@ -65,35 +86,31 @@ struct VM {
 	Blocks * blocks;
 	
 	List<Value> stack;
-	List<Scope*> scopes;
-
-	BC * bytecode;
-	size_t bc_pointer;
-	size_t bc_length;
+	List<Scope*> scope_stack;
 	
-	void init(Blocks * blocks)
+	List<Call_Frame> call_stack;
+	
+	void init(Blocks * blocks, size_t block_reference)
 	{
 		this->blocks = blocks;
+		
 		stack.alloc();
-		scopes.alloc();
-		scopes.push(Scope::create_empty());
-	}
-	void prime(size_t block_reference)
-	{
-		bytecode = blocks->retrieve_block(block_reference);
-		bc_pointer = 0;
-		bc_length = blocks->size_block(block_reference);
+		
+		call_stack.alloc();
+		call_stack.push(Call_Frame::create(blocks, block_reference));
+		
+		scope_stack.alloc();
+		scope_stack.push(Scope::alloc_empty()); // Global scope
 	}
 	void destroy()
 	{
 		stack.dealloc();
-		scopes[0]->destroy();
-		free(scopes[0]);
-		scopes.dealloc();
+		call_stack.dealloc();
+		scope_stack.dealloc();
 	}
 	bool halted()
 	{
-		return bc_pointer >= bc_length;
+		return call_stack.size == 0;
 	}
 	void push(Value v)
 	{
@@ -109,7 +126,11 @@ struct VM {
 	}
 	Scope * current_scope()
 	{
-		return scopes[scopes.size - 1];
+		return scope_stack[scope_stack.size - 1];
+	}
+	Scope * scope_at_offset(size_t offset)
+	{
+		return scope_stack[scope_stack.size - 1 - offset];
 	}
 	void mark_reachable()
 	{
@@ -117,13 +138,57 @@ struct VM {
 			stack[i].gc_mark();
 		}
 	}
-	void step()
-	{	
-		if (halted()) {
-			return;
+	void pop_scope()
+	{
+		auto scope = scope_stack.pop();
+		scope->destroy();
+		free(scope);
+	}
+	void return_function()
+	{
+		auto top_frame = &call_stack[call_stack.size - 1];
+		for (int i = 0; i < top_frame->scope_depth; i++) {
+			pop_scope();
 		}
-		BC bc = bytecode[bc_pointer++];
+		call_stack.pop();
+	}
+	void step()
+	{
+		/* Manage call stack and VM halting */
+		Call_Frame * frame;
+
+		{
+			if (halted()) {
+				return;
+			}
+
+			auto top_frame = &call_stack[call_stack.size - 1];
+			
+			// If our call frame has come to an implicit end
+			if (top_frame->bc_pointer >= top_frame->bc_length) {
+				assert(top_frame->scope_depth == 1); // An implicit end
+												     // indicates only one
+												     // level of scope
+												     // depth.
+				return_function();
+				push(Value::nothing());
+				
+				if (halted()) { // If we've just returned from global
+								// scope, we're halted and should
+								// return
+					return;
+				}
+			}
+
+			frame = &call_stack[call_stack.size - 1];
+		}
+		
+		BC bc = frame->bytecode[frame->bc_pointer++];
+		
 		switch (bc.kind) {
+		case BC_POP_AND_DISCARD: {
+			pop();
+		} break;
 		case BC_LOAD_CONST: {
 			push(bc.arg.value);
 		} break;
@@ -150,8 +215,21 @@ struct VM {
 			auto symbol = pop();
 			symbol.assert_is(TYPE_SYMBOL);
 			size_t offset;
-			bool success = current_scope()->resolve_binding(symbol.symbol, &offset);
-			if (!success) {
+			// Recurse back through available scopes to find the var
+			bool found_var = false;
+			for (int i = 0; i < frame->scope_depth; i++) {
+				bool success = scope_at_offset(i)->resolve_binding(symbol.symbol, &offset);
+				if (success) {
+					found_var = true;
+					break;
+				}
+			}
+			// Backup into global scope in case we didn't find it anywhere else
+			if (!found_var) {
+				found_var = scope_stack[0]->resolve_binding(symbol.symbol, &offset);
+			}
+			// If we STILL have nothing, it's not bound
+			if (!found_var) {
 				fatal("Variable '%s' is not bound", symbol.symbol);
 			}
 			assert(offset < stack.size);
@@ -182,6 +260,30 @@ struct VM {
 			value.ref_function = func;
 			push(value);
 		} break;
+		case BC_POP_AND_CALL_FUNCTION: {
+			auto func = pop();
+			func.assert_is(TYPE_FUNCTION);
+			auto passed_arg_count = pop();
+			passed_arg_count.assert_is(TYPE_INTEGER);
+			if (passed_arg_count.integer != func.ref_function->parameter_count) {
+				fatal("Function takes %d arguments; was passed %d",
+					  func.ref_function->parameter_count,
+					  passed_arg_count.integer);
+			}
+
+			call_stack.push(Call_Frame::create(blocks, func.ref_function->block_reference));
+			scope_stack.push(Scope::alloc_empty());
+
+			auto scope = current_scope();
+			// Create bindings to pushed arguments
+			for (int i = 0; i < passed_arg_count.integer; i++) {
+				scope->create_binding(func.ref_function->parameters[i],
+									  stack.size - i - 1);
+			}
+		} break;
+		case BC_RETURN: {
+			return_function();
+		} break;
 		}
 
 		GC::unmark_all();
@@ -192,10 +294,13 @@ struct VM {
 	{
 		printf("--- Frame ---\n");
 		const int width = 13;
-		if (bc_pointer > 0) {
-			char * s = bytecode[bc_pointer - 1].to_string();
-			printf("%s\n", s);
-			free(s);
+		if (call_stack.size > 0) {
+			auto frame = &call_stack[call_stack.size - 1];
+			if (frame->bc_pointer < frame->bc_length) {
+				char * s = frame->bytecode[frame->bc_pointer].to_string();
+				printf("%s\n", s);
+				free(s);
+			}
 		}
 		printf(".............\n");
 		printf("    Stack\n");
@@ -215,13 +320,13 @@ struct VM {
 		}
 		printf(".............\n");
 		printf("    Vars\n");
-		for (int i = scopes.size - 1; i >= 0; i--) {
-			auto scope = scopes[i];
+		for (int i = scope_stack.size - 1; i >= 0; i--) {
+			auto scope = scope_stack[i];
 			assert(scope->symbols.size == scope->offsets.size);
 			for (int j = 0; j < scope->symbols.size; j++) {
-				printf("  %s: %d\n", scope->symbols[j], scope->offsets[j]);
+				printf("  %s: %zu\n", scope->symbols[j], scope->offsets[j]);
 			}
-			if (i < scopes.size - 1) {
+			if (i < scope_stack.size - 1) {
 				printf("      .\n");
 			}
 		}

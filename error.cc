@@ -42,6 +42,8 @@ void fatal(const char * fmt, ...)
 	abort();
 }
 
+/** TODO(pixlark): Do this without GCC dependency... like so? https://stackoverflow.com/questions/18777843/variadic-macro-with-empty-argument-in-c11
+
 void _fatal_internal(const char * fmt, const char * file, size_t line, ...)
 {
 	va_list args;
@@ -60,3 +62,5 @@ void _fatal_internal(const char * fmt, const char * file, size_t line, ...)
 #define fatal_internal(fmt, ...) _fatal_internal(fmt, __FILE__, __LINE__, ##__VA_ARGS__)
 
 //
+
+*/

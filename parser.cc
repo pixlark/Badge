@@ -21,6 +21,7 @@ struct Parser {
 	bool match(char c)        { return match((Token_Kind) c); }
 
 	Expr * parse_atom();
+	Expr * parse_function_call();
 	List<Symbol> parse_symbol_list();
 	Expr * parse_lambda();
 	Expr * parse_expr();
@@ -28,6 +29,7 @@ struct Parser {
 	Stmt * parse_let();
 	Stmt * parse_set();
 	Stmt * parse_print();
+	Stmt * parse_return();
 	Stmt * parse_stmt();
 };
 
@@ -51,6 +53,7 @@ Expr * Parser::parse_atom()
 	default:
 		fatal("Expected <int>, <symbol>; got %s", peek.to_string());
 	}
+	return NULL; // @linter
 }
 
 List<Symbol> Parser::parse_symbol_list()
@@ -73,6 +76,28 @@ List<Symbol> Parser::parse_symbol_list()
 	return list;
 }
 
+Expr * Parser::parse_function_call()
+{
+	Expr * left = parse_atom();
+	if (match('(')) {
+		Expr * expr = Expr::with_kind(EXPR_FUNCALL);
+		expr->funcall.func = left;
+		expr->funcall.args.alloc();
+		while (true) {
+			if (match(')')) {
+				break;
+			}
+			expr->funcall.args.push(parse_expr());
+			if (!match(',')) {
+				expect(')');
+				break;
+			}
+		}
+		return expr;
+	}
+	return left;
+}
+
 Expr * Parser::parse_lambda()
 {
 	if (match(TOKEN_LAMBDA)) {
@@ -85,7 +110,7 @@ Expr * Parser::parse_lambda()
 		}
 		return lambda;
 	} else {
-		return parse_atom();
+		return parse_function_call();
 	}
 }
 
@@ -134,6 +159,14 @@ Stmt * Parser::parse_print()
 	return stmt;
 }
 
+Stmt * Parser::parse_return()
+{
+	Stmt * stmt = Stmt::with_kind(STMT_RETURN);
+	advance();
+	stmt->_return.expr = parse_expr();
+	return stmt;	
+}
+
 Stmt * Parser::parse_stmt()
 {
 	Stmt * stmt;
@@ -143,8 +176,11 @@ Stmt * Parser::parse_stmt()
 		stmt = parse_set();
 	} else if (is(TOKEN_PRINT)) {
 		stmt = parse_print();
+	} else if (is(TOKEN_RETURN)) {
+		stmt = parse_return();
 	} else {
-		fatal("Expected let, set; got %s", peek.to_string());
+		stmt = Stmt::with_kind(STMT_EXPR);
+		stmt->expr = parse_expr();
 	}
 	expect(';');
 	return stmt;

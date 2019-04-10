@@ -1,7 +1,7 @@
 struct Compiler {
 	List<BC> bytecode;
 	Blocks * blocks;
-	int block_reference;
+	size_t block_reference;
 	void init(Blocks * blocks)
 	{
 		bytecode.alloc();
@@ -52,6 +52,17 @@ struct Compiler {
 			bytecode.push(BC::create(BC_CONSTRUCT_FUNCTION,
 									 compiler.block_reference));
 		} break;
+		case EXPR_FUNCALL: {
+			auto args = expr->funcall.args;
+			// Args are pushed in reverse order
+			for (int i = args.size - 1; i >= 0; i--) {
+				compile_expr(args[i]);
+			}
+			bytecode.push(BC::create(BC_LOAD_CONST,
+									 Value::raise(args.size)));
+			compile_expr(expr->funcall.func);
+			bytecode.push(BC::create(BC_POP_AND_CALL_FUNCTION));
+		} break;
 		}
 	}
 	void compile_stmt(Stmt * stmt)
@@ -72,6 +83,14 @@ struct Compiler {
 		case STMT_PRINT:
 			compile_expr(stmt->print.expr);
 			bytecode.push(BC::create(BC_POP_AND_PRINT));
+			break;
+		case STMT_RETURN:
+			compile_expr(stmt->_return.expr);
+			bytecode.push(BC::create(BC_RETURN));
+			break;
+		case STMT_EXPR:
+			compile_expr(stmt->expr);
+			bytecode.push(BC::create(BC_POP_AND_DISCARD));
 			break;
 		}
 	}

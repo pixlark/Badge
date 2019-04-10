@@ -7,6 +7,8 @@ struct Function {
 char * Value::to_string()
 {
 	switch (type) {
+	case TYPE_NOTHING:
+		return strdup("nothing");
 	case TYPE_INTEGER:
 		return itoa(integer);
 	case TYPE_SYMBOL:
@@ -19,6 +21,8 @@ char * Value::to_string()
 void Value::gc_mark()
 {
 	switch (type) {
+	case TYPE_NOTHING:
+		break;
 	case TYPE_INTEGER:
 		break;
 	case TYPE_SYMBOL:
