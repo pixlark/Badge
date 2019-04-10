@@ -153,13 +153,23 @@ struct VM {
 			free(s);
 		} break;
 		case BC_CONSTRUCT_FUNCTION: {
-			auto code = bc.arg.bytecode;
-			auto arg_count = pop();
-			arg_count.assert_is(TYPE_INTEGER);
+			auto count = pop();
+			count.assert_is(TYPE_INTEGER);
 			
-			for (int i = 0; i < arg_count.integer; i++) {
-				
+			Function * func =  (Function*) GC::alloc(sizeof(Function));
+			func->bytecode = &bc.arg.bytecode;
+			
+			func->parameter_count = count.integer;
+			func->parameters = (Symbol*) GC::alloc(sizeof(Symbol) * count.integer);
+			for (int i = 0; i < count.integer; i++) {
+				auto it = pop();
+				it.assert_is(TYPE_SYMBOL);
+				func->parameters[count.integer - i - 1] = it.symbol;
 			}
+
+			Value value = Value::create(TYPE_FUNCTION);
+			value.ref_function = func;
+			push(value);
 		} break;
 		}
 	}

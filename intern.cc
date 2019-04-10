@@ -6,7 +6,7 @@ namespace Intern {
 	{
 		interns.alloc();
 	}
-	void destroy_everything()
+	void destroy()
 	{
 		for (int i = 0; i < interns.size; i++) {
 			free((void*) interns[i]);

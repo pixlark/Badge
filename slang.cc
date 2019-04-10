@@ -7,8 +7,10 @@
 #include "lexer.cc"
 #include "ast.cc"
 #include "parser.cc"
-#include "value.cc"
+#include "gc.cc"
+#include "value-decl.cc"
 #include "bytecode.cc"
+#include "value-def.cc"
 #include "compiler.cc"
 #include "vm.cc"
 
@@ -121,12 +123,16 @@ int main(int argc, char ** argv)
 	}
 
 	Intern::init();
+	GC::init();
 	
 	if (is_repl) {
 		repl();
 	} else {
 		work_from_source(argv[1]);
 	}	
+
+	GC::destroy();
+	Intern::destroy();
 	
 	return 0;
 }
