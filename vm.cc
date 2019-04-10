@@ -114,7 +114,7 @@ struct VM {
 		BC bc = bytecode[bc_pointer++];
 		switch (bc.kind) {
 		case BC_LOAD_CONST: {
-			push(bc.arg);
+			push(bc.arg.value);
 		} break;
 		case BC_CREATE_BINDING: {
 			auto symbol = pop();
@@ -151,6 +151,15 @@ struct VM {
 			char * s = v.to_string();
 			printf("%s\n", s);
 			free(s);
+		} break;
+		case BC_CONSTRUCT_FUNCTION: {
+			auto code = bc.arg.bytecode;
+			auto arg_count = pop();
+			arg_count.assert_is(TYPE_INTEGER);
+			
+			for (int i = 0; i < arg_count.integer; i++) {
+				
+			}
 		} break;
 		}
 	}

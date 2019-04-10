@@ -28,7 +28,18 @@ struct Compiler {
 			}
 			bytecode.push(BC::create(BC_LOAD_CONST,
 									 Value::raise(params.size)));
-			bytecode.push(BC::create(BC_NEW_FUNCTION));
+			Compiler compiler;
+			compiler.init();
+			auto body = expr->lambda.body;
+			for (int i = 0; i < body.size; i++) {
+				compiler.compile_stmt(body[i]);
+			}
+			// WARNING: We never clean up `compiler` because all it
+			// has is `bytecode` and we want that to stick around
+			// anyway... in the future if other stuff is added to
+			// `Compiler` this could be dangerous.
+			bytecode.push(BC::create(BC_CONSTRUCT_FUNCTION,
+									 compiler.bytecode));
 		} break;
 		}
 	}

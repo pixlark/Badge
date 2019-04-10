@@ -4,6 +4,7 @@ enum BC_Kind {
 	BC_UPDATE_BINDING,
 	BC_RESOLVE_BINDING,
 	BC_POP_AND_PRINT,
+	BC_CONSTRUCT_FUNCTION,
 };
 
 static const char * BC_Kind_names[] = {
@@ -12,11 +13,16 @@ static const char * BC_Kind_names[] = {
 	"UPDATE_BINDING",
 	"RESOLVE_BINDING",
 	"POP_AND_PRINT",
+	"CONSTRUCT_FUNCTION",
 };
 
 struct BC {
 	BC_Kind kind;
-	Value arg;
+	union {
+		Value value;
+		int integer;
+		List<BC> bytecode;
+	} arg;
 	static BC create(BC_Kind kind)
 	{
 		BC bc;
@@ -27,23 +33,28 @@ struct BC {
 	{
 		BC bc;
 		bc.kind = kind;
-		bc.arg = arg;
+		bc.arg.value = arg;
 		return bc;
 	}
-	bool has_arg()
+	static BC create(BC_Kind kind, int arg)
 	{
-		return kind == BC_LOAD_CONST;
+		BC bc;
+		bc.kind = kind;
+		bc.arg.integer = arg;
+		return bc;
+	}
+	static BC create(BC_Kind kind, List<BC> arg)
+	{
+		BC bc;
+		bc.kind = kind;
+		bc.arg.bytecode = arg;
+		return bc;
 	}
 	char * to_string()
 	{
 		String_Builder builder;
 		builder.append(BC_Kind_names[kind]);
-		builder.append(" ");
-		if (has_arg()) {
-			char * s = arg.to_string();
-			builder.append(s);
-			free(s);
-		}
+		// TODO(pixlark): Fancier
 		return builder.final_string();
 	}
 };
