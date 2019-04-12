@@ -1,0 +1,18 @@
+(@) source
+
+%this should not be seen !#$)(@*#%&%
+
+%%%%%%%% neither should this
+
+let f = lambda (x) { return x; }; % or this
+print f; %%%%% and this
+
+[-
+
+this shouldn't either
+
+
+-]
+
+(@) expected(0, stdout)
+@[function]

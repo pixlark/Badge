@@ -1,0 +1,8 @@
+SLANG:
+
+- Type system
+- Arithmetic operators
+
+EXPECT:
+
+- Multiple tests per file

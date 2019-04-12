@@ -19,10 +19,30 @@
 
 void work_from_source(const char * path)
 {
-	const char * source = load_string_from_file(path);
-
-	if (!source) {
-		fatal("File does not exist");
+	const char * source;
+	
+	if (strcmp(path, "-") == 0) {
+		// Read from stdin
+		String_Builder builder;
+		const int chunk_size = 64;
+		char buf[chunk_size];
+		
+		size_t read;
+		while ((read = fread(buf, sizeof(char), chunk_size, stdin)) == chunk_size) {
+			builder.append_size(buf, chunk_size);
+		}
+		if (ferror(stdin)) {
+			fatal("Error reading from stdin");
+		}
+		assert(read <= chunk_size);
+		builder.append_size(buf, read);
+		source = builder.final_string();
+	} else {
+		// Read from file
+		source = load_string_from_file(path);
+		if (!source) {
+			fatal("File does not exist");
+		}
 	}
 
 	Lexer lexer;

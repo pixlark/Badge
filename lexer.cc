@@ -100,6 +100,7 @@ struct Lexer {
 	const char * source;
 	size_t source_length;
 	size_t cursor;
+	size_t line;
 	void init(const char * source);
 	char next();
 	char peek();
@@ -113,6 +114,7 @@ void Lexer::init(const char * source)
 	this->source = source;
 	source_length = strlen(source);
 	cursor = 0;
+	line = 1;
 }
 
 char Lexer::next()
@@ -132,6 +134,12 @@ char Lexer::peek()
 
 void Lexer::advance()
 {
+	if (cursor >= source_length) {
+		return;
+	}
+	if (source[cursor] == '\n') {
+		line++;
+	}
 	cursor++;
 }
 
@@ -147,6 +155,13 @@ Token Lexer::next_token()
 		goto reset;
 	}
 
+	if (peek() == '%') {
+		while (peek() != '\n') {
+			advance();
+		}
+		goto reset;
+	}
+	
 	if (peek() == '"') {
 		advance();
 		// TODO(pixlark): Buffer overflow
@@ -208,11 +223,31 @@ Token Lexer::next_token()
 	case '{':
 	case '}':
 		return Token::with_type((Token_Kind) next());
+	case '[':
+		advance();
+		if (peek() == '-') {
+			// Multi-line comment
+			while (true) {
+				advance();
+				if (peek() == '\0') {
+					fatal("Unterminated multi-line comment");
+				}
+				if (peek() == '-') {
+					advance();
+					if (peek() == ']') {
+						advance();
+						break;
+					}
+				}
+			}
+			goto reset;
+		}
+		/* FALLTHROUGH */
+	default:
+		fatal("Line %d\nMisplaced character %c (%d)", line, peek(), peek());
 		/*
 	case ';':
 		return Token::with_type(read_double_token(';', ';', TOKEN_DOUBLE_SEMICOLON));*/
-	default:
-		fatal("Misplaced character %c (%d)", peek(), peek());
 	}
 	return (Token) {}; // @linter
 }

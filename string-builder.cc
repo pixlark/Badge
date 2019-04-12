@@ -5,6 +5,7 @@ struct String_Builder {
 	String_Builder();
 	~String_Builder();
 	void append(const char * s);
+	void append_size(const char * s, size_t size);
 	char * final_string();
 };
 
@@ -21,6 +22,13 @@ String_Builder::~String_Builder()
 void String_Builder::append(const char * s)
 {
 	for (int i = 0; i < strlen(s); i++) {
+		builder.push(s[i]);
+	}
+}
+
+void String_Builder::append_size(const char * s, size_t size)
+{
+	for (int i = 0; i < size; i++) {
 		builder.push(s[i]);
 	}
 }
