@@ -22,6 +22,8 @@ struct Parser {
 
 	Expr * parse_atom();
 	Expr * parse_function_call();
+	Expr * parse_multiply_divide();
+	Expr * parse_add_subtract();
 	List<Symbol> parse_symbol_list();
 	Expr * parse_lambda();
 	Expr * parse_expr();
@@ -37,15 +39,20 @@ struct Parser {
 
 Expr * Parser::parse_atom()
 {
-	switch (peek.type) {
+	if (match('(')) {
+		auto expr = parse_expr();
+		expect(')');
+		return expr;
+	}
+	switch (peek.kind) {
 	case TOKEN_INTEGER_LITERAL: {
-		Expr * atom = Expr::with_kind(EXPR_INTEGER);
+		auto atom = Expr::with_kind(EXPR_INTEGER);
 		atom->integer = peek.values.integer;
 		advance();
 		return atom;
 	} break;
 	case TOKEN_SYMBOL: {
-		Expr * atom = Expr::with_kind(EXPR_VARIABLE);
+		auto atom = Expr::with_kind(EXPR_VARIABLE);
 		atom->variable = peek.values.symbol;
 		advance();
 		return atom;
@@ -54,26 +61,6 @@ Expr * Parser::parse_atom()
 		fatal("Expected <int>, <symbol>; got %s", peek.to_string());
 	}
 	return NULL; // @linter
-}
-
-List<Symbol> Parser::parse_symbol_list()
-{
-	expect('(');
-	List<Symbol> list;
-	list.alloc();
-	while (true) {
-		if (match(')')) {
-			break;
-		}
-		weak_expect(TOKEN_SYMBOL);
-		list.push(peek.values.symbol);
-		advance();
-		if (!match(',')) {
-			expect(')');
-			break;
-		}
-	}
-	return list;
 }
 
 Expr * Parser::parse_function_call()
@@ -98,6 +85,64 @@ Expr * Parser::parse_function_call()
 	return left;
 }
 
+Expr * Parser::parse_multiply_divide()
+{
+	auto left = parse_function_call();
+	while (is('*') || is('/')) {
+		Operator op;
+		if (match('*')) {
+			op = OP_MULTIPLY;
+		} else if (match('/')) {
+			op = OP_DIVIDE;
+		} else assert(false);
+		auto expr = Expr::with_kind(EXPR_BINARY);
+		expr->binary.left = left;
+		expr->binary.op = op;
+		expr->binary.right = parse_function_call();
+		left = expr;
+	}
+	return left;
+}
+
+Expr * Parser::parse_add_subtract()
+{
+	auto left = parse_multiply_divide();
+	while (is('+') || is('-')) {
+		Operator op;
+		if (match('+')) {
+			op = OP_ADD;
+		} else if (match('-')) {
+			op = OP_SUBTRACT;
+		} else assert(false);
+		auto expr = Expr::with_kind(EXPR_BINARY);
+		expr->binary.left = left;
+		expr->binary.op = op;
+		expr->binary.right = parse_multiply_divide();
+		left = expr;
+	}
+	return left;
+}
+
+List<Symbol> Parser::parse_symbol_list()
+{
+	expect('(');
+	List<Symbol> list;
+	list.alloc();
+	while (true) {
+		if (match(')')) {
+			break;
+		}
+		weak_expect(TOKEN_SYMBOL);
+		list.push(peek.values.symbol);
+		advance();
+		if (!match(',')) {
+			expect(')');
+			break;
+		}
+	}
+	return list;
+}
+
 Expr * Parser::parse_lambda()
 {
 	if (match(TOKEN_LAMBDA)) {
@@ -110,7 +155,7 @@ Expr * Parser::parse_lambda()
 		}
 		return lambda;
 	} else {
-		return parse_function_call();
+		return parse_add_subtract();
 	}
 }
 
@@ -190,12 +235,12 @@ Stmt * Parser::parse_stmt()
 
 bool Parser::is(Token_Kind type)
 {
-	return peek.type == type;
+	return peek.kind == type;
 }
 
 bool Parser::at_end()
 {
-	return peek.type == TOKEN_EOF;
+	return peek.kind == TOKEN_EOF;
 }
 
 Token Parser::next()

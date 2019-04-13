@@ -43,29 +43,52 @@ struct Stmt {
 	};
 	static Stmt * with_kind(Stmt_Kind kind);
 	void destroy();
-	char * _to_string(int indent);
-	char * to_string();
 };
 
 /*
  * Expr
  */
 
+enum Operator {
+	OP_NEGATE,
+	OP_ADD,
+	OP_SUBTRACT,
+	OP_MULTIPLY,
+	OP_DIVIDE,
+};
+
 enum Expr_Kind {
 	EXPR_INTEGER,
 	EXPR_VARIABLE,
+	EXPR_UNARY,
+	EXPR_BINARY,
 	EXPR_LAMBDA,
 	EXPR_FUNCALL,
+};
+
+struct Expr_Unary {
+	Operator op;
+	Expr * expr;
+	void destroy();
+};
+
+struct Expr_Binary {
+	Expr * left;
+	Operator op;
+	Expr * right;
+	void destroy();
 };
 
 struct Expr_Lambda {
 	List<Symbol> parameters;
 	List<Stmt*> body;
+	void destroy();
 };
 
 struct Expr_Funcall {
 	Expr * func;
 	List<Expr*> args;
+	void destroy();
 };
 
 struct Expr {
@@ -73,6 +96,8 @@ struct Expr {
 	union {
 		int integer;
 		Symbol variable;
+		Expr_Unary unary;
+		Expr_Binary binary;
 		Expr_Lambda lambda;
 		Expr_Funcall funcall;
 	};
@@ -89,82 +114,56 @@ struct Expr {
 			break;
 		case EXPR_VARIABLE:
 			break;
+		case EXPR_UNARY:
+			unary.destroy();
+			break;
+		case EXPR_BINARY:
+			binary.destroy();
+			break;
 		case EXPR_LAMBDA:
-			lambda.parameters.dealloc();
-			for (int i = 0; i < lambda.body.size; i++) {
-				lambda.body[i]->destroy();
-				free(lambda.body[i]);
-			}
-			lambda.body.dealloc();
+			lambda.destroy();
 			break;
 		case EXPR_FUNCALL:
-			funcall.func->destroy();
-			free(funcall.func);
-			for (int i = 0; i < funcall.args.size; i++) {
-				funcall.args[i]->destroy();
-				free(funcall.args[i]);
-			}
-			funcall.args.dealloc();
+			funcall.destroy();
 			break;
 		}
 	}
-	char * _to_string(int indent)
-	{
-		String_Builder builder;
-		for (int i = 0; i < indent * PRETTY_INDENT_MULT; i++) {
-			builder.append(" ");
-		}
-
-		switch (kind) {
-		case EXPR_INTEGER: {
-			char * s = itoa(integer);
-			builder.append(s);
-			free(s);
-		} break;
-		case EXPR_VARIABLE: {
-			builder.append(variable);
-		} break;
-		case EXPR_LAMBDA: {
-			builder.append("lambda (");
-			for (int i = 0; i < lambda.parameters.size; i++) {
-				builder.append(lambda.parameters[i]);
-				if (i < lambda.parameters.size - 1) {
-					builder.append(", ");
-				}
-			}
-			builder.append(") {\n");
-			for (int i = 0; i < lambda.body.size; i++) {
-				char * s = lambda.body[i]->_to_string(indent + 1);
-				builder.append(s);
-				free(s);
-			}
-			builder.append(" }\n");
-		} break;
-		case EXPR_FUNCALL: {
-			builder.append("(");
-			char * s = funcall.func->_to_string(indent);
-			builder.append(s);
-			free(s);
-			builder.append(") on (\n");
-			for (int i = 0; i < funcall.args.size; i++) {
-				char * s = funcall.args[i]->_to_string(indent + 1);
-				builder.append(s);
-				free(s);
-				if (i < funcall.args.size - 1) {
-					builder.append(",\n");
-				}
-			}
-			builder.append(") ");
-		};
-		}
-		
-		return builder.final_string();
-	}
-	char * to_string()
-	{
-		return this->_to_string(0);
-	}
 };
+
+void Expr_Unary::destroy()
+{
+	expr->destroy();
+	free(expr);
+}
+
+void Expr_Binary::destroy()
+{
+	left->destroy();
+	free(left);
+	right->destroy();
+	free(right);
+}
+
+void Expr_Lambda::destroy()
+{
+	parameters.dealloc();
+	for (int i = 0; i < body.size; i++) {
+		body[i]->destroy();
+		free(body[i]);
+	}
+	body.dealloc();
+}
+
+void Expr_Funcall::destroy()
+{
+	func->destroy();
+	free(func);
+	for (int i = 0; i < args.size; i++) {
+		args[i]->destroy();
+		free(args[i]);
+	}
+	args.dealloc();
+}
 
 /*
  * Stmt Instances
@@ -227,53 +226,3 @@ void Stmt::destroy()
 		break;
 	}
 }
-char * Stmt::_to_string(int indent)
-{
-	String_Builder builder;
-	for (int i = 0; i < indent * PRETTY_INDENT_MULT; i++) {
-		builder.append(" ");
-	}
-	switch (kind) {
-	case STMT_LET: {
-		char buf[512];
-		sprintf(buf, "let %s = \n", let.left);
-		builder.append(buf);
-			
-		char * right_s = let.right->_to_string(indent + 1);
-		builder.append(right_s);
-		free(right_s);
-	} break;
-	case STMT_SET: {
-		char buf[512];
-		sprintf(buf, "set %s = \n", set.left);
-		builder.append(buf);
-			
-		char * right_s = set.right->_to_string(indent + 1);
-		builder.append(right_s);
-		free(right_s);
-	} break;
-	case STMT_PRINT: {
-		builder.append("print\n");
-		char * expr_s = print.expr->_to_string(indent + 1);
-		builder.append(expr_s);
-		free(expr_s);
-	} break;
-	case STMT_RETURN: {
-		builder.append("return\n");
-		char * expr_s = _return.expr->_to_string(indent + 1);
-		builder.append(expr_s);
-		free(expr_s);
-	} break;		
-	case STMT_EXPR: {
-		char * s = expr->_to_string(indent);
-		builder.append(s);
-		free(s);
-	} break;
-	}
-	return builder.final_string();
-}
-char * Stmt::to_string()
-{
-	return this->_to_string(0);
-}
-

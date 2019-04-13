@@ -1,17 +1,17 @@
 
+%% This shouldn't work
+%lambda (x) { print x; }(1);
+%% This should work
+(lambda (x) { print x; })(1);
 
-let f = lambda () { print f; };
-f();
-
-set f = lambda (x) { print x; };
-f(f);
-f(2);
-
-set f = lambda (a) {
-	return lambda (b) { return b; };
+%% TODO: Closures
+[-
+let add = lambda (x) {
+	return lambda (y) {
+		return x + y;
+	};
 };
 
-let add1 = f(1);
-print add1(2);
-
-
+let increment = add(1);
+print increment(2);
+-]

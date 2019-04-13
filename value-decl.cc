@@ -38,6 +38,15 @@ struct Value {
 	{
 		assert(this->type == type);
 	}
+	bool same_type(Value other)
+	{
+		return type == other.type;
+	}
 	char * to_string();
 	void gc_mark();
+
+	static Value add(Value a, Value b);
+	static Value subtract(Value a, Value b);
+	static Value multiply(Value a, Value b);
+	static Value divide(Value a, Value b);
 };

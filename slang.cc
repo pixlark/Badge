@@ -64,13 +64,6 @@ void work_from_source(const char * path)
 		// The parser feeds from the lexer and returns one
 		// statement's worth of abstract syntax tree
 		auto stmt = parser.parse_stmt();
-		{
-			char * s = stmt->to_string();
-			#if DEBUG
-			printf("%s\n\n", s);
-			#endif
-			free(s);
-		}
 
 		// Here we generate bytecode from our abstract syntax tree
 		// (one statement's worth)

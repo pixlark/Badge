@@ -33,3 +33,58 @@ void Value::gc_mark()
 		break;
 	}
 }
+
+static void validate_same_type(Value a, Value b)
+{
+	if (!a.same_type(b)) {
+		fatal("Values must be of same type");
+	}
+}
+
+Value Value::add(Value a, Value b)
+{
+	validate_same_type(a, b);
+	switch (a.type) {
+	case TYPE_INTEGER:
+		return Value::raise(a.integer + b.integer);
+	default:
+		fatal("+ not valid for type");
+	}
+	return (Value) {}; // @linter
+}
+
+Value Value::subtract(Value a, Value b)
+{
+	validate_same_type(a, b);
+	switch (a.type) {
+	case TYPE_INTEGER:
+		return Value::raise(a.integer - b.integer);
+	default:
+		fatal("- not valid for type");
+	}
+	return (Value) {}; // @linter
+}
+
+Value Value::multiply(Value a, Value b)
+{
+	validate_same_type(a, b);
+	switch (a.type) {
+	case TYPE_INTEGER:
+		return Value::raise(a.integer * b.integer);
+	default:
+		fatal("* not valid for type");
+	}
+	return (Value) {}; // @linter
+}
+
+Value Value::divide(Value a, Value b)
+{
+	validate_same_type(a, b);
+	switch (a.type) {
+	case TYPE_INTEGER:
+		return Value::raise(a.integer / b.integer);
+	default:
+		fatal("/ not valid for type");
+	}
+	return (Value) {}; // @linter
+}

@@ -241,6 +241,26 @@ struct VM {
 			printf("%s\n", s);
 			free(s);
 		} break;
+		case BC_ADD_TWO: {
+			auto b = pop();
+			auto a = pop();
+			push(Value::add(a, b));
+		} break;
+		case BC_SUB_TWO: {
+			auto b = pop();
+			auto a = pop();
+			push(Value::subtract(a, b));
+		} break;
+		case BC_MUL_TWO: {
+			auto b = pop();
+			auto a = pop();
+			push(Value::multiply(a, b));
+		} break;
+		case BC_DIV_TWO: {
+			auto b = pop();
+			auto a = pop();
+			push(Value::divide(a, b));
+		} break;
 		case BC_CONSTRUCT_FUNCTION: {
 			auto count = pop();
 			count.assert_is(TYPE_INTEGER);

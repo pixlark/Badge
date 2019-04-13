@@ -20,25 +20,58 @@ struct Compiler {
 	{
 		bytecode.dealloc();
 	}
+	void push(BC bc)
+	{
+		bytecode.push(bc);
+	}	
+	void compile_operator(Operator op)
+	{
+		switch (op) {
+		case OP_NEGATE:
+			fatal("Unimplemented");
+			break;
+		case OP_ADD:
+			push(BC::create(BC_ADD_TWO));
+			break;
+		case OP_SUBTRACT:
+			push(BC::create(BC_SUB_TWO));
+			break;
+		case OP_MULTIPLY:
+			push(BC::create(BC_MUL_TWO));
+			break;
+		case OP_DIVIDE:
+			push(BC::create(BC_DIV_TWO));
+			break;
+		}
+	}
 	void compile_expr(Expr * expr)
 	{
 		switch (expr->kind) {
+		case EXPR_UNARY:
+			compile_expr(expr->unary.expr);
+			compile_operator(expr->unary.op);
+			break;
+		case EXPR_BINARY:
+			compile_expr(expr->binary.left);
+			compile_expr(expr->binary.right);
+			compile_operator(expr->binary.op);
+			break;
 		case EXPR_INTEGER:
-			bytecode.push(BC::create(BC_LOAD_CONST,
+			push(BC::create(BC_LOAD_CONST,
 									 Value::raise(expr->integer)));
 			break;
 		case EXPR_VARIABLE:
-			bytecode.push(BC::create(BC_LOAD_CONST,
+			push(BC::create(BC_LOAD_CONST,
 									 Value::raise(expr->variable)));
-			bytecode.push(BC::create(BC_RESOLVE_BINDING));
+			push(BC::create(BC_RESOLVE_BINDING));
 			break;
 		case EXPR_LAMBDA: {
 			auto params = expr->lambda.parameters;
 			for (int i = 0; i < params.size; i++) {
-				bytecode.push(BC::create(BC_LOAD_CONST,
+				push(BC::create(BC_LOAD_CONST,
 										 Value::raise(params[i])));
 			}
-			bytecode.push(BC::create(BC_LOAD_CONST,
+			push(BC::create(BC_LOAD_CONST,
 									 Value::raise(params.size)));
 			Compiler compiler;
 			compiler.init(blocks);
@@ -49,7 +82,7 @@ struct Compiler {
 			compiler.finalize();
 			compiler.destroy();
 			
-			bytecode.push(BC::create(BC_CONSTRUCT_FUNCTION,
+			push(BC::create(BC_CONSTRUCT_FUNCTION,
 									 compiler.block_reference));
 		} break;
 		case EXPR_FUNCALL: {
@@ -58,10 +91,10 @@ struct Compiler {
 			for (int i = args.size - 1; i >= 0; i--) {
 				compile_expr(args[i]);
 			}
-			bytecode.push(BC::create(BC_LOAD_CONST,
+			push(BC::create(BC_LOAD_CONST,
 									 Value::raise(args.size)));
 			compile_expr(expr->funcall.func);
-			bytecode.push(BC::create(BC_POP_AND_CALL_FUNCTION));
+			push(BC::create(BC_POP_AND_CALL_FUNCTION));
 		} break;
 		}
 	}
@@ -70,27 +103,27 @@ struct Compiler {
 		switch (stmt->kind) {
 		case STMT_LET:
 			compile_expr(stmt->let.right);
-			bytecode.push(BC::create(BC_LOAD_CONST,
+			push(BC::create(BC_LOAD_CONST,
 									 Value::raise(stmt->let.left)));
-			bytecode.push(BC::create(BC_CREATE_BINDING));
+			push(BC::create(BC_CREATE_BINDING));
 			break;
 		case STMT_SET:
 			compile_expr(stmt->set.right);
-			bytecode.push(BC::create(BC_LOAD_CONST,
+			push(BC::create(BC_LOAD_CONST,
 									 Value::raise(stmt->set.left)));
-			bytecode.push(BC::create(BC_UPDATE_BINDING));
+			push(BC::create(BC_UPDATE_BINDING));
 			break;
 		case STMT_PRINT:
 			compile_expr(stmt->print.expr);
-			bytecode.push(BC::create(BC_POP_AND_PRINT));
+			push(BC::create(BC_POP_AND_PRINT));
 			break;
 		case STMT_RETURN:
 			compile_expr(stmt->_return.expr);
-			bytecode.push(BC::create(BC_RETURN));
+			push(BC::create(BC_RETURN));
 			break;
 		case STMT_EXPR:
 			compile_expr(stmt->expr);
-			bytecode.push(BC::create(BC_POP_AND_DISCARD));
+			push(BC::create(BC_POP_AND_DISCARD));
 			break;
 		}
 	}

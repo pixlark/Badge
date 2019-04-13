@@ -22,7 +22,7 @@ static const char * reserved_words[RESERVED_WORDS_COUNT] = {
 };
 
 struct Token {
-	Token_Kind type;
+	Token_Kind kind;
 	union {
 		int integer;
 		Symbol symbol;
@@ -31,30 +31,30 @@ struct Token {
 	static Token eof()
 	{
 		Token token;
-		token.type = TOKEN_EOF;
+		token.kind = TOKEN_EOF;
 		return token;
 	}
 	static Token with_type(Token_Kind type)
 	{
 		Token token;
-		token.type = type;
+		token.kind = type;
 		return token;
 	}
 	static char * type_to_string(Token_Kind type);
 	char * to_string();
 };
 
-char * Token::type_to_string(Token_Kind type)
+char * Token::type_to_string(Token_Kind kind)
 {
-	if (type < 256) {
-		return Token::with_type(type).to_string();
+	if (kind < 256) {
+		return Token::with_type(kind).to_string();
 	}
 	
-	if (type >= RESERVED_WORDS_BEGIN && type < RESERVED_WORDS_END) {
-		return strdup(reserved_words[type - RESERVED_WORDS_BEGIN]);
+	if (kind >= RESERVED_WORDS_BEGIN && kind < RESERVED_WORDS_END) {
+		return strdup(reserved_words[kind - RESERVED_WORDS_BEGIN]);
 	}
 	
-	switch (type) {
+	switch (kind) {
 	case TOKEN_EOF:
 		return strdup("EOF");
 	case TOKEN_SYMBOL:
@@ -71,13 +71,13 @@ char * Token::type_to_string(Token_Kind type)
 
 char * Token::to_string()
 {
-	if (type >= 0 && type < 256) {
+	if (kind >= 0 && kind < 256) {
 		char buf[2];
-		buf[0] = type;
+		buf[0] = kind;
 		buf[1] = '\0';
 		return strdup(buf);
 	}
-	switch (type) {
+	switch (kind) {
 	case TOKEN_SYMBOL: {
 		return strdup(values.symbol);
 	}
@@ -92,7 +92,7 @@ char * Token::to_string()
 		return builder.final_string();
 	}
 	default:
-		return Token::type_to_string(type);
+		return Token::type_to_string(kind);
 	}
 }
 
@@ -174,7 +174,7 @@ Token Lexer::next_token()
 		advance();
 		
 		Token token;
-		token.type = TOKEN_STRING_LITERAL;
+		token.kind = TOKEN_STRING_LITERAL;
 		token.values.string = Intern::intern(buf); // string literals are technically symbols
 		return token;
 	}
@@ -195,7 +195,7 @@ Token Lexer::next_token()
 		}
 		
 		Token token;
-		token.type = TOKEN_SYMBOL;
+		token.kind = TOKEN_SYMBOL;
 		token.values.symbol = Intern::intern(buf);
 		return token;
 	}
@@ -209,12 +209,16 @@ Token Lexer::next_token()
 		}
 		buf[i++] = '\0';
 		Token token;
-		token.type = TOKEN_INTEGER_LITERAL;
+		token.kind = TOKEN_INTEGER_LITERAL;
 		token.values.integer = strtol(buf, NULL, 10);
 		return token;
 	}
 	
 	switch (peek()) {
+	case '+':
+	case '-':
+	case '*':
+	case '/':
 	case ';':
 	case '=':
 	case ',':
