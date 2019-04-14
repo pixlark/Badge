@@ -88,8 +88,8 @@ void work_from_source(const char * path)
 		vm.step();
 		#if DEBUG
 		vm.print_debug_info();
-		#endif
 		printf("%zu allocations in GC\n\n", GC::allocations.size);
+		#endif
 	}
 	#if DEBUG
 	vm.print_debug_info();
