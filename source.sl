@@ -1,12 +1,29 @@
 
 
+let function = lambda () {
+	% This should get collected
+	let inner = lambda (x) { print x. }.
+	inner(2).
+}.
+
+let x = function().
+print x.
 
 
+[-
+let simple_closure = lambda (x) lambda () x.
+print simple_closure(111)().
+
+let curry = lambda (x) (lambda (y) (lambda (z) (z + y + x))).
+print curry(1)(2)(4).-]
+
+
+[-
 let f = lambda (x) {
 	return lambda () x.
 }.
 
-print (f(100))().
+print (f(100))().-]
 
 
 [-

@@ -89,10 +89,15 @@ void work_from_source(const char * path)
 		#if DEBUG
 		vm.print_debug_info();
 		#endif
+		printf("%zu allocations in GC\n\n", GC::allocations.size);
 	}
 	#if DEBUG
 	vm.print_debug_info();
 	#endif
+
+	GC::unmark_all();
+	vm.mark_reachable();
+	GC::free_unmarked();
 	
 	blocks.destroy();
 	vm.destroy();

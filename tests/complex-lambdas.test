@@ -19,9 +19,6 @@ let h = lambda () nothing.
 print h.
 print h().
 
-let curry = lambda (x) (lambda (y) (lambda (z) (z + y + x))).
-print curry(1)(2)(4).
-
 (@) expected(0, stdout)
 10
 10
@@ -31,4 +28,3 @@ print curry(1)(2)(4).
 5
 @[function]
 nothing
-7

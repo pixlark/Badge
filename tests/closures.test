@@ -1,0 +1,13 @@
+(@) source
+
+let simple_closure = lambda (x) lambda () x.
+print simple_closure(111)().
+
+let curry = lambda (x) (lambda (y) (lambda (z) (z + y + x))).
+print curry(1)(2)(4).
+
+
+
+(@) expected(0, stdout)
+111
+7

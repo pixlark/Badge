@@ -65,13 +65,13 @@ struct Call_Frame {
 	size_t scope_depth;
 	size_t block_reference;
 	size_t arg_count;
-	size_t closed_count;
+	size_t original_offset;
 	
 	BC * bytecode;
 	size_t bc_pointer;
 	size_t bc_length;
 	static Call_Frame create(Blocks * blocks, size_t block_reference,
-							 size_t arg_count, size_t closed_count)
+							 size_t arg_count, size_t original_offset)
 	{
 		Call_Frame frame;
 		frame.block_reference = block_reference;
@@ -82,7 +82,7 @@ struct Call_Frame {
 		
 		frame.scope_depth = 1;
 		frame.arg_count = arg_count;
-		frame.closed_count = closed_count;
+		frame.original_offset = original_offset;
 		return frame;
 	}
 };
@@ -154,8 +154,9 @@ struct VM {
 		auto top_frame = &call_stack[call_stack.size - 1];
 		// Save return value
 		auto return_value = pop();
-		// Pop closed values
-		for (int i = 0; i < top_frame->closed_count; i++) {
+		// Pop until reached original offset
+		assert(stack.size >= top_frame->original_offset);
+		while (stack.size > top_frame->original_offset) {
 			pop();
 		}
 		// Pop arguments
@@ -205,6 +206,13 @@ struct VM {
 				if (halted()) { // If we've just returned from global
 								// scope, we're halted and should
 								// return
+					
+					// First, clear out the stack so that the garbage
+					// collector can clean everything up
+					size_t remaining = stack.size;
+					for (int i = 0; i < remaining; i++) {
+						pop();
+					}
 					return;
 				}
 			}
@@ -342,8 +350,7 @@ struct VM {
 			}
 
 			call_stack.push(Call_Frame::create(blocks, func->block_reference,
-											   passed_arg_count.integer,
-											   func->closure.size));
+											   func->parameter_count, stack.size));
 			scope_stack.push(Scope::alloc_empty());
 
 			auto scope = current_scope();
@@ -368,6 +375,8 @@ struct VM {
 		mark_reachable();
 		GC::free_unmarked();
 	}
+	// TODO(pixlark): This function is a right mess. Clean this up at
+	// some point.
 	void print_debug_info()
 	{
 		printf("--- Frame ---\n");
@@ -383,6 +392,10 @@ struct VM {
 				} else {
 					printf("POP_AND_CALL_FUNCTION\n"); // HACK
 				}
+			} else {
+				char * s = frame->bytecode[index - 1].to_string();
+				printf("%s\n", s);
+				free(s);
 			}
 		} else {
 			printf(".HALTED.\n");
