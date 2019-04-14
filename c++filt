@@ -1,7 +1,0 @@
-Stacktrace: 
-./slang(+0x3971)[0x55c1139f4971]
-./slang(+0x54be)[0x55c1139f64be]
-./slang(+0x3636)[0x55c1139f4636]
-./slang(+0x36ce)[0x55c1139f46ce]
-/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf1)[0x7fde3026b2e1]
-./slang(+0x109a)[0x55c1139f209a]
