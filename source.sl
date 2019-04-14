@@ -3,11 +3,10 @@
 
 
 let f = lambda (x) {
-	return lambda () 1.
+	return lambda () x.
 }.
 
-print (f(1))().
-
+print (f(100))().
 
 
 [-

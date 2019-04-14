@@ -1,7 +1,30 @@
+struct Closure {
+	size_t size;
+	Symbol * names;
+	Value * values;
+	static Closure create(size_t size)
+	{
+		Closure c;
+		c.size = size;
+		c.names = (Symbol*) GC::alloc(sizeof(Symbol) * size);
+		c.values = (Value*) GC::alloc(sizeof(Value) * size);
+		return c;
+	}
+	void gc_mark()
+	{
+		GC::mark_opaque(names);
+		GC::mark_opaque(values);
+		for (int i = 0; i < size; i++) {
+			values[i].gc_mark();
+		}
+	}
+};
+
 struct Function {
 	Symbol * parameters;
 	size_t parameter_count;
 	size_t block_reference;
+	Closure closure;
 };
 
 char * Value::to_string()
@@ -31,6 +54,7 @@ void Value::gc_mark()
 	case TYPE_FUNCTION:
 		GC::mark_opaque(ref_function);
 		GC::mark_opaque(ref_function->parameters);
+		ref_function->closure.gc_mark();
 		break;
 	}
 }

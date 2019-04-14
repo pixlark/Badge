@@ -65,11 +65,13 @@ struct Call_Frame {
 	size_t scope_depth;
 	size_t block_reference;
 	size_t arg_count;
+	size_t closed_count;
 	
 	BC * bytecode;
 	size_t bc_pointer;
 	size_t bc_length;
-	static Call_Frame create(Blocks * blocks, size_t block_reference, size_t arg_count)
+	static Call_Frame create(Blocks * blocks, size_t block_reference,
+							 size_t arg_count, size_t closed_count)
 	{
 		Call_Frame frame;
 		frame.block_reference = block_reference;
@@ -80,6 +82,7 @@ struct Call_Frame {
 		
 		frame.scope_depth = 1;
 		frame.arg_count = arg_count;
+		frame.closed_count = closed_count;
 		return frame;
 	}
 };
@@ -99,7 +102,7 @@ struct VM {
 		stack.alloc();
 		
 		call_stack.alloc();
-		call_stack.push(Call_Frame::create(blocks, block_reference, 0));
+		call_stack.push(Call_Frame::create(blocks, block_reference, 0, 0));
 		
 		scope_stack.alloc();
 		scope_stack.push(Scope::alloc_empty()); // Global scope
@@ -151,6 +154,10 @@ struct VM {
 		auto top_frame = &call_stack[call_stack.size - 1];
 		// Save return value
 		auto return_value = pop();
+		// Pop closed values
+		for (int i = 0; i < top_frame->closed_count; i++) {
+			pop();
+		}
 		// Pop arguments
 		for (int i = 0; i < top_frame->arg_count; i++) {
 			pop();
@@ -287,9 +294,10 @@ struct VM {
 			auto count = pop();
 			count.assert_is(TYPE_INTEGER);
 			
-			Function * func =  (Function*) GC::alloc(sizeof(Function));
+			Function * func = (Function*) GC::alloc(sizeof(Function));
 			func->block_reference = bc.arg.block_reference;
-			
+
+			// Insert parameters
 			func->parameter_count = count.integer;
 			func->parameters = (Symbol*) GC::alloc(sizeof(Symbol) * count.integer);
 			for (int i = 0; i < count.integer; i++) {
@@ -298,30 +306,57 @@ struct VM {
 				func->parameters[count.integer - i - 1] = it.symbol;
 			}
 
+			// Close over scopes
+			size_t closed_size = 0;
+			for (int i = 0; i < frame->scope_depth; i++) {
+				auto scope = scope_at_offset(i);
+				closed_size += scope->offsets.size;
+			}
+			func->closure = Closure::create(closed_size);
+			{
+				size_t index = 0;
+				for (int i = 0; i < frame->scope_depth; i++) {
+					auto scope = scope_at_offset(i);
+					for (int j = 0; j < scope->offsets.size; j++) {
+						func->closure.names[index] = scope->symbols[j];
+						func->closure.values[index++] = stack[scope->offsets[j]];
+					}
+				}
+			}
+			
+			// Create and push value
 			Value value = Value::create(TYPE_FUNCTION);
 			value.ref_function = func;
 			push(value);
 		} break;
 		case BC_POP_AND_CALL_FUNCTION: {
-			auto func = pop();
-			func.assert_is(TYPE_FUNCTION);
+			auto func_val = pop();
+			func_val.assert_is(TYPE_FUNCTION);
+			auto func = func_val.ref_function;
 			auto passed_arg_count = pop();
 			passed_arg_count.assert_is(TYPE_INTEGER);
-			if (passed_arg_count.integer != func.ref_function->parameter_count) {
+			if (passed_arg_count.integer != func->parameter_count) {
 				fatal("Function takes %d arguments; was passed %d",
-					  func.ref_function->parameter_count,
+					  func->parameter_count,
 					  passed_arg_count.integer);
 			}
 
-			call_stack.push(Call_Frame::create(blocks, func.ref_function->block_reference,
-											   passed_arg_count.integer));
+			call_stack.push(Call_Frame::create(blocks, func->block_reference,
+											   passed_arg_count.integer,
+											   func->closure.size));
 			scope_stack.push(Scope::alloc_empty());
 
 			auto scope = current_scope();
 			// Create bindings to pushed arguments
 			for (int i = 0; i < passed_arg_count.integer; i++) {
-				scope->create_binding(func.ref_function->parameters[i],
+				scope->create_binding(func->parameters[i],
 									  stack.size - i - 1);
+			}
+			// Bind closured values
+			for (int i = 0; i < func->closure.size; i++) {
+				push(func->closure.values[i]);
+				scope->create_binding(func->closure.names[i],
+									  stack.size - 1);
 			}
 		} break;
 		case BC_RETURN: {
