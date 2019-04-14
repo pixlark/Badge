@@ -64,11 +64,12 @@ struct Scope {
 struct Call_Frame {
 	size_t scope_depth;
 	size_t block_reference;
+	size_t arg_count;
 	
 	BC * bytecode;
 	size_t bc_pointer;
 	size_t bc_length;
-	static Call_Frame create(Blocks * blocks, size_t block_reference)
+	static Call_Frame create(Blocks * blocks, size_t block_reference, size_t arg_count)
 	{
 		Call_Frame frame;
 		frame.block_reference = block_reference;
@@ -78,6 +79,7 @@ struct Call_Frame {
 		frame.bc_length = blocks->size_block(block_reference);
 		
 		frame.scope_depth = 1;
+		frame.arg_count = arg_count;
 		return frame;
 	}
 };
@@ -97,7 +99,7 @@ struct VM {
 		stack.alloc();
 		
 		call_stack.alloc();
-		call_stack.push(Call_Frame::create(blocks, block_reference));
+		call_stack.push(Call_Frame::create(blocks, block_reference, 0));
 		
 		scope_stack.alloc();
 		scope_stack.push(Scope::alloc_empty()); // Global scope
@@ -147,6 +149,15 @@ struct VM {
 	void return_function()
 	{
 		auto top_frame = &call_stack[call_stack.size - 1];
+		// Save return value
+		auto return_value = pop();
+		// Pop arguments
+		for (int i = 0; i < top_frame->arg_count; i++) {
+			pop();
+		}
+		// Push return value back
+		push(return_value);
+		// Pop scopes
 		for (int i = 0; i < top_frame->scope_depth; i++) {
 			pop_scope();
 		}
@@ -166,12 +177,23 @@ struct VM {
 			
 			// If our call frame has come to an implicit end
 			if (top_frame->bc_pointer >= top_frame->bc_length) {
+				// HACK: If we're exiting from global scope, push a
+				// dummy value to appease the assert up ahead.
+				if (call_stack.size == 1) {
+					push(Value::nothing());
+				}
+				
+				// There should *always* be something pushed to the stack
+				// at this point, because lambda bodies are expressions,
+				// and expressions always terminate with a value having
+				// been pushed to the stack.
+				assert(stack.size > 0);
+				
 				assert(top_frame->scope_depth == 1); // An implicit end
 												     // indicates only one
 												     // level of scope
 												     // depth.
 				return_function();
-				push(Value::nothing());
 				
 				if (halted()) { // If we've just returned from global
 								// scope, we're halted and should
@@ -291,7 +313,8 @@ struct VM {
 					  passed_arg_count.integer);
 			}
 
-			call_stack.push(Call_Frame::create(blocks, func.ref_function->block_reference));
+			call_stack.push(Call_Frame::create(blocks, func.ref_function->block_reference,
+											   passed_arg_count.integer));
 			scope_stack.push(Scope::alloc_empty());
 
 			auto scope = current_scope();
@@ -316,11 +339,18 @@ struct VM {
 		const int width = 13;
 		if (call_stack.size > 0) {
 			auto frame = &call_stack[call_stack.size - 1];
-			if (frame->bc_pointer < frame->bc_length) {
-				char * s = frame->bytecode[frame->bc_pointer].to_string();
-				printf("%s\n", s);
-				free(s);
+			int index = frame->bc_pointer;
+			if (index < frame->bc_length) {
+				if (index > 0) {
+					char * s = frame->bytecode[index - 1].to_string();
+					printf("%s\n", s);
+					free(s);
+				} else {
+					printf("POP_AND_CALL_FUNCTION\n"); // HACK
+				}
 			}
+		} else {
+			printf(".HALTED.\n");
 		}
 		printf(".............\n");
 		printf("    Stack\n");
@@ -340,13 +370,24 @@ struct VM {
 		}
 		printf(".............\n");
 		printf("    Vars\n");
+		/*
+		if (!halted()) {
+			printf("%d scopes; %d reachable\n",
+				   scope_stack.size,
+				   call_stack[call_stack.size - 1].scope_depth);
+				   }*/
 		for (int i = scope_stack.size - 1; i >= 0; i--) {
 			auto scope = scope_stack[i];
 			assert(scope->symbols.size == scope->offsets.size);
 			for (int j = 0; j < scope->symbols.size; j++) {
-				printf("  %s: %zu\n", scope->symbols[j], scope->offsets[j]);
+				printf("  %s: (%lu) ", scope->symbols[j], scope->offsets[j]);
+				{
+					char * s = stack[scope->offsets[j]].to_string();
+					printf("%s\n", s);
+					free(s);
+				}
 			}
-			if (i < scope_stack.size - 1) {
+			if (i > 0) {
 				printf("      .\n");
 			}
 		}

@@ -7,6 +7,7 @@ enum Token_Kind {
 	TOKEN_PRINT,
 	TOKEN_LAMBDA,
 	TOKEN_RETURN,
+	TOKEN_NOTHING,
 	
 	TOKEN_SYMBOL,
 	TOKEN_INTEGER_LITERAL,
@@ -18,7 +19,7 @@ enum Token_Kind {
 #define RESERVED_WORDS_COUNT (RESERVED_WORDS_END - RESERVED_WORDS_BEGIN)
 
 static const char * reserved_words[RESERVED_WORDS_COUNT] = {
-	"let", "set", "print", "lambda", "return", 
+	"let", "set", "print", "lambda", "return", "nothing",
 };
 
 struct Token {
@@ -219,7 +220,8 @@ Token Lexer::next_token()
 	case '-':
 	case '*':
 	case '/':
-	case ';':
+		//case ';':
+	case '.':
 	case '=':
 	case ',':
 	case '(':

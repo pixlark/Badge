@@ -1,19 +1,19 @@
 (@) source
 
-let f = lambda () { print f; };
-f();
+let f = lambda () { print f. }.
+f().
 
-set f = lambda (x) { print x; };
-f(f);
-f(2);
+set f = lambda (x) { print x. }.
+f(f).
+f(2).
 
 [-
 set f = lambda (a) {
-	return lambda (b) { return a; };
+	return lambda (b) { return a. }.
 };
 
-let add1 = f(1);
-print add1(2);
+let add1 = f(1).
+print add1(2).
 -]
 
 (@) expected(0, stdout)

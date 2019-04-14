@@ -26,6 +26,7 @@ struct Parser {
 	Expr * parse_add_subtract();
 	List<Symbol> parse_symbol_list();
 	Expr * parse_lambda();
+	Expr * parse_scope();
 	Expr * parse_expr();
 	
 	Stmt * parse_let();
@@ -45,6 +46,11 @@ Expr * Parser::parse_atom()
 		return expr;
 	}
 	switch (peek.kind) {
+	case TOKEN_NOTHING: {
+		auto atom = Expr::with_kind(EXPR_NOTHING);
+		advance();
+		return atom;
+	} break;
 	case TOKEN_INTEGER_LITERAL: {
 		auto atom = Expr::with_kind(EXPR_INTEGER);
 		atom->integer = peek.values.integer;
@@ -65,8 +71,8 @@ Expr * Parser::parse_atom()
 
 Expr * Parser::parse_function_call()
 {
-	Expr * left = parse_atom();
-	if (match('(')) {
+	auto left = parse_atom();
+	while (match('(')) {
 		Expr * expr = Expr::with_kind(EXPR_FUNCALL);
 		expr->funcall.func = left;
 		expr->funcall.args.alloc();
@@ -80,7 +86,7 @@ Expr * Parser::parse_function_call()
 				break;
 			}
 		}
-		return expr;
+		left = expr;
 	}
 	return left;
 }
@@ -148,20 +154,44 @@ Expr * Parser::parse_lambda()
 	if (match(TOKEN_LAMBDA)) {
 		auto lambda = Expr::with_kind(EXPR_LAMBDA);
 		lambda->lambda.parameters = parse_symbol_list();
+		lambda->lambda.body = parse_expr();
+		/*
 		expect('{');
 		lambda->lambda.body.alloc();
 		while (!match('}')) {
 			lambda->lambda.body.push(parse_stmt());
-		}
+			}*/
 		return lambda;
 	} else {
 		return parse_add_subtract();
 	}
 }
 
+Expr * Parser::parse_scope()
+{
+	if (match('{')) {
+		auto scope = Expr::with_kind(EXPR_SCOPE);
+		scope->scope.body.alloc();
+		scope->scope.terminator = NULL;
+		while (!match('}')) {
+			auto stmt = parse_stmt();
+			if (stmt->kind == STMT_EXPR && match('}')) {
+				scope->scope.terminator = stmt->expr;
+				free(stmt);
+				break;
+			}
+			expect('.');
+			scope->scope.body.push(stmt);
+		}
+		return scope;
+	} else {
+		return parse_lambda();
+	}
+}
+
 Expr * Parser::parse_expr()
 {
-	return parse_lambda();
+	return parse_scope();
 }
 
 Stmt * Parser::parse_let()
@@ -227,7 +257,7 @@ Stmt * Parser::parse_stmt()
 		stmt = Stmt::with_kind(STMT_EXPR);
 		stmt->expr = parse_expr();
 	}
-	expect(';');
+	//expect('.');
 	return stmt;
 }
 

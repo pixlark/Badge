@@ -1,10 +1,10 @@
 (@) source
 
-print (1 + 2) * 3;
-print 9 / 3;
-print 9 / 4;
-print 9 - 4 - 3;
-print 15 / 5 / 5;
+print (1 + 2) * 3.
+print 9 / 3.
+print 9 / 4.
+print 9 - 4 - 3.
+print 15 / 5 / 5.
 
 (@) expected(0, stdout)
 9

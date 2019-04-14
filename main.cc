@@ -64,6 +64,8 @@ void work_from_source(const char * path)
 		// The parser feeds from the lexer and returns one
 		// statement's worth of abstract syntax tree
 		auto stmt = parser.parse_stmt();
+		// Top-level expects terminators for every statement
+		parser.expect('.');
 
 		// Here we generate bytecode from our abstract syntax tree
 		// (one statement's worth)
@@ -99,8 +101,6 @@ void work_from_source(const char * path)
 
 int main(int argc, char ** argv)
 {
-	bool is_repl;
-
 	if (argc != 2) {
 		fatal("Provide one source file");
 	}

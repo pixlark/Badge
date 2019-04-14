@@ -16,6 +16,7 @@ char * Value::to_string()
 	case TYPE_FUNCTION:
 		return strdup("@[function]");
 	}
+	assert(false); // @linter
 }
 
 void Value::gc_mark()

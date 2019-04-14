@@ -58,10 +58,12 @@ enum Operator {
 };
 
 enum Expr_Kind {
+	EXPR_NOTHING,
 	EXPR_INTEGER,
 	EXPR_VARIABLE,
 	EXPR_UNARY,
 	EXPR_BINARY,
+	EXPR_SCOPE,
 	EXPR_LAMBDA,
 	EXPR_FUNCALL,
 };
@@ -79,9 +81,16 @@ struct Expr_Binary {
 	void destroy();
 };
 
+struct Expr_Scope {
+	List<Stmt*> body;
+	Expr * terminator;
+	void destroy();
+};
+
 struct Expr_Lambda {
 	List<Symbol> parameters;
-	List<Stmt*> body;
+	Expr * body;
+	//List<Stmt*> body;
 	void destroy();
 };
 
@@ -98,6 +107,7 @@ struct Expr {
 		Symbol variable;
 		Expr_Unary unary;
 		Expr_Binary binary;
+		Expr_Scope scope;
 		Expr_Lambda lambda;
 		Expr_Funcall funcall;
 	};
@@ -110,6 +120,8 @@ struct Expr {
 	void destroy()
 	{
 		switch (kind) {
+		case EXPR_NOTHING:
+			break;
 		case EXPR_INTEGER:
 			break;
 		case EXPR_VARIABLE:
@@ -119,6 +131,9 @@ struct Expr {
 			break;
 		case EXPR_BINARY:
 			binary.destroy();
+			break;
+		case EXPR_SCOPE:
+			scope.destroy();
 			break;
 		case EXPR_LAMBDA:
 			lambda.destroy();
@@ -144,14 +159,30 @@ void Expr_Binary::destroy()
 	free(right);
 }
 
-void Expr_Lambda::destroy()
+void Expr_Scope::destroy()
 {
-	parameters.dealloc();
 	for (int i = 0; i < body.size; i++) {
 		body[i]->destroy();
 		free(body[i]);
 	}
 	body.dealloc();
+	if (terminator) {
+		terminator->destroy();
+		free(terminator);
+	}
+}
+
+void Expr_Lambda::destroy()
+{
+	parameters.dealloc();
+	body->destroy();
+	free(body);
+	/*
+	for (int i = 0; i < body.size; i++) {
+		body[i]->destroy();
+		free(body[i]);
+	}
+	body.dealloc();*/
 }
 
 void Expr_Funcall::destroy()

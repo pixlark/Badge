@@ -4,8 +4,8 @@
 
 %%%%%%%% neither should this
 
-let f = lambda (x) { return x; }; % or this
-print f; %%%%% and this
+let f = lambda (x) { return x. }. % or this
+print f. %%%%% and this
 
 [-
 

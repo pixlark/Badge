@@ -1,0 +1,35 @@
+(@) source
+
+let f = lambda (x) {
+	return lambda () 10.
+}.
+
+print (f(1))().
+
+set f = lambda (x) lambda () 10.
+print (f(1))().
+
+let g = lambda () lambda () lambda () 5.
+print g.
+print g().
+print g()().
+print g()()().
+
+let h = lambda () nothing.
+print h.
+print h().
+
+[-
+let f = lambda (x) (lambda (y) (lambda (z) (z + y + x))).
+print f(1)(2)(4).
+-]
+
+(@) expected(0, stdout)
+10
+10
+@[function]
+@[function]
+@[function]
+5
+@[function]
+nothing
