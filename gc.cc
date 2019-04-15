@@ -1,6 +1,6 @@
 namespace GC {
 	List<void*> allocations;
-
+	
 	void init()
 	{
 		allocations.alloc();
@@ -22,6 +22,10 @@ namespace GC {
 		void * ptr = malloc(size + 1);
 		allocations.push(ptr);
 		return raw_to_opaque(ptr);
+	}
+	void release(void * ptr)
+	{
+		// do nothing!
 	}
 	void mark_opaque(void * ptr)
 	{
@@ -47,4 +51,6 @@ namespace GC {
 		allocations.dealloc();
 		allocations = new_allocations;
 	}
+
+	Allocator allocator = Allocator::construct(alloc, release);
 }

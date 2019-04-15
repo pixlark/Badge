@@ -1,5 +1,6 @@
-#include "list.h"
 #include "includes.cc"
+#include "allocator.cc"
+#include "list.h"
 #include "string-builder.cc"
 #include "intern.cc"
 #include "utility.cc"
@@ -8,11 +9,13 @@
 #include "ast.cc"
 #include "parser.cc"
 #include "gc.cc"
+#include "gc-structs.cc"
 #include "value-decl.cc"
 #include "bytecode.cc"
 #include "value-def.cc"
 #include "blocks.cc"
 #include "compiler.cc"
+#include "environment.cc"
 #include "vm.cc"
 
 #define OUTPUT_BYTECODE true

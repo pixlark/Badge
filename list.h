@@ -15,7 +15,10 @@ struct List {
 	T * arr;
 	size_t size;
 	size_t capacity;
-	void alloc();
+	Allocator allocator;
+	
+	void alloc(Allocator allocator = default_allocator);
+	T * get_raw();
 	List<T> copy();
 	void dealloc();
 	void resize(size_t new_capacity);
@@ -32,11 +35,18 @@ struct List {
 };
 
 template <typename T>
-void List<T>::alloc()
+void List<T>::alloc(Allocator allocator)
 {
 	size = 0;
 	capacity = List::initial_size;
-	arr = (T*) malloc(sizeof(T) * capacity);
+	this->allocator = allocator;
+	arr = (T*) allocator.__malloc(sizeof(T) * capacity);
+}
+
+template <typename T>
+T * List<T>::get_raw()
+{
+	return arr;
 }
 
 template <typename T>
@@ -45,7 +55,7 @@ List<T> List<T>::copy()
 	List<T> list;
 	list.size = size;
 	list.capacity = capacity;
-	list.arr = (T*) malloc(sizeof(T) * capacity);
+	list.arr = (T*) allocator.__malloc(sizeof(T) * capacity);
 	memcpy(list.arr, arr, sizeof(T) * size);
 	return list;
 }
@@ -53,7 +63,7 @@ List<T> List<T>::copy()
 template <typename T>
 void List<T>::dealloc()
 {
-	free(arr);
+	allocator.__free(arr);
 	size = 0;
 	capacity = 0;
 }
@@ -62,9 +72,9 @@ template <typename T>
 void List<T>::resize(size_t new_capacity)
 {
 	assert(new_capacity >= size);
-	T * new_arr = (T*) malloc(sizeof(T) * new_capacity);
+	T * new_arr = (T*) allocator.__malloc(sizeof(T) * new_capacity);
 	memcpy(new_arr, arr, sizeof(T) * size);
-	free(arr);
+	allocator.__free(arr);
 	arr = new_arr;
 	capacity = new_capacity;
 }
