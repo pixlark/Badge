@@ -92,7 +92,7 @@ struct VM {
 	
 	List<Value> stack;
 	List<Scope*> scope_stack;
-	
+
 	List<Call_Frame> call_stack;
 	
 	void init(Blocks * blocks, size_t block_reference)
@@ -103,6 +103,7 @@ struct VM {
 		
 		call_stack.alloc();
 		call_stack.push(Call_Frame::create(blocks, block_reference, 0, 0));
+		call_stack[0].scope_depth = 0;
 		
 		scope_stack.alloc();
 		scope_stack.push(Scope::alloc_empty()); // Global scope
@@ -143,6 +144,10 @@ struct VM {
 			stack[i].gc_mark();
 		}
 	}
+	void push_scope()
+	{
+		scope_stack.push(Scope::alloc_empty());
+	}
 	void pop_scope()
 	{
 		auto scope = scope_stack.pop();
@@ -171,17 +176,44 @@ struct VM {
 		}
 		call_stack.pop();
 	}
+	Call_Frame * frame_reference()
+	{
+		assert(call_stack.size > 0);
+		return &call_stack[call_stack.size - 1];
+	}
+	size_t resolve_binding(Symbol symbol)
+	{
+		auto frame = frame_reference();
+		// Recurse back through available scopes to find the var
+		size_t offset;
+		bool found_var = false;
+		for (int i = 0; i < frame->scope_depth; i++) {
+			bool success = scope_at_offset(i)->resolve_binding(symbol, &offset);
+			if (success) {
+				found_var = true;
+				break;
+			}
+		}
+		// Backup into global scope in case we didn't find it anywhere else
+		if (!found_var) {
+			found_var = scope_stack[0]->resolve_binding(symbol, &offset);
+		}
+		// If we STILL have nothing, it's not bound
+		if (!found_var) {
+			fatal("Variable '%s' is not bound", symbol);
+		}
+		return offset;
+	}
 	void step()
 	{
+		if (halted()) {
+			return;
+		}
+		
 		/* Manage call stack and VM halting */
 		Call_Frame * frame;
-
 		{
-			if (halted()) {
-				return;
-			}
-
-			auto top_frame = &call_stack[call_stack.size - 1];
+			auto top_frame = frame_reference();
 			
 			// If our call frame has come to an implicit end
 			if (top_frame->bc_pointer >= top_frame->bc_length) {
@@ -196,11 +228,12 @@ struct VM {
 				// and expressions always terminate with a value having
 				// been pushed to the stack.
 				assert(stack.size > 0);
-				
-				assert(top_frame->scope_depth == 1); // An implicit end
-												     // indicates only one
-												     // level of scope
-												     // depth.
+
+				if (call_stack.size > 1) {
+					// An implicit end indicates only one level of scope
+					// depth.
+					assert(top_frame->scope_depth == 1);
+				}
 				return_function();
 				
 				if (halted()) { // If we've just returned from global
@@ -217,7 +250,8 @@ struct VM {
 				}
 			}
 
-			frame = &call_stack[call_stack.size - 1];
+			// Update frame reference
+			frame = frame_reference();
 		}
 		
 		BC bc = frame->bytecode[frame->bc_pointer++];
@@ -235,41 +269,22 @@ struct VM {
 			symbol.assert_is(TYPE_SYMBOL);
 			bool success = current_scope()->create_binding(symbol.symbol, top_offset());
 			if (!success) {
-				fatal("Can't create new variable '%s' -- already bound!", symbol.symbol);
+				fatal("Can't create new variable '%s' -- already bound in this scope!",
+					  symbol.symbol);
 			}
 		} break;
 		case BC_UPDATE_BINDING: {
 			auto symbol = pop();
 			symbol.assert_is(TYPE_SYMBOL);
 			auto new_value = pop();
-			size_t offset;
-			bool success = current_scope()->resolve_binding(symbol.symbol, &offset);
-			if (!success) {
-				fatal("Can't update variable '%s' -- not bound!", symbol.symbol);
-			}
+			auto offset = resolve_binding(symbol.symbol);
+			assert(offset < stack.size);
 			stack[offset] = new_value;
 		} break;
 		case BC_RESOLVE_BINDING: {
 			auto symbol = pop();
 			symbol.assert_is(TYPE_SYMBOL);
-			size_t offset;
-			// Recurse back through available scopes to find the var
-			bool found_var = false;
-			for (int i = 0; i < frame->scope_depth; i++) {
-				bool success = scope_at_offset(i)->resolve_binding(symbol.symbol, &offset);
-				if (success) {
-					found_var = true;
-					break;
-				}
-			}
-			// Backup into global scope in case we didn't find it anywhere else
-			if (!found_var) {
-				found_var = scope_stack[0]->resolve_binding(symbol.symbol, &offset);
-			}
-			// If we STILL have nothing, it's not bound
-			if (!found_var) {
-				fatal("Variable '%s' is not bound", symbol.symbol);
-			}
+			auto offset = resolve_binding(symbol.symbol);
 			assert(offset < stack.size);
 			push(stack[offset]);
 		} break;
@@ -360,6 +375,7 @@ struct VM {
 			func->closure = Closure::create(closed_size);
 			{
 				size_t index = 0;
+				//printf("%d/%d scopes\n", frame->scope_depth, scope_stack.size);
 				for (int i = 0; i < frame->scope_depth; i++) {
 					auto scope = scope_at_offset(i);
 					for (int j = 0; j < scope->offsets.size; j++) {
@@ -386,9 +402,10 @@ struct VM {
 					  passed_arg_count.integer);
 			}
 
+			// WARNING: `frame` invalidated here! Don't use it!
 			call_stack.push(Call_Frame::create(blocks, func->block_reference,
 											   func->parameter_count, stack.size));
-			scope_stack.push(Scope::alloc_empty());
+			push_scope();
 
 			auto scope = current_scope();
 			// Create bindings to pushed arguments
@@ -404,7 +421,16 @@ struct VM {
 			}
 		} break;
 		case BC_RETURN: {
+			// WARNING: `frame` invalidated here! Don't use it!
 			return_function();
+		} break;
+		case BC_ENTER_SCOPE: {
+			push_scope();
+			frame->scope_depth++;
+		} break;
+		case BC_EXIT_SCOPE: {
+			pop_scope();
+			frame->scope_depth--;
 		} break;
 		case BC_POP_JUMP: {
 			auto a = pop();
@@ -481,6 +507,15 @@ struct VM {
 					free(s);
 				}
 			}
+			if (i > 0) {
+				printf("      .\n");
+			}
+		}
+		printf(".............\n");
+		printf("    Calls\n");
+		for (int i = call_stack.size - 1; i >= 0; i--) {
+			Call_Frame frame = call_stack[i];
+			printf("dp: %zu\n", frame.scope_depth);
 			if (i > 0) {
 				printf("      .\n");
 			}

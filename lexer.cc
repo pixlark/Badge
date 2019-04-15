@@ -169,7 +169,7 @@ Token Lexer::next_token()
 	}
 
 	if (peek() == '%') {
-		while (peek() != '\n') {
+		while (peek() != '\0' && peek() != '\n') {
 			advance();
 		}
 		goto reset;

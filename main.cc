@@ -15,8 +15,8 @@
 #include "compiler.cc"
 #include "vm.cc"
 
-#define OUTPUT_BYTECODE false
-#define DEBUG false
+#define OUTPUT_BYTECODE true
+#define DEBUG true
 
 void work_from_source(const char * path)
 {
