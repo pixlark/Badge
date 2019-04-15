@@ -1,4 +1,4 @@
-%% Factorial
+(@) source
 
 let fact =
   lambda (x) if x == 0
@@ -8,4 +8,6 @@ let fact =
 print fact(0).
 print fact(7).
 
-%%
+(@) expected(0, stdout)
+1
+5040

@@ -31,16 +31,28 @@ struct Compiler {
 			fatal("Unimplemented");
 			break;
 		case OP_ADD:
-			push(BC::create(BC_ADD_TWO));
+			push(BC::create(BC_ADD));
 			break;
 		case OP_SUBTRACT:
-			push(BC::create(BC_SUB_TWO));
+			push(BC::create(BC_SUBTRACT));
 			break;
 		case OP_MULTIPLY:
-			push(BC::create(BC_MUL_TWO));
+			push(BC::create(BC_MULTIPLY));
 			break;
 		case OP_DIVIDE:
-			push(BC::create(BC_DIV_TWO));
+			push(BC::create(BC_DIVIDE));
+			break;
+		case OP_EQUAL:
+			push(BC::create(BC_EQUAL));
+			break;
+		case OP_NOT_EQUAL:
+			push(BC::create(BC_NOT_EQUAL));
+			break;
+		case OP_AND:
+			push(BC::create(BC_AND));
+			break;
+		case OP_OR:
+			push(BC::create(BC_OR));
 			break;
 		}
 	}
@@ -114,6 +126,36 @@ struct Compiler {
 							Value::raise(args.size)));
 			compile_expr(expr->funcall.func);
 			push(BC::create(BC_POP_AND_CALL_FUNCTION));
+		} break;
+		case EXPR_IF: {
+			List<int> end_jumps;
+			end_jumps.alloc();
+
+			auto _if = expr->if_expr;
+			assert(_if.conditions.size == _if.expressions.size);
+			for (int i = 0; i < _if.conditions.size; i++) {
+				compile_expr(_if.conditions[i]);
+				push(BC::create(BC_NOT));
+				push(BC::create(BC_POP_JUMP));
+				int skip_pos = bytecode.size - 1;
+				compile_expr(_if.expressions[i]);
+				push(BC::create(BC_JUMP));
+				end_jumps.push(bytecode.size - 1);
+				bytecode[skip_pos].arg.integer = bytecode.size;
+			}
+			if (_if.else_expr) {
+				compile_expr(_if.else_expr);
+			} else {
+				push(BC::create(BC_LOAD_CONST,
+								Value::nothing()));
+			}
+			push(BC::create(BC_NOP));
+			for (int i = 0; i < end_jumps.size; i++) {
+				assert(bytecode[end_jumps[i]].kind == BC_JUMP);
+				bytecode[end_jumps[i]].arg.integer = bytecode.size - 1;
+			}
+			
+			end_jumps.dealloc();
 		} break;
 		}
 	}

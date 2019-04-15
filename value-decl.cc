@@ -49,4 +49,7 @@ struct Value {
 	static Value subtract(Value a, Value b);
 	static Value multiply(Value a, Value b);
 	static Value divide(Value a, Value b);
+	static bool equal(Value a, Value b);
+	static Value _and(Value a, Value b);
+	static Value _or(Value a, Value b);
 };

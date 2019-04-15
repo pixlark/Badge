@@ -55,6 +55,10 @@ enum Operator {
 	OP_SUBTRACT,
 	OP_MULTIPLY,
 	OP_DIVIDE,
+	OP_EQUAL,
+	OP_NOT_EQUAL,
+	OP_AND,
+	OP_OR,
 };
 
 enum Expr_Kind {
@@ -66,6 +70,7 @@ enum Expr_Kind {
 	EXPR_SCOPE,
 	EXPR_LAMBDA,
 	EXPR_FUNCALL,
+	EXPR_IF,
 };
 
 struct Expr_Unary {
@@ -100,6 +105,13 @@ struct Expr_Funcall {
 	void destroy();
 };
 
+struct Expr_If {
+	List<Expr*> conditions;
+	List<Expr*> expressions;
+	Expr * else_expr;
+	void destroy();
+};
+
 struct Expr {
 	Expr_Kind kind;
 	union {
@@ -110,6 +122,7 @@ struct Expr {
 		Expr_Scope scope;
 		Expr_Lambda lambda;
 		Expr_Funcall funcall;
+		Expr_If if_expr;
 	};
 	static Expr * with_kind(Expr_Kind kind)
 	{
@@ -141,6 +154,8 @@ struct Expr {
 		case EXPR_FUNCALL:
 			funcall.destroy();
 			break;
+		case EXPR_IF:
+			if_expr.destroy();
 		}
 	}
 };
@@ -194,6 +209,24 @@ void Expr_Funcall::destroy()
 		free(args[i]);
 	}
 	args.dealloc();
+}
+
+void Expr_If::destroy()
+{
+	for (int i = 0; i < conditions.size; i++) {
+		conditions[i]->destroy();
+		free(conditions[i]);
+	}
+	conditions.dealloc();
+	
+	for (int i = 0; i < expressions.size; i++) {
+		expressions[i]->destroy();
+		free(expressions[i]);
+	}
+	expressions.dealloc();
+	
+	else_expr->destroy();
+	free(else_expr);
 }
 
 /*

@@ -223,6 +223,7 @@ struct VM {
 		BC bc = frame->bytecode[frame->bc_pointer++];
 		
 		switch (bc.kind) {
+		case BC_NOP: break;
 		case BC_POP_AND_DISCARD: {
 			pop();
 		} break;
@@ -278,25 +279,61 @@ struct VM {
 			printf("%s\n", s);
 			free(s);
 		} break;
-		case BC_ADD_TWO: {
+		case BC_ADD: {
 			auto b = pop();
 			auto a = pop();
 			push(Value::add(a, b));
 		} break;
-		case BC_SUB_TWO: {
+		case BC_SUBTRACT: {
 			auto b = pop();
 			auto a = pop();
 			push(Value::subtract(a, b));
 		} break;
-		case BC_MUL_TWO: {
+		case BC_MULTIPLY: {
 			auto b = pop();
 			auto a = pop();
 			push(Value::multiply(a, b));
 		} break;
-		case BC_DIV_TWO: {
+		case BC_DIVIDE: {
 			auto b = pop();
 			auto a = pop();
 			push(Value::divide(a, b));
+		} break;
+		case BC_EQUAL: {
+			auto b = pop();
+			auto a = pop();
+			if (Value::equal(a, b)) {
+				push(Value::raise(1));
+			} else {
+				push(Value::nothing());
+			}
+		} break;
+		case BC_NOT_EQUAL: {
+			auto b = pop();
+			auto a = pop();
+			if (Value::equal(a, b)) {
+				push(Value::nothing());
+			} else {
+				push(Value::raise(1));
+			}
+		} break;
+		case BC_AND: {
+			auto b = pop();
+			auto a = pop();
+			push(Value::_and(a, b));
+		} break;
+		case BC_OR: {
+			auto b = pop();
+			auto a = pop();
+			push(Value::_or(a, b));
+		} break;
+		case BC_NOT: {
+			auto a = pop();
+			if (a.type == TYPE_NOTHING) {
+				push(Value::raise(1));
+			} else {
+				push(Value::nothing());
+			}
 		} break;
 		case BC_CONSTRUCT_FUNCTION: {
 			auto count = pop();
@@ -368,6 +405,15 @@ struct VM {
 		} break;
 		case BC_RETURN: {
 			return_function();
+		} break;
+		case BC_POP_JUMP: {
+			auto a = pop();
+			if (a.type == TYPE_NOTHING) {
+				break;
+			}
+		} /* FALLTHROUGH */
+		case BC_JUMP: {
+			frame->bc_pointer = bc.arg.integer;
 		} break;
 		}
 

@@ -75,7 +75,7 @@ Value Value::add(Value a, Value b)
 	default:
 		fatal("+ not valid for type");
 	}
-	return (Value) {}; // @linter
+	assert(false); // @linter
 }
 
 Value Value::subtract(Value a, Value b)
@@ -87,7 +87,7 @@ Value Value::subtract(Value a, Value b)
 	default:
 		fatal("- not valid for type");
 	}
-	return (Value) {}; // @linter
+	assert(false); // @linter
 }
 
 Value Value::multiply(Value a, Value b)
@@ -99,7 +99,7 @@ Value Value::multiply(Value a, Value b)
 	default:
 		fatal("* not valid for type");
 	}
-	return (Value) {}; // @linter
+	assert(false); // @linter
 }
 
 Value Value::divide(Value a, Value b)
@@ -111,5 +111,43 @@ Value Value::divide(Value a, Value b)
 	default:
 		fatal("/ not valid for type");
 	}
-	return (Value) {}; // @linter
+	assert(false); // @linter
+}
+
+bool Value::equal(Value a, Value b)
+{
+	if (a.type != b.type) {
+		return false;
+	}
+	switch (a.type) {
+	case TYPE_NOTHING:
+		return true;
+	case TYPE_INTEGER:
+		return a.integer == b.integer;
+	case TYPE_SYMBOL:
+		return a.symbol == b.symbol;
+	case TYPE_FUNCTION:
+		return a.ref_function == b.ref_function;
+	}
+	assert(false); // @linter
+}
+
+Value Value::_and(Value a, Value b)
+{
+	if (a.type == TYPE_NOTHING ||
+		b.type == TYPE_NOTHING) {
+		return Value::nothing();
+	} else {
+		return Value::raise(1);
+	}
+}
+
+Value Value::_or(Value a, Value b)
+{
+	if (a.type == TYPE_NOTHING &&
+		b.type == TYPE_NOTHING) {
+		return Value::nothing();
+	} else {
+		return Value::raise(1);
+	}
 }

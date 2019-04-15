@@ -1,0 +1,26 @@
+(@) source
+
+print (if 1
+	   then 100
+	   else 200).
+
+print (if nothing
+	   then 100
+	   else 200).
+
+if nothing
+then nothing
+elif nothing
+then nothing
+elif nothing
+then nothing
+elif 1
+then { print 1234. }
+elif nothing
+then nothing
+else nothing.
+
+(@) expected(0, stdout)
+100
+200
+1234

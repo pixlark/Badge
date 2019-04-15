@@ -15,6 +15,7 @@
 #include "compiler.cc"
 #include "vm.cc"
 
+#define OUTPUT_BYTECODE false
 #define DEBUG false
 
 void work_from_source(const char * path)
@@ -22,7 +23,7 @@ void work_from_source(const char * path)
 	const char * source;
 	
 	if (strcmp(path, "-") == 0) {
-		// Read from stdin
+		// Read from stdinb
 		String_Builder builder;
 		const int chunk_size = 64;
 		char buf[chunk_size];
@@ -79,6 +80,19 @@ void work_from_source(const char * path)
 	// Finalize our zeroth block and clean up compiler
 	compiler.finalize();
 	compiler.destroy();
+
+	#if OUTPUT_BYTECODE
+	for (int i = 0; i < blocks.blocks.size; i++) {
+		auto block = blocks.blocks[i];
+		auto size = blocks.sizes[i];
+		printf("Block %d:\n", i);
+		for (int j = 0; j < size; j++) {
+			char * s = block[j].to_string();
+			printf("%02d %s\n", j, s);
+			free(s);
+		}
+	}
+	#endif
 	
 	// Finally, just run our bytecode through the VM, starting with
 	// `block_reference` 0

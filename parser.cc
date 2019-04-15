@@ -24,8 +24,12 @@ struct Parser {
 	Expr * parse_function_call();
 	Expr * parse_multiply_divide();
 	Expr * parse_add_subtract();
+	Expr * parse_equal_not_equal();
+	Expr * parse_and();
+	Expr * parse_or();
 	List<Symbol> parse_symbol_list();
 	Expr * parse_lambda();
+	Expr * parse_if();
 	Expr * parse_scope();
 	Expr * parse_expr();
 	
@@ -129,6 +133,51 @@ Expr * Parser::parse_add_subtract()
 	return left;
 }
 
+Expr * Parser::parse_equal_not_equal()
+{
+	auto left = parse_add_subtract();
+	while (is(TOKEN_EQUAL) || is(TOKEN_NOT_EQUAL)) {
+		Operator op;
+		if (match(TOKEN_EQUAL)) {
+			op = OP_EQUAL;
+		} else if (match(TOKEN_NOT_EQUAL)) {
+			op = OP_NOT_EQUAL;
+		} else assert(false);
+		auto expr = Expr::with_kind(EXPR_BINARY);
+		expr->binary.left = left;
+		expr->binary.op = op;
+		expr->binary.right = parse_add_subtract();
+		left = expr;
+	}
+	return left;
+}
+
+Expr * Parser::parse_and()
+{
+	auto left = parse_equal_not_equal();
+	while (match(TOKEN_AND)) {
+		auto expr = Expr::with_kind(EXPR_BINARY);
+		expr->binary.left = left;
+		expr->binary.op = OP_AND;
+		expr->binary.right = parse_equal_not_equal();
+		left = expr;
+	}
+	return left;
+}
+
+Expr * Parser::parse_or()
+{
+	auto left = parse_and();
+	while (match(TOKEN_OR)) {
+		auto expr = Expr::with_kind(EXPR_BINARY);
+		expr->binary.left = left;
+		expr->binary.op = OP_OR;
+		expr->binary.right = parse_and();
+		left = expr;
+	}
+	return left;
+}
+
 List<Symbol> Parser::parse_symbol_list()
 {
 	expect('(');
@@ -163,7 +212,29 @@ Expr * Parser::parse_lambda()
 			}*/
 		return lambda;
 	} else {
-		return parse_add_subtract();
+		return parse_or();
+	}
+}
+
+Expr * Parser::parse_if()
+{
+	if (match(TOKEN_IF)) {
+		auto expr = Expr::with_kind(EXPR_IF);
+		expr->if_expr.conditions.alloc();
+		expr->if_expr.expressions.alloc();
+		do {
+			expr->if_expr.conditions.push(parse_expr());
+			expect(TOKEN_THEN);
+			expr->if_expr.expressions.push(parse_expr());
+		} while (match(TOKEN_ELIF));
+		if (match(TOKEN_ELSE)) {
+			expr->if_expr.else_expr = parse_expr();
+		} else {
+			expr->if_expr.else_expr = NULL;
+		}
+		return expr;
+	} else {
+		return parse_lambda();
 	}
 }
 
@@ -185,7 +256,7 @@ Expr * Parser::parse_scope()
 		}
 		return scope;
 	} else {
-		return parse_lambda();
+		return parse_if();
 	}
 }
 

@@ -1,5 +1,9 @@
 enum Token_Kind {
 	TOKEN_EOF = 256,
+
+	// Double-chars
+	TOKEN_EQUAL,
+	TOKEN_NOT_EQUAL,
 	
 	// Reserved words
 	TOKEN_LET,
@@ -8,6 +12,12 @@ enum Token_Kind {
 	TOKEN_LAMBDA,
 	TOKEN_RETURN,
 	TOKEN_NOTHING,
+	TOKEN_OR,
+	TOKEN_AND,
+	TOKEN_IF,
+	TOKEN_THEN,
+	TOKEN_ELIF,
+	TOKEN_ELSE,
 	
 	TOKEN_SYMBOL,
 	TOKEN_INTEGER_LITERAL,
@@ -19,7 +29,9 @@ enum Token_Kind {
 #define RESERVED_WORDS_COUNT (RESERVED_WORDS_END - RESERVED_WORDS_BEGIN)
 
 static const char * reserved_words[RESERVED_WORDS_COUNT] = {
-	"let", "set", "print", "lambda", "return", "nothing",
+	"let", "set", "print", "lambda", "return",
+	"nothing", "or", "and", "if", "then", "elif",
+	"else",
 };
 
 struct Token {
@@ -35,7 +47,7 @@ struct Token {
 		token.kind = TOKEN_EOF;
 		return token;
 	}
-	static Token with_type(Token_Kind type)
+	static Token with_kind(Token_Kind type)
 	{
 		Token token;
 		token.kind = type;
@@ -48,7 +60,7 @@ struct Token {
 char * Token::type_to_string(Token_Kind kind)
 {
 	if (kind < 256) {
-		return Token::with_type(kind).to_string();
+		return Token::with_kind(kind).to_string();
 	}
 	
 	if (kind >= RESERVED_WORDS_BEGIN && kind < RESERVED_WORDS_END) {
@@ -191,7 +203,7 @@ Token Lexer::next_token()
 
 		for (int i = 0; i < RESERVED_WORDS_COUNT; i++) {
 			if (strcmp(buf, reserved_words[i]) == 0) {
-				return Token::with_type((Token_Kind) (RESERVED_WORDS_BEGIN + i));
+				return Token::with_kind((Token_Kind) (RESERVED_WORDS_BEGIN + i));
 			}
 		}
 		
@@ -220,15 +232,19 @@ Token Lexer::next_token()
 	case '-':
 	case '*':
 	case '/':
-		//case ';':
 	case '.':
-	case '=':
 	case ',':
 	case '(':
 	case ')':
 	case '{':
 	case '}':
-		return Token::with_type((Token_Kind) next());
+	case '>':
+	case '<':
+		return Token::with_kind((Token_Kind) next());
+	case '=':
+		return Token::with_kind(read_double_token('=', '=', TOKEN_EQUAL));
+	case '!':
+		return Token::with_kind(read_double_token('!', '=', TOKEN_NOT_EQUAL));
 	case '[':
 		advance();
 		if (peek() == '-') {
@@ -253,7 +269,7 @@ Token Lexer::next_token()
 		fatal("Line %d\nMisplaced character %c (%d)", line, peek(), peek());
 		/*
 	case ';':
-		return Token::with_type(read_double_token(';', ';', TOKEN_DOUBLE_SEMICOLON));*/
+		return Token::with_kind(read_double_token(';', ';', TOKEN_DOUBLE_SEMICOLON));*/
 	}
 	return (Token) {}; // @linter
 }
