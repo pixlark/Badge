@@ -289,14 +289,9 @@ struct VM {
 					  func->parameter_count,
 					  passed_arg_count.integer);
 			}
-
-			// TODO(pixlark): Frames should be dynamically allocated, this is stupid.
-			
-			// WARNING: `frame` invalidated here! Don't use it!
 			call_stack.push(Call_Frame::alloc(blocks, func->block_reference,
 											  func->parameter_count, stack.size));
-
-			// `frame` revalidated
+			
 			frame = frame_reference();
 			auto env = frame->environment;
 			
