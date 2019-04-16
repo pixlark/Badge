@@ -7,20 +7,19 @@ struct Call_Frame {
 	BC * bytecode;
 	size_t bc_pointer;
 	size_t bc_length;
-	static Call_Frame create(Blocks * blocks, size_t block_reference,
-							 size_t arg_count, size_t original_offset)
+	static Call_Frame * alloc(Blocks * blocks, size_t block_reference,
+							  size_t arg_count, size_t original_offset)
 	{
-		Call_Frame frame;
-		frame.environment = (Environment*) GC::alloc(sizeof(Environment));
-		*frame.environment = Environment::create();
-		frame.block_reference = block_reference;
+		Call_Frame * frame = (Call_Frame*) GC::alloc(sizeof(Call_Frame));
+		frame->environment = Environment::alloc();
+		frame->block_reference = block_reference;
 
-		frame.bytecode = blocks->retrieve_block(block_reference);
-		frame.bc_pointer = 0;
-		frame.bc_length = blocks->size_block(block_reference);
+		frame->bytecode = blocks->retrieve_block(block_reference);
+		frame->bc_pointer = 0;
+		frame->bc_length = blocks->size_block(block_reference);
 		
-		frame.arg_count = arg_count;
-		frame.original_offset = original_offset;
+		frame->arg_count = arg_count;
+		frame->original_offset = original_offset;
 		return frame;
 	}
 	void gc_mark()
@@ -33,7 +32,7 @@ struct Call_Frame {
 struct VM {
 	Blocks * blocks;
 	List<Value> stack;
-	List<Call_Frame> call_stack;
+	List<Call_Frame*> call_stack;
 	
 	void init(Blocks * blocks, size_t block_reference)
 	{
@@ -42,7 +41,7 @@ struct VM {
 		stack.alloc();
 		
 		call_stack.alloc();
-		call_stack.push(Call_Frame::create(blocks, block_reference, 0, 0));
+		call_stack.push(Call_Frame::alloc(blocks, block_reference, 0, 0));
 	}
 	void destroy()
 	{
@@ -68,7 +67,8 @@ struct VM {
 	void mark_reachable()
 	{
 		for (int i = 0; i < call_stack.size; i++) {
-			call_stack[i].gc_mark();
+			GC::mark_opaque(call_stack[i]);
+			call_stack[i]->gc_mark();
 		}
 		for (int i = 0; i < stack.size; i++) {
 			stack[i].gc_mark();
@@ -76,7 +76,7 @@ struct VM {
 	}
 	void return_function()
 	{
-		auto top_frame = &call_stack[call_stack.size - 1];
+		auto top_frame = frame_reference();
 		// Save return value
 		auto return_value = pop();
 		// Pop until reached original offset
@@ -95,7 +95,7 @@ struct VM {
 	Call_Frame * frame_reference()
 	{
 		assert(call_stack.size > 0);
-		return &call_stack[call_stack.size - 1];
+		return call_stack[call_stack.size - 1];
 	}
 	size_t resolve_binding(Symbol symbol)
 	{
@@ -104,7 +104,7 @@ struct VM {
 		if (frame->environment->resolve_binding(symbol, &offset)) {
 			return offset;
 		}
-		auto global = &call_stack[0];
+		auto global = call_stack[0];
 		if (global->environment->resolve_binding(symbol, &offset)) {
 			return offset;
 		}
@@ -118,12 +118,13 @@ struct VM {
 		}
 		
 		/* Manage call stack and VM halting */
+		// TODO(pixlark): Clean this mess up
 		Call_Frame * frame;
 		{
-			auto top_frame = frame_reference();
+			frame = frame_reference();
 			
 			// If our call frame has come to an implicit end
-			if (top_frame->bc_pointer >= top_frame->bc_length) {
+			while (frame->bc_pointer >= frame->bc_length) {
 				// HACK: If we're exiting from global scope, push a
 				// dummy value to appease the assert up ahead.
 				if (call_stack.size == 1) {
@@ -150,10 +151,10 @@ struct VM {
 					}
 					return;
 				}
+				
+				// Update frame reference
+				frame = frame_reference();
 			}
-
-			// Update frame reference
-			frame = frame_reference();
 		}
 		
 		BC bc = frame->bytecode[frame->bc_pointer++];
@@ -292,8 +293,8 @@ struct VM {
 			// TODO(pixlark): Frames should be dynamically allocated, this is stupid.
 			
 			// WARNING: `frame` invalidated here! Don't use it!
-			call_stack.push(Call_Frame::create(blocks, func->block_reference,
-											   func->parameter_count, stack.size));
+			call_stack.push(Call_Frame::alloc(blocks, func->block_reference,
+											  func->parameter_count, stack.size));
 
 			// `frame` revalidated
 			frame = frame_reference();
@@ -338,7 +339,7 @@ struct VM {
 		printf("--- Frame ---\n");
 		const int width = 13;
 		if (call_stack.size > 0) {
-			auto frame = &call_stack[call_stack.size - 1];
+			auto frame = frame_reference();
 			int index = frame->bc_pointer;
 			if (index < frame->bc_length) {
 				if (index > 0) {
@@ -375,8 +376,8 @@ struct VM {
 		printf(".............\n");
 		printf("    Vars\n");
 		for (int i = call_stack.size - 1; i >= 0; i--) {
-			Call_Frame frame = call_stack[i];
-			auto env = frame.environment;
+			auto frame = call_stack[i];
+			auto env = frame->environment;
 			for (int j = 0; j < env->names.size; j++) {
 				auto sym = env->names[j];
 				auto o = env->offsets[j];

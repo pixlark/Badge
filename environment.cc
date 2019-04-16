@@ -1,11 +1,11 @@
 struct Environment {
 	GC_List<Symbol> names;
 	GC_List<size_t> offsets;
-	static Environment create()
+	static Environment * alloc()
 	{
-		Environment env;
-		env.names.alloc();
-		env.offsets.alloc();
+		Environment * env = (Environment*) GC::alloc(sizeof(Environment));
+		env->names.alloc();
+		env->offsets.alloc();
 		return env;
 	}
 	void gc_mark()
@@ -57,13 +57,13 @@ struct Environment {
 	}
 	static void test()
 	{
-		auto env = Environment::create();
-		assert( env.create_binding(Intern::intern("asdf"), 5));
-		assert( env.create_binding(Intern::intern("j"), 0));
-		assert(!env.create_binding(Intern::intern("asdf"), 6));
-		assert( env.update_binding(Intern::intern("asdf"), 100));
+		auto env = Environment::alloc();
+		assert( env->create_binding(Intern::intern("asdf"), 5));
+		assert( env->create_binding(Intern::intern("j"), 0));
+		assert(!env->create_binding(Intern::intern("asdf"), 6));
+		assert( env->update_binding(Intern::intern("asdf"), 100));
 		size_t resolved;
-		assert(env.resolve_binding(Intern::intern("asdf"), &resolved));
+		assert(env->resolve_binding(Intern::intern("asdf"), &resolved));
 		assert(resolved == 100);
 	}
 };
