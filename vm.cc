@@ -1,68 +1,5 @@
-struct Scope {
-	List<Symbol> symbols;
-	List<size_t> offsets;
-	void init()
-	{
-		symbols.alloc();
-		offsets.alloc();
-	}
-	void destroy()
-	{
-		symbols.dealloc();
-		offsets.dealloc();
-	}
-	static Scope * alloc_empty()
-	{
-		Scope * s = (Scope*) malloc(sizeof(Scope));
-		s->init();
-		return s;
-	}
-	int where_bound(Symbol symbol)
-	{
-		for (int i = 0; i < symbols.size; i++) {
-			if (symbol == symbols[i]) {
-				return i;
-			}
-		}
-		return -1;
-	}
-	bool create_binding(Symbol symbol, size_t offset)
-	{
-		if (where_bound(symbol) != -1) {
-			return false;
-		}
-		assert(symbols.size == offsets.size);
-		symbols.push(symbol);
-		offsets.push(offset);
-		return true;
-	}
-	bool resolve_binding(Symbol symbol, size_t * ret)
-	{
-		assert(symbols.size == offsets.size);
-		for (int i = 0; i < symbols.size; i++) {
-			if (symbol == symbols[i]) {
-				*ret = offsets[i];
-				return true;
-			}
-		}
-		return false;
-	}
-	static void test()
-	{
-		Scope scope;
-		scope.init();
-
-		scope.create_binding(Intern::intern("test"), 13);
-		size_t ret;
-		scope.resolve_binding(Intern::intern("test"), &ret);
-		printf("%zu\n", ret);
-		
-		scope.destroy();
-	}
-};
-
 struct Call_Frame {
-	size_t scope_depth;
+	Environment * environment;
 	size_t block_reference;
 	size_t arg_count;
 	size_t original_offset;
@@ -74,25 +11,28 @@ struct Call_Frame {
 							 size_t arg_count, size_t original_offset)
 	{
 		Call_Frame frame;
+		frame.environment = (Environment*) GC::alloc(sizeof(Environment));
+		*frame.environment = Environment::create();
 		frame.block_reference = block_reference;
 
 		frame.bytecode = blocks->retrieve_block(block_reference);
 		frame.bc_pointer = 0;
 		frame.bc_length = blocks->size_block(block_reference);
 		
-		frame.scope_depth = 1;
 		frame.arg_count = arg_count;
 		frame.original_offset = original_offset;
 		return frame;
+	}
+	void gc_mark()
+	{
+		GC::mark_opaque(environment);
+		environment->gc_mark();
 	}
 };
 
 struct VM {
 	Blocks * blocks;
-	
 	List<Value> stack;
-	List<Scope*> scope_stack;
-
 	List<Call_Frame> call_stack;
 	
 	void init(Blocks * blocks, size_t block_reference)
@@ -103,16 +43,11 @@ struct VM {
 		
 		call_stack.alloc();
 		call_stack.push(Call_Frame::create(blocks, block_reference, 0, 0));
-		call_stack[0].scope_depth = 0;
-		
-		scope_stack.alloc();
-		scope_stack.push(Scope::alloc_empty()); // Global scope
 	}
 	void destroy()
 	{
 		stack.dealloc();
 		call_stack.dealloc();
-		scope_stack.dealloc();
 	}
 	bool halted()
 	{
@@ -130,29 +65,14 @@ struct VM {
 	{
 		return stack.size - 1;
 	}
-	Scope * current_scope()
-	{
-		return scope_stack[scope_stack.size - 1];
-	}
-	Scope * scope_at_offset(size_t offset)
-	{
-		return scope_stack[scope_stack.size - 1 - offset];
-	}
 	void mark_reachable()
 	{
+		for (int i = 0; i < call_stack.size; i++) {
+			call_stack[i].gc_mark();
+		}
 		for (int i = 0; i < stack.size; i++) {
 			stack[i].gc_mark();
 		}
-	}
-	void push_scope()
-	{
-		scope_stack.push(Scope::alloc_empty());
-	}
-	void pop_scope()
-	{
-		auto scope = scope_stack.pop();
-		scope->destroy();
-		free(scope);
 	}
 	void return_function()
 	{
@@ -170,10 +90,6 @@ struct VM {
 		}
 		// Push return value back
 		push(return_value);
-		// Pop scopes
-		for (int i = 0; i < top_frame->scope_depth; i++) {
-			pop_scope();
-		}
 		call_stack.pop();
 	}
 	Call_Frame * frame_reference()
@@ -184,25 +100,15 @@ struct VM {
 	size_t resolve_binding(Symbol symbol)
 	{
 		auto frame = frame_reference();
-		// Recurse back through available scopes to find the var
 		size_t offset;
-		bool found_var = false;
-		for (int i = 0; i < frame->scope_depth; i++) {
-			bool success = scope_at_offset(i)->resolve_binding(symbol, &offset);
-			if (success) {
-				found_var = true;
-				break;
-			}
+		if (frame->environment->resolve_binding(symbol, &offset)) {
+			return offset;
 		}
-		// Backup into global scope in case we didn't find it anywhere else
-		if (!found_var) {
-			found_var = scope_stack[0]->resolve_binding(symbol, &offset);
+		auto global = &call_stack[0];
+		if (global->environment->resolve_binding(symbol, &offset)) {
+			return offset;
 		}
-		// If we STILL have nothing, it's not bound
-		if (!found_var) {
-			fatal("Variable '%s' is not bound", symbol);
-		}
-		return offset;
+		fatal("Variable '%s' is not bound", symbol);
 	}
 	void step()
 	{
@@ -229,11 +135,6 @@ struct VM {
 				// been pushed to the stack.
 				assert(stack.size > 0);
 
-				if (call_stack.size > 1) {
-					// An implicit end indicates only one level of scope
-					// depth.
-					assert(top_frame->scope_depth == 1);
-				}
 				return_function();
 				
 				if (halted()) { // If we've just returned from global
@@ -267,7 +168,8 @@ struct VM {
 		case BC_CREATE_BINDING: {
 			auto symbol = pop();
 			symbol.assert_is(TYPE_SYMBOL);
-			bool success = current_scope()->create_binding(symbol.symbol, top_offset());
+			//bool success = current_scope()->create_binding(symbol.symbol, top_offset());
+			bool success = frame->environment->create_binding(symbol.symbol, top_offset());
 			if (!success) {
 				fatal("Can't create new variable '%s' -- already bound in this scope!",
 					  symbol.symbol);
@@ -366,6 +268,9 @@ struct VM {
 				func->parameters[count.integer - i - 1] = it.symbol;
 			}
 
+			func->closure = frame->environment;
+			
+			/*
 			// Close over scopes
 			size_t closed_size = 0;
 			for (int i = 0; i < frame->scope_depth; i++) {
@@ -383,7 +288,7 @@ struct VM {
 						func->closure.values[index++] = stack[scope->offsets[j]];
 					}
 				}
-			}
+				}*/
 			
 			// Create and push value
 			Value value = Value::create(TYPE_FUNCTION);
@@ -402,35 +307,32 @@ struct VM {
 					  passed_arg_count.integer);
 			}
 
+			// TODO(pixlark): Frames should be dynamically allocated, this is stupid.
+			
 			// WARNING: `frame` invalidated here! Don't use it!
 			call_stack.push(Call_Frame::create(blocks, func->block_reference,
 											   func->parameter_count, stack.size));
-			push_scope();
 
-			auto scope = current_scope();
+			// `frame` revalidated
+			frame = frame_reference();
+			auto env = frame->environment;
+			
 			// Create bindings to pushed arguments
 			for (int i = 0; i < passed_arg_count.integer; i++) {
-				scope->create_binding(func->parameters[i],
-									  stack.size - i - 1);
+				env->create_binding(func->parameters[i],
+									stack.size - i - 1);
 			}
+			/*
 			// Bind closured values
 			for (int i = 0; i < func->closure.size; i++) {
 				push(func->closure.values[i]);
-				scope->create_binding(func->closure.names[i],
-									  stack.size - 1);
-			}
+				env->create_binding(func->closure.names[i],
+									stack.size - 1);
+									}*/
 		} break;
 		case BC_RETURN: {
 			// WARNING: `frame` invalidated here! Don't use it!
 			return_function();
-		} break;
-		case BC_ENTER_SCOPE: {
-			push_scope();
-			frame->scope_depth++;
-		} break;
-		case BC_EXIT_SCOPE: {
-			pop_scope();
-			frame->scope_depth--;
 		} break;
 		case BC_POP_JUMP: {
 			auto a = pop();
@@ -490,32 +392,16 @@ struct VM {
 		}
 		printf(".............\n");
 		printf("    Vars\n");
-		/*
-		if (!halted()) {
-			printf("%d scopes; %d reachable\n",
-				   scope_stack.size,
-				   call_stack[call_stack.size - 1].scope_depth);
-				   }*/
-		for (int i = scope_stack.size - 1; i >= 0; i--) {
-			auto scope = scope_stack[i];
-			assert(scope->symbols.size == scope->offsets.size);
-			for (int j = 0; j < scope->symbols.size; j++) {
-				printf("  %s: (%lu) ", scope->symbols[j], scope->offsets[j]);
-				{
-					char * s = stack[scope->offsets[j]].to_string();
-					printf("%s\n", s);
-					free(s);
-				}
-			}
-			if (i > 0) {
-				printf("      .\n");
-			}
-		}
-		printf(".............\n");
-		printf("    Calls\n");
 		for (int i = call_stack.size - 1; i >= 0; i--) {
 			Call_Frame frame = call_stack[i];
-			printf("dp: %zu\n", frame.scope_depth);
+			auto env = frame.environment;
+			for (int j = 0; j < env->names.size; j++) {
+				auto sym = env->names[j];
+				auto o = env->offsets[j];
+				char * s = stack[o].to_string();
+				printf("%s: (%d) %s\n", sym, o, s);
+				free(s);
+			}
 			if (i > 0) {
 				printf("      .\n");
 			}

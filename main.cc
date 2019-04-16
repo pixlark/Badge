@@ -10,16 +10,16 @@
 #include "parser.cc"
 #include "gc.cc"
 #include "gc-structs.cc"
+#include "environment.cc"
 #include "value-decl.cc"
 #include "bytecode.cc"
 #include "value-def.cc"
 #include "blocks.cc"
 #include "compiler.cc"
-#include "environment.cc"
 #include "vm.cc"
 
-#define OUTPUT_BYTECODE true
-#define DEBUG true
+#define OUTPUT_BYTECODE false
+#define DEBUG false
 
 void work_from_source(const char * path)
 {
@@ -129,6 +129,8 @@ int main(int argc, char ** argv)
 
 	Intern::init();
 	GC::init();
+
+	Environment::test();
 	
 	work_from_source(argv[1]);
 

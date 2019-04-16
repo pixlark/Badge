@@ -1,11 +1,20 @@
 %% Scoping
 
+let f = lambda () {
+	let x = 10.
+	lambda () { print x. }
+}.
+
+let g = f().
+g().
+
+[-
 {
 	let fact = lambda (x) if x == 0
 			   		  	  then 1
 						  else x * fact(x - 1).
-	print fact(7).
-}.
+	print fact(1).
+}.-]
 
 %% Factorial
 [-
