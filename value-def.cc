@@ -32,6 +32,7 @@ void Value::gc_mark()
 	case TYPE_FUNCTION:
 		GC::mark_opaque(ref_function);
 		GC::mark_opaque(ref_function->parameters);
+		GC::mark_opaque(ref_function->closure);
 		ref_function->closure->gc_mark();
 		break;
 	}

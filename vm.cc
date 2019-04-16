@@ -109,6 +109,7 @@ struct VM {
 			return offset;
 		}
 		fatal("Variable '%s' is not bound", symbol);
+		assert(false); // @linter
 	}
 	void step()
 	{
@@ -268,27 +269,8 @@ struct VM {
 				func->parameters[count.integer - i - 1] = it.symbol;
 			}
 
+			// Close over local environment
 			func->closure = frame->environment;
-			
-			/*
-			// Close over scopes
-			size_t closed_size = 0;
-			for (int i = 0; i < frame->scope_depth; i++) {
-				auto scope = scope_at_offset(i);
-				closed_size += scope->offsets.size;
-			}
-			func->closure = Closure::create(closed_size);
-			{
-				size_t index = 0;
-				//printf("%d/%d scopes\n", frame->scope_depth, scope_stack.size);
-				for (int i = 0; i < frame->scope_depth; i++) {
-					auto scope = scope_at_offset(i);
-					for (int j = 0; j < scope->offsets.size; j++) {
-						func->closure.names[index] = scope->symbols[j];
-						func->closure.values[index++] = stack[scope->offsets[j]];
-					}
-				}
-				}*/
 			
 			// Create and push value
 			Value value = Value::create(TYPE_FUNCTION);
@@ -344,7 +326,7 @@ struct VM {
 			frame->bc_pointer = bc.arg.integer;
 		} break;
 		}
-
+		
 		GC::unmark_all();
 		mark_reachable();
 		GC::free_unmarked();
@@ -399,7 +381,7 @@ struct VM {
 				auto sym = env->names[j];
 				auto o = env->offsets[j];
 				char * s = stack[o].to_string();
-				printf("%s: (%d) %s\n", sym, o, s);
+				printf("%s: (%zu) %s\n", sym, o, s);
 				free(s);
 			}
 			if (i > 0) {

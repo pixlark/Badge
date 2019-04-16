@@ -1,3 +1,5 @@
+#define SHOW_COLLECTIONS false
+
 namespace GC {
 	List<void*> allocations;
 	
@@ -48,6 +50,9 @@ namespace GC {
 				free(allocations[i]);
 			}
 		}
+		#if SHOW_COLLECTIONS
+		printf("\n-- %zu collections\n\n", allocations.size - new_allocations.size);
+		#endif
 		allocations.dealloc();
 		allocations = new_allocations;
 	}

@@ -111,7 +111,7 @@ void work_from_source(const char * path)
 	#if DEBUG
 	vm.print_debug_info();
 	#endif
-
+	
 	GC::unmark_all();
 	vm.mark_reachable();
 	GC::free_unmarked();
