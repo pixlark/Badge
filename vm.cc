@@ -80,6 +80,15 @@ struct VM {
 		assert(call_stack.size > 0);
 		return call_stack[call_stack.size - 1];
 	}
+	void create_binding(Symbol symbol, Value value)
+	{
+		auto frame = frame_reference();
+		bool success = frame->environment->create_binding(symbol, value);
+		if (!success) {
+			fatal("Can't create new variable '%s' -- already bound in this scope!",
+				  symbol);
+		}
+	}
 	Value resolve_binding(Symbol symbol)
 	{
 		auto frame = frame_reference();
@@ -157,11 +166,7 @@ struct VM {
 			auto symbol = pop();
 			symbol.assert_is(TYPE_SYMBOL);
 			auto value = pop();
-			bool success = frame->environment->create_binding(symbol.symbol, value);
-			if (!success) {
-				fatal("Can't create new variable '%s' -- already bound in this scope!",
-					  symbol.symbol);
-			}
+			create_binding(symbol.symbol, value);
 		} break;
 		case BC_UPDATE_BINDING: {
 			auto symbol = pop();
@@ -274,13 +279,10 @@ struct VM {
 			}
 			call_stack.push(Call_Frame::alloc(blocks, func->block_reference, func->closure));
 			
-			frame = frame_reference();
-			auto env = frame->environment;
-			
 			// Create bindings to pushed arguments
 			for (int i = 0; i < passed_arg_count.integer; i++) {
 				auto value = pop();
-				env->create_binding(func->parameters[i], value);
+				create_binding(func->parameters[i], value);
 			}
 		} break;
 		case BC_RETURN: {
@@ -358,6 +360,7 @@ struct VM {
 		for (int i = call_stack.size - 1; i >= 0; i--) {
 			auto frame = call_stack[i];
 			auto env = frame->environment;
+			int index = 0;
 			while (env) {
 				for (int j = 0; j < env->names.size; j++) {
 					auto sym = env->names[j];
@@ -368,6 +371,7 @@ struct VM {
 					free(s);
 				}
 				env = env->next_env;
+				index++;
 			}
 			if (i > 0) {
 				printf("      .\n");

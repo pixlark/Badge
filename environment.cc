@@ -24,7 +24,7 @@ struct Environment {
 			next_env->gc_mark();
 		}
 	}
-	bool is_bound(Symbol symbol)
+	bool is_bound(Symbol symbol, bool recurse=true)
 	{
 		assert(names.size == values.size);
 		for (int i = 0; i < names.size; i++) {
@@ -32,7 +32,7 @@ struct Environment {
 				return true;
 			}
 		}
-		if (next_env) {
+		if (recurse && next_env) {
 			return next_env->is_bound(symbol);
 		}
 		return false;
@@ -42,7 +42,7 @@ struct Environment {
 		assert(names.size == values.size);
 		// TODO(pixlark): Do we want to be able to shadow closed
 		// variables? Probably...
-		if (is_bound(symbol)) {
+		if (is_bound(symbol, false)) {
 			return false;
 		}
 		names.push(symbol);
