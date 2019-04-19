@@ -1,25 +1,20 @@
 struct Call_Frame {
 	Environment * environment;
 	size_t block_reference;
-	size_t arg_count;
-	size_t original_offset;
 	
 	BC * bytecode;
 	size_t bc_pointer;
 	size_t bc_length;
-	static Call_Frame * alloc(Blocks * blocks, size_t block_reference,
-							  size_t arg_count, size_t original_offset)
+	static Call_Frame * alloc(Blocks * blocks, size_t block_reference, Environment * closure)
 	{
 		Call_Frame * frame = (Call_Frame*) GC::alloc(sizeof(Call_Frame));
 		frame->environment = Environment::alloc();
+		frame->environment->next_env = closure;
 		frame->block_reference = block_reference;
 
 		frame->bytecode = blocks->retrieve_block(block_reference);
 		frame->bc_pointer = 0;
 		frame->bc_length = blocks->size_block(block_reference);
-		
-		frame->arg_count = arg_count;
-		frame->original_offset = original_offset;
 		return frame;
 	}
 	void gc_mark()
@@ -43,7 +38,7 @@ struct VM {
 		stack.alloc();
 		
 		call_stack.alloc();
-		call_stack.push(Call_Frame::alloc(blocks, block_reference, 0, 0));
+		call_stack.push(Call_Frame::alloc(blocks, block_reference, NULL));
 	}
 	void destroy()
 	{
@@ -92,6 +87,9 @@ struct VM {
 		if (frame->environment->resolve_binding(symbol, &value)) {
 			return value;
 		}
+		// TODO(pixlark): Make it so that every environment implicity
+		// links to the global environment, thus removing the need for
+		// this call frame?
 		auto global = call_stack[0];
 		if (global->environment->resolve_binding(symbol, &value)) {
 			return value;
@@ -274,8 +272,7 @@ struct VM {
 					  func->parameter_count,
 					  passed_arg_count.integer);
 			}
-			call_stack.push(Call_Frame::alloc(blocks, func->block_reference,
-											  func->parameter_count, stack.size));
+			call_stack.push(Call_Frame::alloc(blocks, func->block_reference, func->closure));
 			
 			frame = frame_reference();
 			auto env = frame->environment;
@@ -285,13 +282,6 @@ struct VM {
 				auto value = pop();
 				env->create_binding(func->parameters[i], value);
 			}
-			/*
-			// Bind closured values
-			for (int i = 0; i < func->closure.size; i++) {
-				push(func->closure.values[i]);
-				env->create_binding(func->closure.names[i],
-									stack.size - 1);
-									}*/
 		} break;
 		case BC_RETURN: {
 			// WARNING: `frame` invalidated here! Don't use it!
@@ -305,6 +295,14 @@ struct VM {
 		} /* FALLTHROUGH */
 		case BC_JUMP: {
 			frame->bc_pointer = bc.arg.integer;
+		} break;
+		case BC_ENTER_SCOPE: {
+			auto new_env = Environment::alloc();
+			new_env->next_env = frame->environment;
+			frame->environment = new_env;
+		} break;
+		case BC_EXIT_SCOPE: {
+			frame->environment = frame->environment->next_env;
 		} break;
 		}
 

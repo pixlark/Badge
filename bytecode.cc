@@ -20,6 +20,8 @@ enum BC_Kind {
 	BC_NOT,
 	BC_JUMP,
 	BC_POP_JUMP,
+	BC_ENTER_SCOPE,
+	BC_EXIT_SCOPE,
 };
 
 static const char * BC_Kind_names[] = {
@@ -44,6 +46,8 @@ static const char * BC_Kind_names[] = {
 	"NOT",
 	"JUMP",
 	"POP_JUMP",
+	"ENTER_SCOPE",
+	"EXIT_SCOPE",
 };
 
 struct BC {

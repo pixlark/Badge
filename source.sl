@@ -1,33 +1,20 @@
 
 
 
-let f = lambda (x) {
-	lambda (y) {
-		lambda () { x + y }
-	}
-}.
-
-let g = f(1).
-let h = g(2).
-print h().
 
 
 
 
-[-
+
+
 let f = lambda () {
-	let x = 10.
-	lambda () { print x. }
+	{
+		let x = 2.
+	}.
+	print x.
 }.
 
-let g = f().
-g().-]
-
-
-
-
-
-
+f().
 
 
 
@@ -39,8 +26,19 @@ g().-]
 	let fact = lambda (x) if x == 0
 			   		  	  then 1
 						  else x * fact(x - 1).
-	print fact(1).
+	print fact(7).
 }.-]
+
+
+
+
+
+
+
+
+
+
+
 
 %% Factorial
 [-

@@ -84,6 +84,7 @@ struct Compiler {
 		case EXPR_SCOPE: {
 			auto body = expr->scope.body;
 			auto terminator = expr->scope.terminator;
+			push(BC::create(BC_ENTER_SCOPE));
 			for (int i = 0; i < body.size; i++) {
 				compile_stmt(body[i]);
 			}
@@ -93,6 +94,7 @@ struct Compiler {
 				push(BC::create(BC_LOAD_CONST,
 								Value::nothing()));
 			}
+			push(BC::create(BC_EXIT_SCOPE));
 		} break;
 		case EXPR_LAMBDA: {
 			auto params = expr->lambda.parameters;
