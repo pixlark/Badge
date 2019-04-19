@@ -358,13 +358,16 @@ struct VM {
 		for (int i = call_stack.size - 1; i >= 0; i--) {
 			auto frame = call_stack[i];
 			auto env = frame->environment;
-			for (int j = 0; j < env->names.size; j++) {
-				auto sym = env->names[j];
-				Value val;
-				env->resolve_binding(sym, &val);
-				char * s = val.to_string();
-				printf("%s: %s\n", sym, s);
-				free(s);
+			while (env) {
+				for (int j = 0; j < env->names.size; j++) {
+					auto sym = env->names[j];
+					Value val;
+					env->resolve_binding(sym, &val);
+					char * s = val.to_string();
+					printf("%s: %s\n", sym, s);
+					free(s);
+				}
+				env = env->next_env;
 			}
 			if (i > 0) {
 				printf("      .\n");

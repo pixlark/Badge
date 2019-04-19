@@ -19,7 +19,7 @@
 #include "vm.cc"
 
 #define OUTPUT_BYTECODE false
-#define DEBUG false
+#define DEBUG true
 
 void work_from_source(const char * path)
 {
@@ -105,7 +105,6 @@ void work_from_source(const char * path)
 		vm.step();
 		#if DEBUG
 		vm.print_debug_info();
-		printf("%zu allocations in GC\n\n", GC::allocations.size);
 		#endif
 	}
 	#if DEBUG

@@ -7,16 +7,17 @@
 
 
 
-let f = lambda () {
-	{
+{
+	let f = lambda () {
 		let x = 2.
+		print x.
 	}.
-	print x.
+
+	f().
 }.
 
-f().
-
-
+print 15.
+print 15.
 
 
 

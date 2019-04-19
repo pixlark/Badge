@@ -1,4 +1,5 @@
 #define COLLECTION true
+#define SHOW_TOTAL_ALLOCATIONS true
 #define SHOW_COLLECTIONS false
 
 namespace GC {
@@ -55,6 +56,9 @@ namespace GC {
 				free(allocations[i]);
 			}
 		}
+		#if SHOW_TOTAL_ALLOCATIONS
+		printf("\n-- %zu allocations\n\n", new_allocations.size);
+		#endif
 		#if SHOW_COLLECTIONS
 		printf("\n-- %zu collections\n\n", allocations.size - new_allocations.size);
 		#endif
