@@ -1,5 +1,5 @@
 #define COLLECTION true
-#define SHOW_TOTAL_ALLOCATIONS true
+#define SHOW_TOTAL_ALLOCATIONS false
 #define SHOW_COLLECTIONS false
 
 namespace GC {
