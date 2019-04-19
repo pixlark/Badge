@@ -1,4 +1,5 @@
-#define SHOW_COLLECTIONS false
+#define COLLECTION true
+#define SHOW_COLLECTIONS true
 
 namespace GC {
 	List<void*> allocations;
@@ -32,6 +33,10 @@ namespace GC {
 	void mark_opaque(void * ptr)
 	{
 		*((uint8_t*) opaque_to_raw(ptr)) = 1;
+	}
+	bool is_marked_opaque(void * ptr)
+	{
+		return *((uint8_t*) opaque_to_raw(ptr));
 	}
 	void unmark_all()
 	{

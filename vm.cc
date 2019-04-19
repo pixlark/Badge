@@ -24,8 +24,10 @@ struct Call_Frame {
 	}
 	void gc_mark()
 	{
-		GC::mark_opaque(environment);
-		environment->gc_mark();
+		if (!GC::is_marked_opaque(environment)) {
+			GC::mark_opaque(environment);
+			environment->gc_mark();
+		}
 	}
 };
 
@@ -76,20 +78,6 @@ struct VM {
 	}
 	void return_function()
 	{
-		auto top_frame = frame_reference();
-		// Save return value
-		auto return_value = pop();
-		// Pop until reached original offset
-		assert(stack.size >= top_frame->original_offset);
-		while (stack.size > top_frame->original_offset) {
-			pop();
-		}
-		// Pop arguments
-		for (int i = 0; i < top_frame->arg_count; i++) {
-			pop();
-		}
-		// Push return value back
-		push(return_value);
 		call_stack.pop();
 	}
 	Call_Frame * frame_reference()
@@ -97,16 +85,16 @@ struct VM {
 		assert(call_stack.size > 0);
 		return call_stack[call_stack.size - 1];
 	}
-	size_t resolve_binding(Symbol symbol)
+	Value resolve_binding(Symbol symbol)
 	{
 		auto frame = frame_reference();
-		size_t offset;
-		if (frame->environment->resolve_binding(symbol, &offset)) {
-			return offset;
+		Value value;
+		if (frame->environment->resolve_binding(symbol, &value)) {
+			return value;
 		}
 		auto global = call_stack[0];
-		if (global->environment->resolve_binding(symbol, &offset)) {
-			return offset;
+		if (global->environment->resolve_binding(symbol, &value)) {
+			return value;
 		}
 		fatal("Variable '%s' is not bound", symbol);
 		assert(false); // @linter
@@ -170,8 +158,8 @@ struct VM {
 		case BC_CREATE_BINDING: {
 			auto symbol = pop();
 			symbol.assert_is(TYPE_SYMBOL);
-			//bool success = current_scope()->create_binding(symbol.symbol, top_offset());
-			bool success = frame->environment->create_binding(symbol.symbol, top_offset());
+			auto value = pop();
+			bool success = frame->environment->create_binding(symbol.symbol, value);
 			if (!success) {
 				fatal("Can't create new variable '%s' -- already bound in this scope!",
 					  symbol.symbol);
@@ -180,17 +168,14 @@ struct VM {
 		case BC_UPDATE_BINDING: {
 			auto symbol = pop();
 			symbol.assert_is(TYPE_SYMBOL);
-			auto new_value = pop();
-			auto offset = resolve_binding(symbol.symbol);
-			assert(offset < stack.size);
-			stack[offset] = new_value;
+			auto value = pop();
+			frame->environment->update_binding(symbol.symbol, value);
 		} break;
 		case BC_RESOLVE_BINDING: {
 			auto symbol = pop();
 			symbol.assert_is(TYPE_SYMBOL);
-			auto offset = resolve_binding(symbol.symbol);
-			assert(offset < stack.size);
-			push(stack[offset]);
+			auto value = resolve_binding(symbol.symbol);
+			push(value);
 		} break;
 		case BC_POP_AND_PRINT: {
 			auto v = pop();
@@ -297,8 +282,8 @@ struct VM {
 			
 			// Create bindings to pushed arguments
 			for (int i = 0; i < passed_arg_count.integer; i++) {
-				env->create_binding(func->parameters[i],
-									stack.size - i - 1);
+				auto value = pop();
+				env->create_binding(func->parameters[i], value);
 			}
 			/*
 			// Bind closured values
@@ -322,10 +307,12 @@ struct VM {
 			frame->bc_pointer = bc.arg.integer;
 		} break;
 		}
-		
+
+		#if COLLECTION
 		GC::unmark_all();
 		mark_reachable();
 		GC::free_unmarked();
+		#endif
 	}
 	// TODO(pixlark): This function is a right mess. Clean this up at
 	// some point.
@@ -375,9 +362,10 @@ struct VM {
 			auto env = frame->environment;
 			for (int j = 0; j < env->names.size; j++) {
 				auto sym = env->names[j];
-				auto o = env->offsets[j];
-				char * s = stack[o].to_string();
-				printf("%s: (%zu) %s\n", sym, o, s);
+				Value val;
+				env->resolve_binding(sym, &val);
+				char * s = val.to_string();
+				printf("%s: %s\n", sym, s);
 				free(s);
 			}
 			if (i > 0) {

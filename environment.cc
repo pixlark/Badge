@@ -1,21 +1,25 @@
 struct Environment {
 	GC_List<Symbol> names;
-	GC_List<size_t> offsets;
+	GC_List<Value> values;
+	
 	static Environment * alloc()
 	{
 		Environment * env = (Environment*) GC::alloc(sizeof(Environment));
 		env->names.alloc();
-		env->offsets.alloc();
+		env->values.alloc();
 		return env;
 	}
 	void gc_mark()
 	{
 		names.gc_mark();
-		offsets.gc_mark();
+		values.gc_mark();
+		for (int i = 0; i < values.size; i++) {
+			values[i].gc_mark();
+		}
 	}
 	bool is_bound(Symbol symbol)
 	{
-		assert(names.size == offsets.size);
+		assert(names.size == values.size);
 		for (int i = 0; i < names.size; i++) {
 			if (symbol == names[i]) {
 				return true;
@@ -23,47 +27,36 @@ struct Environment {
 		}
 		return false;
 	}
-	bool create_binding(Symbol symbol, size_t offset)
+	bool create_binding(Symbol symbol, Value value)
 	{
-		assert(names.size == offsets.size);
+		assert(names.size == values.size);
 		if (is_bound(symbol)) {
 			return false;
 		}
 		names.push(symbol);
-		offsets.push(offset);
+		values.push(value);
 		return true;
 	}
-	bool update_binding(Symbol symbol, size_t offset)
+	bool update_binding(Symbol symbol, Value value)
 	{
-		assert(names.size == offsets.size);
+		assert(names.size == values.size);
 		for (int i = 0; i < names.size; i++) {
 			if (symbol == names[i]) {
-				offsets[i] = offset;
+				values[i] = value;
 				return true;
 			}
 		}
 		return false;
 	}
-	bool resolve_binding(Symbol symbol, size_t * offset)
+	bool resolve_binding(Symbol symbol, Value * value)
 	{
-		assert(names.size == offsets.size);
+		assert(names.size == values.size);
 		for (int i = 0; i < names.size; i++) {
 			if (symbol == names[i]) {
-				*offset = offsets[i];
+				*value = values[i];
 				return true;
 			}
 		}
 		return false;
-	}
-	static void test()
-	{
-		auto env = Environment::alloc();
-		assert( env->create_binding(Intern::intern("asdf"), 5));
-		assert( env->create_binding(Intern::intern("j"), 0));
-		assert(!env->create_binding(Intern::intern("asdf"), 6));
-		assert( env->update_binding(Intern::intern("asdf"), 100));
-		size_t resolved;
-		assert(env->resolve_binding(Intern::intern("asdf"), &resolved));
-		assert(resolved == 100);
 	}
 };

@@ -1,12 +1,38 @@
-%% Scoping
 
+
+
+let f = lambda (x) {
+	lambda (y) {
+		lambda () { x + y }
+	}
+}.
+
+let g = f(1).
+let h = g(2).
+print h().
+
+
+
+
+[-
 let f = lambda () {
 	let x = 10.
 	lambda () { print x. }
 }.
 
 let g = f().
-g().
+g().-]
+
+
+
+
+
+
+
+
+
+
+
 
 [-
 {
