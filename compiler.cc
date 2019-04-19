@@ -48,6 +48,18 @@ struct Compiler {
 		case OP_NOT_EQUAL:
 			push(BC::create(BC_NOT_EQUAL));
 			break;
+		case OP_LESS_THAN:
+			push(BC::create(BC_LESS_THAN));
+			break;
+		case OP_GREATER_THAN:
+			push(BC::create(BC_GREATER_THAN));
+			break;
+		case OP_LESS_THAN_OR_EQUAL_TO:
+			push(BC::create(BC_LESS_THAN_OR_EQUAL_TO));
+			break;
+		case OP_GREATER_THAN_OR_EQUAL_TO:
+			push(BC::create(BC_GREATER_THAN_OR_EQUAL_TO));
+			break;
 		case OP_AND:
 			push(BC::create(BC_AND));
 			break;

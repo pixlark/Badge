@@ -1,0 +1,34 @@
+(@) source
+
+print 1 == 1.
+print 1 != 1.
+print 2 == 1.
+print 2 != 1.
+
+print 1 < 2.
+print 2 < 2.
+print 2 > 1.
+print 2 > 2.
+
+print 1 <= 2.
+print 2 <= 2.
+print 3 <= 2.
+print 2 >= 1.
+print 2 >= 2.
+print 2 >= 3.
+
+(@) expected(0, stdout)
+1
+nothing
+nothing
+1
+1
+nothing
+1
+nothing
+1
+1
+nothing
+1
+1
+nothing

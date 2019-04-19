@@ -24,6 +24,7 @@ struct Parser {
 	Expr * parse_function_call();
 	Expr * parse_multiply_divide();
 	Expr * parse_add_subtract();
+	Expr * parse_comparisons();
 	Expr * parse_equal_not_equal();
 	Expr * parse_and();
 	Expr * parse_or();
@@ -133,9 +134,32 @@ Expr * Parser::parse_add_subtract()
 	return left;
 }
 
-Expr * Parser::parse_equal_not_equal()
+Expr * Parser::parse_comparisons()
 {
 	auto left = parse_add_subtract();
+	while (is('<') || is('>') || is(TOKEN_LTE) || is(TOKEN_GTE)) {
+		Operator op;
+		if (match('<')) {
+			op = OP_LESS_THAN;
+		} else if (match('>')) {
+			op = OP_GREATER_THAN;
+		} else if (match(TOKEN_LTE)) {
+			op = OP_LESS_THAN_OR_EQUAL_TO;
+		} else if (match(TOKEN_GTE)) {
+			op = OP_GREATER_THAN_OR_EQUAL_TO;
+		} else assert(false);
+		auto expr = Expr::with_kind(EXPR_BINARY);
+		expr->binary.left = left;
+		expr->binary.op = op;
+		expr->binary.right = parse_add_subtract();
+		left = expr;
+	}
+	return left;
+}
+
+Expr * Parser::parse_equal_not_equal()
+{
+	auto left = parse_comparisons();
 	while (is(TOKEN_EQUAL) || is(TOKEN_NOT_EQUAL)) {
 		Operator op;
 		if (match(TOKEN_EQUAL)) {
@@ -146,7 +170,7 @@ Expr * Parser::parse_equal_not_equal()
 		auto expr = Expr::with_kind(EXPR_BINARY);
 		expr->binary.left = left;
 		expr->binary.op = op;
-		expr->binary.right = parse_add_subtract();
+		expr->binary.right = parse_comparisons();
 		left = expr;
 	}
 	return left;

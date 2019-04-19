@@ -113,22 +113,60 @@ bool Value::equal(Value a, Value b)
 	assert(false); // @linter
 }
 
-Value Value::_and(Value a, Value b)
+bool Value::_and(Value a, Value b)
 {
-	if (a.type == TYPE_NOTHING ||
-		b.type == TYPE_NOTHING) {
-		return Value::nothing();
-	} else {
-		return Value::raise(1);
-	}
+	return a.truthy() && b.truthy();
 }
 
-Value Value::_or(Value a, Value b)
+bool Value::_or(Value a, Value b)
 {
-	if (a.type == TYPE_NOTHING &&
-		b.type == TYPE_NOTHING) {
-		return Value::nothing();
-	} else {
-		return Value::raise(1);
+	return a.truthy() || b.truthy();
+}
+
+bool Value::less_than(Value a, Value b)
+{
+	validate_same_type(a, b);
+	switch (a.type) {
+	case TYPE_INTEGER:
+		return a.integer < b.integer;
+	default:
+		fatal("< not valid for type");
 	}
+	assert(false); // @linter
+}
+
+bool Value::greater_than(Value a, Value b)
+{
+	validate_same_type(a, b);
+	switch (a.type) {
+	case TYPE_INTEGER:
+		return a.integer > b.integer;
+	default:
+		fatal("> not valid for type");
+	}
+	assert(false); // @linter
+}
+
+bool Value::less_than_or_equal_to(Value a, Value b)
+{
+	validate_same_type(a, b);
+	switch (a.type) {
+	case TYPE_INTEGER:
+		return a.integer <= b.integer;
+	default:
+		fatal("<= not valid for type");
+	}
+	assert(false); // @linter
+}
+
+bool Value::greater_than_or_equal_to(Value a, Value b)
+{
+	validate_same_type(a, b);
+	switch (a.type) {
+	case TYPE_INTEGER:
+		return a.integer >= b.integer;
+	default:
+		fatal(">= not valid for type");
+	}
+	assert(false); // @linter
 }

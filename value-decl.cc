@@ -34,6 +34,19 @@ struct Value {
 		v.symbol = symbol;
 		return v;
 	}
+	static Value raise_bool(bool b) // Can't be an overload because
+									// C++ is stupid
+	{
+		if (b) {
+			return Value::raise(1);
+		} else {
+			return Value::nothing();
+		}
+	}
+	bool truthy()
+	{
+		return this->type != TYPE_NOTHING;
+	}
 	void assert_is(Type type)
 	{
 		assert(this->type == type);
@@ -50,6 +63,10 @@ struct Value {
 	static Value multiply(Value a, Value b);
 	static Value divide(Value a, Value b);
 	static bool equal(Value a, Value b);
-	static Value _and(Value a, Value b);
-	static Value _or(Value a, Value b);
+	static bool less_than(Value a, Value b);
+	static bool greater_than(Value a, Value b);
+	static bool less_than_or_equal_to(Value a, Value b);
+	static bool greater_than_or_equal_to(Value a, Value b);
+	static bool _and(Value a, Value b);
+	static bool _or(Value a, Value b);
 };

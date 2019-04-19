@@ -4,6 +4,8 @@ enum Token_Kind {
 	// Double-chars
 	TOKEN_EQUAL,
 	TOKEN_NOT_EQUAL,
+	TOKEN_GTE,
+	TOKEN_LTE,
 	
 	// Reserved words
 	TOKEN_LET,
@@ -238,13 +240,15 @@ Token Lexer::next_token()
 	case ')':
 	case '{':
 	case '}':
-	case '>':
-	case '<':
 		return Token::with_kind((Token_Kind) next());
 	case '=':
 		return Token::with_kind(read_double_token('=', '=', TOKEN_EQUAL));
 	case '!':
 		return Token::with_kind(read_double_token('!', '=', TOKEN_NOT_EQUAL));
+	case '>':
+		return Token::with_kind(read_double_token('>', '=', TOKEN_GTE));
+	case '<':
+		return Token::with_kind(read_double_token('<', '=', TOKEN_LTE));
 	case '[':
 		advance();
 		if (peek() == '-') {

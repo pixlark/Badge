@@ -209,38 +209,46 @@ struct VM {
 		case BC_EQUAL: {
 			auto b = pop();
 			auto a = pop();
-			if (Value::equal(a, b)) {
-				push(Value::raise(1));
-			} else {
-				push(Value::nothing());
-			}
+			push(Value::raise_bool(Value::equal(a, b)));
 		} break;
 		case BC_NOT_EQUAL: {
 			auto b = pop();
 			auto a = pop();
-			if (Value::equal(a, b)) {
-				push(Value::nothing());
-			} else {
-				push(Value::raise(1));
-			}
+			push(Value::raise_bool(!Value::equal(a, b)));
+		} break;
+		case BC_GREATER_THAN: {
+			auto b = pop();
+			auto a = pop();
+			push(Value::raise_bool(Value::greater_than(a, b)));
+		} break;
+		case BC_LESS_THAN: {
+			auto b = pop();
+			auto a = pop();
+			push(Value::raise_bool(Value::less_than(a, b)));
+		} break;
+		case BC_GREATER_THAN_OR_EQUAL_TO: {
+			auto b = pop();
+			auto a = pop();
+			push(Value::raise_bool(Value::greater_than_or_equal_to(a, b)));
+		} break;
+		case BC_LESS_THAN_OR_EQUAL_TO: {
+			auto b = pop();
+			auto a = pop();
+			push(Value::raise_bool(Value::less_than_or_equal_to(a, b)));
 		} break;
 		case BC_AND: {
 			auto b = pop();
 			auto a = pop();
-			push(Value::_and(a, b));
+			push(Value::raise_bool(Value::_and(a, b)));
 		} break;
 		case BC_OR: {
 			auto b = pop();
 			auto a = pop();
-			push(Value::_or(a, b));
+			push(Value::raise_bool(Value::_or(a, b)));
 		} break;
 		case BC_NOT: {
 			auto a = pop();
-			if (a.type == TYPE_NOTHING) {
-				push(Value::raise(1));
-			} else {
-				push(Value::nothing());
-			}
+			push(Value::raise_bool(!a.truthy()));
 		} break;
 		case BC_CONSTRUCT_FUNCTION: {
 			auto count = pop();
