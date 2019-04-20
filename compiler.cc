@@ -173,9 +173,30 @@ struct Compiler {
 		} break;
 		case EXPR_DIRECTIVE: {
 			auto name = expr->directive.name;
+			/*
+			 * @ffi directive
+			 */
 			if (name == Intern::intern("ffi")) {
+				auto args = expr->directive.arguments;
+				if (args.size != 1) {
+					fatal("@ffi directive expects one argument");
+				}
+				// TODO(pixlark): This is a little bit hacky because
+				// it's not really a variable, it's meant to be a
+				// compile-time symbol. They are technically the same
+				// thing but still it feels like we're trying to build
+				// a directive-based DSL here out of an AST that was
+				// parsed for something else. Maybe there should be a
+				// new subtree type for compile-time expressions.
+				if (args[0]->kind != EXPR_VARIABLE) {
+					fatal("@ffi directive expects constant symbol");
+				}
+				auto ffi_symbol = args[0]->variable;
 				// FFI binding
-				
+				auto ffi = Foreign::get_ffi(ffi_symbol);
+				Value value = Value::create(TYPE_FFI);
+				value.ffi = ffi;
+				push(BC::create(BC_LOAD_CONST, value));
 			} else {
 				// No such directive
 				fatal("No such directive as '%s'", name);

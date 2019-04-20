@@ -50,9 +50,13 @@ struct Value {
 	{
 		return this->type != TYPE_NOTHING;
 	}
+	bool is(Type type)
+	{
+		return this->type == type;
+	}
 	void assert_is(Type type)
 	{
-		assert(this->type == type);
+		assert(is(type));
 	}
 	bool same_type(Value other)
 	{

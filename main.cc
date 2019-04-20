@@ -1,6 +1,7 @@
 #include "includes.cc"
 #include "allocator.cc"
 #include "list.h"
+#include "map.cc"
 #include "string-builder.cc"
 #include "intern.cc"
 #include "utility.cc"
@@ -15,6 +16,7 @@
 #include "bytecode.cc"
 #include "value-def.cc"
 #include "blocks.cc"
+#include "ffi.cc"
 #include "compiler.cc"
 #include "vm.cc"
 
@@ -128,9 +130,11 @@ int main(int argc, char ** argv)
 
 	Intern::init();
 	GC::init();
+	Foreign::init();
 	
 	work_from_source(argv[1]);
 
+	Foreign::destroy();
 	GC::destroy();
 	Intern::destroy();
 	

@@ -276,21 +276,40 @@ struct VM {
 		} break;
 		case BC_POP_AND_CALL_FUNCTION: {
 			auto func_val = pop();
-			func_val.assert_is(TYPE_FUNCTION);
-			auto func = func_val.ref_function;
-			auto passed_arg_count = pop();
-			passed_arg_count.assert_is(TYPE_INTEGER);
-			if (passed_arg_count.integer != func->parameter_count) {
-				fatal("Function takes %d arguments; was passed %d",
-					  func->parameter_count,
-					  passed_arg_count.integer);
-			}
-			call_stack.push(Call_Frame::alloc(blocks, func->block_reference, func->closure));
+			if (func_val.is(TYPE_FFI)) {
+				// If this is an FFI function, override everything and just do an FFI
+				auto ffi = func_val.ffi;
+				auto passed_arg_count = pop();
+				passed_arg_count.assert_is(TYPE_INTEGER);
+				if (passed_arg_count.integer != ffi->arg_count) {
+					fatal("Function takes %d arguments; was passed %d",
+						  ffi->arg_count,
+						  passed_arg_count.integer);
+				}
+				Value * args = (Value*) malloc(sizeof(Value) * ffi->arg_count);
+				for (int i = 0; i < ffi->arg_count; i++) {
+					args[i] = pop();
+				}
+				push((ffi->funcptr)(args));
+				free(args);
+			} else {
+				// Otherwise, this is a normal function
+				func_val.assert_is(TYPE_FUNCTION);
+				auto func = func_val.ref_function;
+				auto passed_arg_count = pop();
+				passed_arg_count.assert_is(TYPE_INTEGER);
+				if (passed_arg_count.integer != func->parameter_count) {
+					fatal("Function takes %d arguments; was passed %d",
+						  func->parameter_count,
+						  passed_arg_count.integer);
+				}
+				call_stack.push(Call_Frame::alloc(blocks, func->block_reference, func->closure));
 			
-			// Create bindings to pushed arguments
-			for (int i = 0; i < passed_arg_count.integer; i++) {
-				auto value = pop();
-				create_binding(func->parameters[i], value);
+				// Create bindings to pushed arguments
+				for (int i = 0; i < passed_arg_count.integer; i++) {
+					auto value = pop();
+					create_binding(func->parameters[i], value);
+				}
 			}
 		} break;
 		case BC_RETURN: {

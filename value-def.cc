@@ -5,6 +5,12 @@ struct Function {
 	Environment * closure;
 };
 
+struct FFI {
+	Symbol name;
+	size_t arg_count;
+	Value(*funcptr)(Value *);
+};
+
 char * Value::to_string()
 {
 	switch (type) {
@@ -38,6 +44,8 @@ void Value::gc_mark()
 			GC::mark_opaque(ref_function->closure);
 			ref_function->closure->gc_mark();
 		}
+		break;
+	case TYPE_FFI:
 		break;
 	}
 }
@@ -111,6 +119,8 @@ bool Value::equal(Value a, Value b)
 		return a.symbol == b.symbol;
 	case TYPE_FUNCTION:
 		return a.ref_function == b.ref_function;
+	case TYPE_FFI:
+		return a.ffi->name == b.ffi->name;
 	}
 	assert(false); // @linter
 }

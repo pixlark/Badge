@@ -10,6 +10,7 @@ struct Map {
 	List<V> * get_values();
 	
 	void alloc(bool (*comparator)(K, K), Allocator allocator = default_allocator);
+	void dealloc();
 	bool bound(K key);
 	bool add(K key, V value);
 	bool update(K key, V value);
@@ -34,6 +35,13 @@ void Map<K, V>::alloc(bool (*comparator)(K, K), Allocator allocator)
 	this->comparator = comparator;
 	keys.alloc(allocator);
 	values.alloc(allocator);
+}
+
+template <typename K, typename V>
+void Map<K, V>::dealloc()
+{
+	keys.dealloc();
+	values.dealloc();
 }
 
 template <typename K, typename V>
