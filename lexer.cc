@@ -240,6 +240,7 @@ Token Lexer::next_token()
 	case ')':
 	case '{':
 	case '}':
+	case '@':
 		return Token::with_kind((Token_Kind) next());
 	case '=':
 		return Token::with_kind(read_double_token('=', '=', TOKEN_EQUAL));
@@ -249,6 +250,8 @@ Token Lexer::next_token()
 		return Token::with_kind(read_double_token('>', '=', TOKEN_GTE));
 	case '<':
 		return Token::with_kind(read_double_token('<', '=', TOKEN_LTE));
+	case ']':
+		return Token::with_kind((Token_Kind) next());
 	case '[':
 		advance();
 		if (peek() == '-') {
@@ -267,8 +270,9 @@ Token Lexer::next_token()
 				}
 			}
 			goto reset;
+		} else {
+			return Token::with_kind((Token_Kind) '[');
 		}
-		/* FALLTHROUGH */
 	default:
 		fatal("Line %d\nMisplaced character %c (%d)", line, peek(), peek());
 		/*

@@ -171,6 +171,16 @@ struct Compiler {
 			
 			end_jumps.dealloc();
 		} break;
+		case EXPR_DIRECTIVE: {
+			auto name = expr->directive.name;
+			if (name == Intern::intern("ffi")) {
+				// FFI binding
+				
+			} else {
+				// No such directive
+				fatal("No such directive as '%s'", name);
+			}
+		} break;
 		}
 	}
 	void compile_stmt(Stmt * stmt)

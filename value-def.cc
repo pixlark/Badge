@@ -16,6 +16,8 @@ char * Value::to_string()
 		return strdup(symbol);
 	case TYPE_FUNCTION:
 		return strdup("@[function]");
+	case TYPE_FFI:
+		return strdup("@[ffi]");
 	}
 	assert(false); // @linter
 }

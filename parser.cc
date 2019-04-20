@@ -32,6 +32,7 @@ struct Parser {
 	Expr * parse_lambda();
 	Expr * parse_if();
 	Expr * parse_scope();
+	Expr * parse_directive();
 	Expr * parse_expr();
 	
 	Stmt * parse_let();
@@ -262,6 +263,29 @@ Expr * Parser::parse_if()
 	}
 }
 
+Expr * Parser::parse_directive()
+{
+	if (match('@')) {
+		auto expr = Expr::with_kind(EXPR_DIRECTIVE);
+		expr->directive.name = expect(TOKEN_SYMBOL).values.symbol;
+		expr->directive.arguments.alloc();
+		expect('[');
+		while (true) {
+			if (match(']')) {
+				break;
+			}
+			expr->directive.arguments.push(parse_expr());
+			if (!match(',')) {
+				expect(']');
+				break;
+			}
+		}
+		return expr;
+	} else {
+		return parse_if();
+	}
+}
+
 Expr * Parser::parse_scope()
 {
 	if (match('{')) {
@@ -280,7 +304,7 @@ Expr * Parser::parse_scope()
 		}
 		return scope;
 	} else {
-		return parse_if();
+		return parse_directive();
 	}
 }
 
