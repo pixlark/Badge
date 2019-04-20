@@ -1,5 +1,7 @@
 (@) source
 
+let println = @ffi[println].
+
 let fib = lambda (n) {
 	let iter =
 		lambda (a, b, n) if n == 0
@@ -8,14 +10,14 @@ let fib = lambda (n) {
 	iter(0, 1, n)
 }.
 
-print fib(1).
-print fib(2).
-print fib(3).
-print fib(4).
-print fib(5).
-print fib(6).
-print fib(7).
-print fib(8).
+println(fib(1)).
+println(fib(2)).
+println(fib(3)).
+println(fib(4)).
+println(fib(5)).
+println(fib(6)).
+println(fib(7)).
+println(fib(8)).
 
 (@) expected(0, stdout)
 1

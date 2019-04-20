@@ -1,11 +1,13 @@
 (@) source
 
+let println = @ffi[println].
+
 %this should not be seen !#$)(@*#%&%
 
 %%%%%%%% neither should this
 
 let f = lambda (x) { return x. }. % or this
-print f. %%%%% and this
+println(f). %%%%% and this
 
 [-
 

@@ -42,18 +42,41 @@ namespace Foreign {
 		}
 		return Value::raise(n.integer % b.integer);
 	}
+	// Stdio.h wrappers
+	DEFINE(print)
+	{
+		PULL_ONE(v);
+		char * s = v.to_string();
+		printf("%s", s);
+		free(s);
+		return Value::nothing();
+	}
+	DEFINE(println)
+	{
+		PULL_ONE(v);
+		char * s = v.to_string();
+		printf("%s\n", s);
+		free(s);
+		return Value::nothing();
+	}	
 	// FFI bridge
 	enum Foreign_Function {
 		FFI_MATH_ABS,
 		FFI_MATH_MOD,
+		FFI_IO_PRINT,
+		FFI_IO_PRINTLN,
 	};
 	size_t ffi_argument_counts[] = {
 		[FFI_MATH_ABS] = 1,
 		[FFI_MATH_MOD] = 2,
+		[FFI_IO_PRINT] = 1,
+		[FFI_IO_PRINTLN] = 1,		
 	};
 	Value(*ffi_funcptrs[])(Value *) = {
 		[FFI_MATH_ABS] = NAMEOF(abs),
 		[FFI_MATH_MOD] = NAMEOF(mod),
+		[FFI_IO_PRINT] = NAMEOF(print),
+		[FFI_IO_PRINTLN] = NAMEOF(println),
 	};
 	// FFI interface
 	bool symbol_comparator(Symbol a, Symbol b) { return a == b; }
@@ -74,6 +97,8 @@ namespace Foreign {
 		if (0) assert(false);
 		CASE("abs", FFI_MATH_ABS);
 		CASE("mod", FFI_MATH_MOD);
+		CASE("print", FFI_IO_PRINT);
+		CASE("println", FFI_IO_PRINTLN);
 		else fatal("Foreign function '%s' does not exist!", symbol);
 		assert(false); // @linter
 	}

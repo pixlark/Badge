@@ -1,9 +1,11 @@
 (@) source
 
-let f = lambda () { print f. }.
+let println = @ffi[println].
+
+let f = lambda () { println(f). }.
 f().
 
-set f = lambda (x) { print x. }.
+set f = lambda (x) { println(x). }.
 f(f).
 f(2).
 

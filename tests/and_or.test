@@ -1,17 +1,19 @@
 (@) source
 
+let println = @ffi[println].
+
 let t = 1.
 let f = nothing.
 
-print f or f.
-print f or t.
-print t or f.
-print t or t.
+println(f or f).
+println(f or t).
+println(t or f).
+println(t or t).
 
-print f and f.
-print f and t.
-print t and f.
-print t and t.
+println(f and f).
+println(f and t).
+println(t and f).
+println(t and t).
 
 (@) expected(0, stdout)
 nothing

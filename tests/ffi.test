@@ -1,7 +1,8 @@
 (@) source
 
+let println = @ffi[println].
 let abs = @ffi[abs].
-print abs(0 - 32).
+println(abs(0 - 32)).
 
 (@) expected(0, stdout)
 32

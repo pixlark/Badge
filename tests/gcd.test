@@ -1,5 +1,7 @@
 (@) source
 
+let println = @ffi[println].
+
 let GCD = lambda (a, b)
 	if a == b
 	then a
@@ -7,7 +9,7 @@ let GCD = lambda (a, b)
 	then GCD(a - b, b)
 	else GCD(a, b - a).
 
-print GCD(1814274, 259896).
+println(GCD(1814274, 259896)).
 
 (@) expected(0, stdout)
 4998

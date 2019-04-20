@@ -37,7 +37,6 @@ struct Parser {
 	
 	Stmt * parse_let();
 	Stmt * parse_set();
-	Stmt * parse_print();
 	Stmt * parse_return();
 	Stmt * parse_stmt();
 };
@@ -345,14 +344,6 @@ Stmt * Parser::parse_set()
 	return stmt;	
 }
 
-Stmt * Parser::parse_print()
-{
-	Stmt * stmt = Stmt::with_kind(STMT_PRINT);
-	advance();
-	stmt->print.expr = parse_expr();
-	return stmt;
-}
-
 Stmt * Parser::parse_return()
 {
 	Stmt * stmt = Stmt::with_kind(STMT_RETURN);
@@ -368,8 +359,6 @@ Stmt * Parser::parse_stmt()
 		stmt = parse_let();
 	} else if (is(TOKEN_SET)) {
 		stmt = parse_set();
-	} else if (is(TOKEN_PRINT)) {
-		stmt = parse_print();
 	} else if (is(TOKEN_RETURN)) {
 		stmt = parse_return();
 	} else {

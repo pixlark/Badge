@@ -180,12 +180,6 @@ struct VM {
 			auto value = resolve_binding(symbol.symbol);
 			push(value);
 		} break;
-		case BC_POP_AND_PRINT: {
-			auto v = pop();
-			char * s = v.to_string();
-			printf("%s\n", s);
-			free(s);
-		} break;
 		case BC_ADD: {
 			auto b = pop();
 			auto a = pop();

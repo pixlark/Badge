@@ -1,5 +1,6 @@
 (@) source
 
+let println = @ffi[println].
 let mod = @ffi[mod].
 
 let isprime = lambda (n) {
@@ -15,8 +16,8 @@ let loop = lambda (n, m) {
 	if n >= 50
 	then nothing
 	else {
-		print n.
-		print isprime(n).
+		println(n).
+		println(isprime(n)).
 		loop(n + 1, m).
 	}.
 }.

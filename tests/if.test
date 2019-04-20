@@ -1,12 +1,14 @@
 (@) source
 
-print (if 1
-	   then 100
-	   else 200).
+let println = @ffi[println].
 
-print (if nothing
-	   then 100
-	   else 200).
+println(if 1
+	    then 100
+	    else 200).
+
+println(if nothing
+	    then 100
+	    else 200).
 
 if nothing
 then nothing
@@ -15,7 +17,7 @@ then nothing
 elif nothing
 then nothing
 elif 1
-then { print 1234. }
+then { println(1234). }
 elif nothing
 then nothing
 else nothing.

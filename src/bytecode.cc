@@ -5,7 +5,6 @@ enum BC_Kind {
 	BC_CREATE_BINDING,
 	BC_UPDATE_BINDING,
 	BC_RESOLVE_BINDING,
-	BC_POP_AND_PRINT,
 	// arithmetic
 	BC_ADD,
 	BC_SUBTRACT,
@@ -38,7 +37,6 @@ static const char * BC_Kind_names[] = {
 	"CREATE_BINDING",
 	"UPDATE_BINDING",
 	"RESOLVE_BINDING",
-	"POP_AND_PRINT",
 	"ADD",
 	"SUBTRACT",
 	"MULTIPLY",

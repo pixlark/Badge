@@ -219,10 +219,6 @@ struct Compiler {
 							Value::raise(stmt->set.left)));
 			push(BC::create(BC_UPDATE_BINDING));
 			break;
-		case STMT_PRINT:
-			compile_expr(stmt->print.expr);
-			push(BC::create(BC_POP_AND_PRINT));
-			break;
 		case STMT_RETURN:
 			compile_expr(stmt->_return.expr);
 			push(BC::create(BC_RETURN));

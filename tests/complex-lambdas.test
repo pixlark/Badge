@@ -1,23 +1,25 @@
 (@) source
 
+let println = @ffi[println].
+
 let f = lambda (x) {
 	return lambda () 10.
 }.
 
-print (f(1))().
+println((f(1))()).
 
 set f = lambda (x) lambda () 10.
-print (f(1))().
+println((f(1))()).
 
 let g = lambda () lambda () lambda () 5.
-print g.
-print g().
-print g()().
-print g()()().
+println(g).
+println(g()).
+println(g()()).
+println(g()()()).
 
 let h = lambda () nothing.
-print h.
-print h().
+println(h).
+println(h()).
 
 (@) expected(0, stdout)
 10

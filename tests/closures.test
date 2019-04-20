@@ -1,10 +1,12 @@
 (@) source
 
+let println = @ffi[println].
+
 let simple_closure = lambda (x) lambda () x.
-print simple_closure(111)().
+println(simple_closure(111)()).
 
 let curry = lambda (x) (lambda (y) (lambda (z) (z + y + x))).
-print curry(1)(2)(4).
+println(curry(1)(2)(4)).
 
 
 

@@ -5,7 +5,6 @@ struct Expr;
 enum Stmt_Kind {
 	STMT_LET,
 	STMT_SET,
-	STMT_PRINT,
 	STMT_RETURN,
 	STMT_EXPR,
 };
@@ -22,11 +21,6 @@ struct Stmt_Set {
 	void destroy();
 };
 
-struct Stmt_Print {
-	Expr * expr;
-	void destroy();
-};
-
 struct Stmt_Return {
 	Expr * expr;
 	void destroy();
@@ -37,7 +31,6 @@ struct Stmt {
 	union {
 		Stmt_Let let;
 		Stmt_Set set;
-		Stmt_Print print;
 		Stmt_Return _return;
 		Expr * expr;
 	};
@@ -271,12 +264,6 @@ void Stmt_Set::destroy()
 	free(right);
 }
 
-void Stmt_Print::destroy()
-{
-	expr->destroy();
-	free(expr);
-}
-
 void Stmt_Return::destroy()
 {
 	expr->destroy();
@@ -302,9 +289,6 @@ void Stmt::destroy()
 		break;
 	case STMT_SET:
 		set.destroy();
-		break;
-	case STMT_PRINT:
-		print.destroy();
 		break;
 	case STMT_RETURN:
 		_return.destroy();

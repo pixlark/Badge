@@ -1,21 +1,23 @@
 (@) source
 
-print 1 == 1.
-print 1 != 1.
-print 2 == 1.
-print 2 != 1.
+let println = @ffi[println].
 
-print 1 < 2.
-print 2 < 2.
-print 2 > 1.
-print 2 > 2.
+println(1 == 1).
+println(1 != 1).
+println(2 == 1).
+println(2 != 1).
 
-print 1 <= 2.
-print 2 <= 2.
-print 3 <= 2.
-print 2 >= 1.
-print 2 >= 2.
-print 2 >= 3.
+println(1 < 2).
+println(2 < 2).
+println(2 > 1).
+println(2 > 2).
+
+println(1 <= 2).
+println(2 <= 2).
+println(3 <= 2).
+println(2 >= 1).
+println(2 >= 2).
+println(2 >= 3).
 
 (@) expected(0, stdout)
 1
