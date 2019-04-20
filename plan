@@ -1,6 +1,0 @@
-When a function is called, it's arguments are pushed onto the stack
-along with any variables created in it's scope.
-
-When a function is defined, it should reach BACK in it's current call
-frame and grab everything, including arguments. These values are
-pushed onto an environment which is stored alongside the function.

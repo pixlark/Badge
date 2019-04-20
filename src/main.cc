@@ -1,6 +1,6 @@
 #include "includes.cc"
 #include "allocator.cc"
-#include "list.h"
+#include "list.cc"
 #include "map.cc"
 #include "string-builder.cc"
 #include "intern.cc"

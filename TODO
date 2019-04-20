@@ -1,12 +1,6 @@
-SLANG:
+BADGE:
 
-- Type system
-x Arithmetic operators
-- Quick lambda/Expression-based lambda
-   Syntax ideas:
-    let f = take (a, b) to (a + b * a).
-	let f = (a, b) => (a + b * a). % Much harder to do, parser-wise
-	let f = have (a, b) become (a + b * a).
+
 
 EXPECT:
 
