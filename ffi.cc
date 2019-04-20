@@ -34,15 +34,26 @@ namespace Foreign {
 		}
 		return Value::raise(abs(n.integer));
 	}
+	DEFINE(mod)
+	{
+		PULL_TWO(n, b);
+		if (!n.is(TYPE_INTEGER) || !b.is(TYPE_INTEGER)) {
+			fatal("FFI function mod() takes integers");
+		}
+		return Value::raise(n.integer % b.integer);
+	}
 	// FFI bridge
 	enum Foreign_Function {
 		FFI_MATH_ABS,
+		FFI_MATH_MOD,
 	};
 	size_t ffi_argument_counts[] = {
 		[FFI_MATH_ABS] = 1,
+		[FFI_MATH_MOD] = 2,
 	};
 	Value(*ffi_funcptrs[])(Value *) = {
 		[FFI_MATH_ABS] = NAMEOF(abs),
+		[FFI_MATH_MOD] = NAMEOF(mod),
 	};
 	// FFI interface
 	bool symbol_comparator(Symbol a, Symbol b) { return a == b; }
@@ -62,6 +73,7 @@ namespace Foreign {
 	{
 		if (0) assert(false);
 		CASE("abs", FFI_MATH_ABS);
+		CASE("mod", FFI_MATH_MOD);
 		else fatal("Foreign function '%s' does not exist!", symbol);
 		assert(false); // @linter
 	}
