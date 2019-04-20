@@ -68,3 +68,10 @@ let complex = lambda (x, y) {
 println(complex(1, 2)). % Outputs 484
 ```
 
+As doing true FFI is very complex, Badge instead has a very spartan FFI system. There are a series of function wrappers compiled with the language itself, and those are the only functions that can be called via FFI. The output functions are one example of this. FFI functions can be pulled into your program using the `@ffi` directive:
+
+```
+let println = @ffi[println].
+println(12). % Outputs 12
+```
+
