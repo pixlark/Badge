@@ -5,7 +5,7 @@ struct Function {
 	Environment * closure;
 };
 
-struct FFI {
+struct Builtin {
 	Symbol name;
 	size_t arg_count;
 	Value(*funcptr)(Value *);
@@ -22,8 +22,8 @@ char * Value::to_string()
 		return strdup(symbol);
 	case TYPE_FUNCTION:
 		return strdup("@[function]");
-	case TYPE_FFI:
-		return strdup("@[ffi]");
+	case TYPE_BUILTIN:
+		return strdup("@[builtin]");
 	}
 	assert(false); // @linter
 }
@@ -45,7 +45,7 @@ void Value::gc_mark()
 			ref_function->closure->gc_mark();
 		}
 		break;
-	case TYPE_FFI:
+	case TYPE_BUILTIN:
 		break;
 	}
 }
@@ -119,8 +119,8 @@ bool Value::equal(Value a, Value b)
 		return a.symbol == b.symbol;
 	case TYPE_FUNCTION:
 		return a.ref_function == b.ref_function;
-	case TYPE_FFI:
-		return a.ffi->name == b.ffi->name;
+	case TYPE_BUILTIN:
+		return a.builtin == b.builtin;
 	}
 	assert(false); // @linter
 }

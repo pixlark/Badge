@@ -1,7 +1,7 @@
 (@) source
 
-let println = @ffi[println].
-let mod = @ffi[mod].
+let println = @builtin[println].
+let mod = @builtin[mod].
 
 let isprime = lambda (n) {
 	let helper = lambda (n, i) if   i == n

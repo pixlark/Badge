@@ -1,6 +1,6 @@
 (@) source
 
-let println = @ffi[println].
+let println = @builtin[println].
 
 println((1 + 2) * 3).
 println(9 / 3).

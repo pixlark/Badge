@@ -1,5 +1,5 @@
 (@) source
 
-let fact = @ffi[fact]
+let fact = @builtin[fact]
 
 (@) expected(-6)

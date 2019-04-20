@@ -1,6 +1,6 @@
 (@) source
 
-let println = @ffi[println].
+let println = @builtin[println].
 
 let fib = lambda (n) {
 	let iter =

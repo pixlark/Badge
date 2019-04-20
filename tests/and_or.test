@@ -1,6 +1,6 @@
 (@) source
 
-let println = @ffi[println].
+let println = @builtin[println].
 
 let t = 1.
 let f = nothing.

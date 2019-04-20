@@ -1,6 +1,6 @@
 (@) source
 
-let println = @ffi[println].
+let println = @builtin[println].
 
 let simple_closure = lambda (x) lambda () x.
 println(simple_closure(111)()).

@@ -1,6 +1,6 @@
 (@) source
 
-let println = @ffi[println].
+let println = @builtin[println].
 
 println(1 == 1).
 println(1 != 1).

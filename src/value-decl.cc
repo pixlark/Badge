@@ -3,11 +3,11 @@ enum Type {
 	TYPE_INTEGER,
 	TYPE_SYMBOL,
 	TYPE_FUNCTION,
-	TYPE_FFI,
+	TYPE_BUILTIN,
 };
 
 struct Function;
-struct FFI;
+struct Builtin;
 
 struct Value {
 	Type type;
@@ -15,7 +15,7 @@ struct Value {
 		int integer;
 		Symbol symbol;
 		Function * ref_function;
-		FFI * ffi;
+		Builtin * builtin;
 	};
 	static Value create(Type type)
 	{

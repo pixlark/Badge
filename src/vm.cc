@@ -270,21 +270,21 @@ struct VM {
 		} break;
 		case BC_POP_AND_CALL_FUNCTION: {
 			auto func_val = pop();
-			if (func_val.is(TYPE_FFI)) {
-				// If this is an FFI function, override everything and just do an FFI
-				auto ffi = func_val.ffi;
+			if (func_val.is(TYPE_BUILTIN)) {
+				// If this is a builtin function, override everything and just do a builtin call
+				auto builtin = func_val.builtin;
 				auto passed_arg_count = pop();
 				passed_arg_count.assert_is(TYPE_INTEGER);
-				if (passed_arg_count.integer != ffi->arg_count) {
+				if (passed_arg_count.integer != builtin->arg_count) {
 					fatal("Function takes %d arguments; was passed %d",
-						  ffi->arg_count,
+						  builtin->arg_count,
 						  passed_arg_count.integer);
 				}
-				Value * args = (Value*) malloc(sizeof(Value) * ffi->arg_count);
-				for (int i = 0; i < ffi->arg_count; i++) {
+				Value * args = (Value*) malloc(sizeof(Value) * builtin->arg_count);
+				for (int i = 0; i < builtin->arg_count; i++) {
 					args[i] = pop();
 				}
-				push((ffi->funcptr)(args));
+				push((builtin->funcptr)(args));
 				free(args);
 			} else {
 				// Otherwise, this is a normal function

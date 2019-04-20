@@ -16,7 +16,7 @@
 #include "bytecode.cc"
 #include "value-def.cc"
 #include "blocks.cc"
-#include "ffi.cc"
+#include "builtins.cc"
 #include "compiler.cc"
 #include "vm.cc"
 
@@ -130,11 +130,11 @@ int main(int argc, char ** argv)
 
 	Intern::init();
 	GC::init();
-	Foreign::init();
+	Builtins::init();
 	
 	work_from_source(argv[1]);
 
-	Foreign::destroy();
+	Builtins::destroy();
 	GC::destroy();
 	Intern::destroy();
 	
