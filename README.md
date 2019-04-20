@@ -25,13 +25,13 @@ Here are some examples of scopes:
 ```
 {
 	let x = 12.
-	print x.
+	println(x).
 	x + 1
 } % Prints 12, evaluates to 13
 
 {
 	let y = { }.
-	print y.
+	println(y).
 } % Prints `nothing`, evaluates to `nothing`
 ```
 
@@ -40,11 +40,11 @@ Here are some examples of scopes:
 ```
 let x = 12.
 
-print x.
+println(x).
 
 set x = nothing.
 
-print x.
+println(x).
 
 % outputs 12, followed by `nothing`
 ```
@@ -53,7 +53,7 @@ print x.
 
 ```
 let square = lambda (x) x * x.
-print square(3). % Outputs 9
+println(square(3)). % Outputs 9
 ```
 
 Lambdas are denoted with the `lambda` keyword, followed by a list of arguments in parentheses. The body of a lambda is an expression -- any sufficiently complex lambda will likely require a scope as the body:
@@ -65,6 +65,6 @@ let complex = lambda (x, y) {
 	set i = i * i.
 	i
 }.
-print complex(1, 2). % Outputs 484
+println(complex(1, 2)). % Outputs 484
 ```
 
