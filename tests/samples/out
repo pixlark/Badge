@@ -1,3 +1,5 @@
+$$ "helloworld.bdg" out
+hello, world!
 $$ "factorial.bdg" out
 1
 5040

@@ -1,3 +1,8 @@
+struct String {
+	char * string;
+	size_t length;
+};
+
 struct Function {
 	Symbol * parameters;
 	size_t parameter_count;
@@ -20,6 +25,12 @@ char * Value::to_string()
 		return itoa(integer);
 	case TYPE_SYMBOL:
 		return strdup(symbol);
+	case TYPE_STRING: {
+		char * s = (char*) malloc(sizeof(char) * (ref_string->length + 1));
+		strncpy(s, ref_string->string, ref_string->length);
+		s[ref_string->length] = '\0';
+		return s;
+	};
 	case TYPE_FUNCTION:
 		return strdup("@[function]");
 	case TYPE_BUILTIN:
@@ -36,6 +47,10 @@ void Value::gc_mark()
 	case TYPE_INTEGER:
 		break;
 	case TYPE_SYMBOL:
+		break;
+	case TYPE_STRING:
+		GC::mark_opaque(ref_string);
+		GC::mark_opaque(ref_string->string);
 		break;
 	case TYPE_FUNCTION:
 		GC::mark_opaque(ref_function);
@@ -117,6 +132,13 @@ bool Value::equal(Value a, Value b)
 		return a.integer == b.integer;
 	case TYPE_SYMBOL:
 		return a.symbol == b.symbol;
+	case TYPE_STRING:
+		if (a.ref_string->length != b.ref_string->length) {
+			return false;
+		}
+		return strncmp(a.ref_string->string,
+					   b.ref_string->string,
+					   a.ref_string->length);
 	case TYPE_FUNCTION:
 		return a.ref_function == b.ref_function;
 	case TYPE_BUILTIN:

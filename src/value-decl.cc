@@ -2,10 +2,12 @@ enum Type {
 	TYPE_NOTHING,
 	TYPE_INTEGER,
 	TYPE_SYMBOL,
+	TYPE_STRING,
 	TYPE_FUNCTION,
 	TYPE_BUILTIN,
 };
 
+struct String;
 struct Function;
 struct Builtin;
 
@@ -14,6 +16,7 @@ struct Value {
 	union {
 		int integer;
 		Symbol symbol;
+		String * ref_string;
 		Function * ref_function;
 		Builtin * builtin;
 	};

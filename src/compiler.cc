@@ -88,6 +88,11 @@ struct Compiler {
 			push(BC::create(BC_LOAD_CONST,
 							Value::raise(expr->integer)));
 			break;
+		case EXPR_STRING:
+			push(BC::create(BC_LOAD_CONST,
+							Value::raise(expr->string)));
+			push(BC::create(BC_SYMBOL_TO_STRING));
+			break;
 		case EXPR_VARIABLE:
 			push(BC::create(BC_LOAD_CONST,
 							Value::raise(expr->variable)));

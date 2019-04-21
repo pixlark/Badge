@@ -61,6 +61,7 @@ enum Operator {
 enum Expr_Kind {
 	EXPR_NOTHING,
 	EXPR_INTEGER,
+	EXPR_STRING,
 	EXPR_VARIABLE,
 	EXPR_UNARY,
 	EXPR_BINARY,
@@ -121,6 +122,7 @@ struct Expr {
 	union {
 		int integer;
 		Symbol variable;
+		Symbol string;
 		Expr_Unary unary;
 		Expr_Binary binary;
 		Expr_Scope scope;
@@ -141,6 +143,8 @@ struct Expr {
 		case EXPR_NOTHING:
 			break;
 		case EXPR_INTEGER:
+			break;
+		case EXPR_STRING:
 			break;
 		case EXPR_VARIABLE:
 			break;

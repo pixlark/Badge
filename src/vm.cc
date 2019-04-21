@@ -310,6 +310,17 @@ struct VM {
 			// WARNING: `frame` invalidated here! Don't use it!
 			return_function();
 		} break;
+		case BC_SYMBOL_TO_STRING: {
+			auto symbol = pop();
+			symbol.assert_is(TYPE_SYMBOL);
+			auto string = (String*) GC::alloc(sizeof(String));
+			string->length = strlen(symbol.symbol);
+			string->string = (char*) GC::alloc(sizeof(char) * string->length);
+			strncpy(string->string, symbol.symbol, string->length);
+			auto value = Value::create(TYPE_STRING);
+			value.ref_string = string;
+			push(value);
+		} break;
 		case BC_POP_JUMP: {
 			auto a = pop();
 			if (a.type == TYPE_NOTHING) {

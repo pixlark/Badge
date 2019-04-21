@@ -1,7 +1,9 @@
 enum BC_Kind {
+	// basic
 	BC_NOP = 0,
 	BC_POP_AND_DISCARD,
 	BC_LOAD_CONST,
+	// binding
 	BC_CREATE_BINDING,
 	BC_UPDATE_BINDING,
 	BC_RESOLVE_BINDING,
@@ -21,11 +23,16 @@ enum BC_Kind {
 	BC_CONSTRUCT_FUNCTION,
 	BC_POP_AND_CALL_FUNCTION,
 	BC_RETURN,
+	// strings
+	BC_SYMBOL_TO_STRING,
+	// boolean
 	BC_AND,
 	BC_OR,
 	BC_NOT,
+	// flow control
 	BC_JUMP,
 	BC_POP_JUMP,
+	// scoping
 	BC_ENTER_SCOPE,
 	BC_EXIT_SCOPE,
 };
@@ -50,6 +57,7 @@ static const char * BC_Kind_names[] = {
 	"CONSTRUCT_FUNCTION",
 	"POP_AND_CALL_FUNCTION",
 	"RETURN",
+	"SYMBOL_TO_STRING",
 	"AND",
 	"OR",
 	"NOT",

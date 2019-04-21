@@ -62,6 +62,12 @@ Expr * Parser::parse_atom()
 		advance();
 		return atom;
 	} break;
+	case TOKEN_STRING_LITERAL: {
+		auto atom = Expr::with_kind(EXPR_STRING);
+		atom->string = peek.values.string;
+		advance();
+		return atom;
+	} break;
 	case TOKEN_SYMBOL: {
 		auto atom = Expr::with_kind(EXPR_VARIABLE);
 		atom->variable = peek.values.symbol;
