@@ -1,7 +1,0 @@
-(@) source
-
-[-
-
-(@) expected(-6)
-
-Should error with unterminated multline comment

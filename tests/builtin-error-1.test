@@ -1,5 +1,0 @@
-(@) source
-
-let fact = @builtin[15 + 3]
-
-(@) expected(-6)

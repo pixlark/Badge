@@ -1,5 +1,3 @@
-(@) source
-
 let println = @builtin[println].
 
 let fib = lambda (n) {
@@ -18,13 +16,3 @@ println(fib(5)).
 println(fib(6)).
 println(fib(7)).
 println(fib(8)).
-
-(@) expected(0, stdout)
-1
-1
-2
-3
-5
-8
-13
-21

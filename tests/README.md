@@ -1,6 +1,6 @@
 # Testing
 
-These tests can be run using the `expect` testing suite, found here:
+These tests can be run using the `lesen` testing suite, found here:
 
-https://github.com/pixlark/expect
+https://github.com/pixlark/lesen
 
