@@ -5,7 +5,7 @@ make:
 	g++ -Wall -g -O0 $(UNITY_FILE) -o $(OUTPUT_NAME) -Wno-sign-compare
 
 release:
-	clang++ -Wall --std=c++11 -O3 $(UNITY_FILE) -o $(OUTPUT_NAME)
+	clang++ -Wall --std=c++11 -DRELEASE -O3 $(UNITY_FILE) -o $(OUTPUT_NAME)
 
 clang:
 	clang++ -Wall --std=c++11 -g -O0 $(UNITY_FILE) -o $(OUTPUT_NAME)

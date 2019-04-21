@@ -1,4 +1,5 @@
 #define COLLECTION true
+#define COLLECT_WATERMARK 20
 #define SHOW_TOTAL_ALLOCATIONS false
 #define SHOW_COLLECTIONS false
 
@@ -64,6 +65,10 @@ namespace GC {
 		#endif
 		allocations.dealloc();
 		allocations = new_allocations;
+	}
+	bool past_watermark()
+	{
+		return allocations.size >= COLLECT_WATERMARK;
 	}
 
 	Allocator allocator = Allocator::construct(alloc, release);

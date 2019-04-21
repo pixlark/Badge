@@ -21,7 +21,7 @@
 #include "vm.cc"
 
 #define OUTPUT_BYTECODE false
-#define DEBUG false
+#define DEBUG_OUTPUT false
 
 void work_from_source(const char * path)
 {
@@ -105,11 +105,11 @@ void work_from_source(const char * path)
 	vm.init(&blocks, 0);
 	while (!vm.halted()) {
 		vm.step();
-		#if DEBUG
+		#if DEBUG_OUTPUT
 		vm.print_debug_info();
 		#endif
 	}
-	#if DEBUG
+	#if DEBUG_OUTPUT
 	vm.print_debug_info();
 	#endif
 	

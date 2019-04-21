@@ -341,9 +341,16 @@ struct VM {
 		}
 
 		#if COLLECTION
-		GC::unmark_all();
-		mark_reachable();
-		GC::free_unmarked();
+		do {
+			#if RELEASE
+			if (GC::past_watermark()) {
+				break;
+			}
+			#endif
+			GC::unmark_all();
+			mark_reachable();
+			GC::free_unmarked();
+		} while(0);
 		#endif
 	}
 	// TODO(pixlark): This function is a right mess. Clean this up at
