@@ -1,3 +1,4 @@
+let print = @builtin[print].
 let println = @builtin[println].
 let mod = @builtin[mod].
 
@@ -14,8 +15,12 @@ let loop = lambda (n, m) {
 	if n >= 50
 	then nothing
 	else {
-		println(n).
-		println(isprime(n)).
+		print(n).
+		print(" ").
+		if isprime(n)
+		then print("prime!")
+		else print("not prime").
+		println("").
 		loop(n + 1, m).
 	}.
 }.
