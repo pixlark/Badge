@@ -1,3 +1,5 @@
+#define TAIL_CALL_OPTIMIZATION true
+
 #include "includes.cc"
 #include "allocator.cc"
 #include "list.cc"

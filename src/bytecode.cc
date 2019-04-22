@@ -125,4 +125,10 @@ struct BC {
 		}
 		return builder.final_string();
 	}
+	bool no_interference_with_tail_calls()
+	{
+		return
+			kind == BC_NOP ||
+			kind == BC_EXIT_SCOPE;
+	}
 };
