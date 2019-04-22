@@ -1,13 +1,3 @@
 let println = @builtin[println].
 
-% while loop equivalent
-
-let N = 10.
-
-(lambda (n, m) if n == m
-			   then nothing
-			   else {
-			   		% do something N times
-					println("blah").
-					this(n + 1, m)
-			   })(0, N).
+println(this(1)).

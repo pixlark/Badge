@@ -343,6 +343,9 @@ struct VM {
 		} break;
 		case BC_THIS_FUNCTION: {
 			auto func = Value::create(TYPE_FUNCTION);
+			if (!frame->origin) {
+				fatal("Invalid use of this -- not in a function!");
+			}
 			func.ref_function = frame->origin;
 			push(func);
 		} break;
