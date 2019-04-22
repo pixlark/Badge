@@ -207,6 +207,9 @@ struct Compiler {
 				fatal("No such directive as '%s'", name);
 			}
 		} break;
+		case EXPR_THIS: {
+			push(BC::create(BC_THIS_FUNCTION));
+		} break;
 		}
 	}
 	void compile_stmt(Stmt * stmt)

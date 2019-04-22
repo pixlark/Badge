@@ -23,6 +23,7 @@ enum BC_Kind {
 	BC_CONSTRUCT_FUNCTION,
 	BC_POP_AND_CALL_FUNCTION,
 	BC_RETURN,
+	BC_THIS_FUNCTION,
 	// strings
 	BC_SYMBOL_TO_STRING,
 	// boolean
@@ -57,6 +58,7 @@ static const char * BC_Kind_names[] = {
 	"CONSTRUCT_FUNCTION",
 	"POP_AND_CALL_FUNCTION",
 	"RETURN",
+	"THIS_FUNCTION",
 	"SYMBOL_TO_STRING",
 	"AND",
 	"OR",

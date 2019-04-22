@@ -70,6 +70,7 @@ enum Expr_Kind {
 	EXPR_FUNCALL,
 	EXPR_IF,
 	EXPR_DIRECTIVE,
+	EXPR_THIS,
 };
 
 struct Expr_Unary {
@@ -168,6 +169,8 @@ struct Expr {
 			break;
 		case EXPR_DIRECTIVE:
 			directive.destroy();
+			break;
+		case EXPR_THIS:
 			break;
 		}
 	}

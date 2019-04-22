@@ -74,6 +74,11 @@ Expr * Parser::parse_atom()
 		advance();
 		return atom;
 	} break;
+	case TOKEN_THIS: {
+		auto atom = Expr::with_kind(EXPR_THIS);
+		advance();
+		return atom;
+	} break;
 	default:
 		fatal("Expected <int>, <symbol>; got %s", peek.to_string());
 	}

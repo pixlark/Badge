@@ -1,13 +1,17 @@
 struct Call_Frame {
+	Function * origin;
+	
 	Environment * environment;
 	size_t block_reference;
 	
 	BC * bytecode;
 	size_t bc_pointer;
 	size_t bc_length;
-	static Call_Frame * alloc(Blocks * blocks, size_t block_reference, Environment * closure)
+	static Call_Frame * alloc(Blocks * blocks, size_t block_reference,
+							  Function * origin, Environment * closure)
 	{
 		Call_Frame * frame = (Call_Frame*) GC::alloc(sizeof(Call_Frame));
+		frame->origin = origin;
 		frame->environment = Environment::alloc();
 		frame->environment->next_env = closure;
 		frame->block_reference = block_reference;
@@ -19,6 +23,10 @@ struct Call_Frame {
 	}
 	void gc_mark()
 	{
+		if (origin) {
+			GC::mark_opaque(origin);
+			origin->gc_mark();
+		}
 		if (!GC::is_marked_opaque(environment)) {
 			GC::mark_opaque(environment);
 			environment->gc_mark();
@@ -38,7 +46,7 @@ struct VM {
 		stack.alloc();
 		
 		call_stack.alloc();
-		call_stack.push(Call_Frame::alloc(blocks, block_reference, NULL));
+		call_stack.push(Call_Frame::alloc(blocks, block_reference, NULL, NULL));
 	}
 	void destroy()
 	{
@@ -297,7 +305,8 @@ struct VM {
 						  func->parameter_count,
 						  passed_arg_count.integer);
 				}
-				call_stack.push(Call_Frame::alloc(blocks, func->block_reference, func->closure));
+				call_stack.push(Call_Frame::alloc(blocks, func->block_reference,
+												  func, func->closure));
 			
 				// Create bindings to pushed arguments
 				for (int i = 0; i < passed_arg_count.integer; i++) {
@@ -309,6 +318,11 @@ struct VM {
 		case BC_RETURN: {
 			// WARNING: `frame` invalidated here! Don't use it!
 			return_function();
+		} break;
+		case BC_THIS_FUNCTION: {
+			auto func = Value::create(TYPE_FUNCTION);
+			func.ref_function = frame->origin;
+			push(func);
 		} break;
 		case BC_SYMBOL_TO_STRING: {
 			auto symbol = pop();

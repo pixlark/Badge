@@ -1,6 +1,10 @@
 struct String {
 	char * string;
 	size_t length;
+	void gc_mark()
+	{
+		GC::mark_opaque(string);
+	}
 };
 
 struct Function {
@@ -8,6 +12,14 @@ struct Function {
 	size_t parameter_count;
 	size_t block_reference;
 	Environment * closure;
+	void gc_mark()
+	{
+		GC::mark_opaque(parameters);
+		if (!GC::is_marked_opaque(closure)) {
+			GC::mark_opaque(closure);
+			closure->gc_mark();
+		}
+	}
 };
 
 struct Builtin {
@@ -50,15 +62,11 @@ void Value::gc_mark()
 		break;
 	case TYPE_STRING:
 		GC::mark_opaque(ref_string);
-		GC::mark_opaque(ref_string->string);
+		ref_string->gc_mark();
 		break;
 	case TYPE_FUNCTION:
 		GC::mark_opaque(ref_function);
-		GC::mark_opaque(ref_function->parameters);
-		if (!GC::is_marked_opaque(ref_function->closure)) {
-			GC::mark_opaque(ref_function->closure);
-			ref_function->closure->gc_mark();
-		}
+		ref_function->gc_mark();
 		break;
 	case TYPE_BUILTIN:
 		break;
