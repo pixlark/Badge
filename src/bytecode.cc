@@ -38,6 +38,7 @@ enum BC_Kind {
 	BC_EXIT_SCOPE,
 	// structs
 	BC_CONSTRUCT_CONSTRUCTOR,
+	BC_RESOLVE_FIELD,
 };
 
 static const char * BC_Kind_names[] = {
@@ -70,6 +71,7 @@ static const char * BC_Kind_names[] = {
 	"ENTER_SCOPE",
 	"EXIT_SCOPE",
 	"BC_CONSTRUCT_CONSTRUCTOR",
+	"BC_RESOLVE_FIELD",
 };
 
 struct BC {

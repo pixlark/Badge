@@ -242,6 +242,7 @@ Token Lexer::next_token()
 	case '{':
 	case '}':
 	case '@':
+	case '\'':
 		return Token::with_kind((Token_Kind) next());
 	case '=':
 		return Token::with_kind(read_double_token('=', '=', TOKEN_EQUAL));

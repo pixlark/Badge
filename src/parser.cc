@@ -21,6 +21,7 @@ struct Parser {
 	bool match(char c)        { return match((Token_Kind) c); }
 
 	Expr * parse_atom();
+	Expr * parse_field_access();
 	Expr * parse_function_call();
 	Expr * parse_multiply_divide();
 	Expr * parse_add_subtract();
@@ -86,11 +87,25 @@ Expr * Parser::parse_atom()
 	return NULL; // @linter
 }
 
-Expr * Parser::parse_function_call()
+Expr * Parser::parse_field_access()
 {
 	auto left = parse_atom();
+	while (match('\'')) {
+		auto expr = Expr::with_kind(EXPR_FIELD);
+		expr->field.left = left;
+		weak_expect(TOKEN_SYMBOL);
+		expr->field.right = peek.values.symbol;
+		advance();
+		left = expr;
+	}
+	return left;
+}
+
+Expr * Parser::parse_function_call()
+{
+	auto left = parse_field_access();
 	while (match('(')) {
-		Expr * expr = Expr::with_kind(EXPR_FUNCALL);
+		auto expr = Expr::with_kind(EXPR_FUNCALL);
 		expr->funcall.func = left;
 		expr->funcall.args.alloc();
 		while (true) {

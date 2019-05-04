@@ -1,0 +1,6 @@
+$$ "objects.bdg" out
+5
+4
+1
+$$ "objects-nonexistent.bdg" error
+$$ "objects-not-object.bdg" error

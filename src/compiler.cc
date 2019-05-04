@@ -217,6 +217,11 @@ struct Compiler {
 			push(BC::create(BC_LOAD_CONST, Value::raise(expr->struct_expr.fields.size)));
 			push(BC::create(BC_CONSTRUCT_CONSTRUCTOR));
 		} break;
+		case EXPR_FIELD: {
+			compile_expr(expr->field.left);
+			push(BC::create(BC_LOAD_CONST, Value::raise(expr->field.right)));
+			push(BC::create(BC_RESOLVE_FIELD));
+		} break;
 		}
 	}
 	void compile_stmt(Stmt * stmt)

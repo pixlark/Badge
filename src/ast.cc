@@ -72,6 +72,7 @@ enum Expr_Kind {
 	EXPR_DIRECTIVE,
 	EXPR_THIS,
 	EXPR_STRUCT,
+	EXPR_FIELD,
 };
 
 struct Expr_Unary {
@@ -124,6 +125,12 @@ struct Expr_Struct {
 	void destroy();
 };
 
+struct Expr_Field {
+	Expr * left;
+	Symbol right;
+	void destroy();
+};
+
 struct Expr {
 	Expr_Kind kind;
 	union {
@@ -138,6 +145,7 @@ struct Expr {
 		Expr_If if_expr;
 		Expr_Directive directive;
 		Expr_Struct struct_expr;
+		Expr_Field field;
 	};
 	static Expr * with_kind(Expr_Kind kind)
 	{
@@ -181,6 +189,9 @@ struct Expr {
 			break;
 		case EXPR_STRUCT:
 			struct_expr.destroy();
+			break;
+		case EXPR_FIELD:
+			field.destroy();
 			break;
 		}
 	}
@@ -267,6 +278,11 @@ void Expr_Directive::destroy()
 void Expr_Struct::destroy()
 {
 	fields.dealloc();
+}
+
+void Expr_Field::destroy()
+{
+	left->destroy();
 }
 
 /*

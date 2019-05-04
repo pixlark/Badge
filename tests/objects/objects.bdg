@@ -6,4 +6,6 @@ let f = lambda () {
 }.
 
 let obj = f().
+println(obj'a).
 println(obj'b).
+println(obj'c).
