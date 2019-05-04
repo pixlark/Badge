@@ -224,6 +224,11 @@ struct Compiler {
 			push(BC::create(BC_LOAD_CONST, Value::raise(expr->field.right)));
 			push(BC::create(BC_RESOLVE_FIELD));
 		} break;
+		case EXPR_LOOP: {
+			int jump_pos = bytecode.size;
+			compile_expr(expr->loop.body);
+			push(BC::create(BC_JUMP, jump_pos));
+		} break;
 		}
 	}
 	void compile_stmt(Stmt * stmt)

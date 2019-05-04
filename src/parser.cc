@@ -31,6 +31,7 @@ struct Parser {
 	Expr * parse_or();
 	List<Symbol> parse_symbol_list(Token_Kind open, Token_Kind close);
 	Expr * parse_lambda();
+	Expr * parse_loop();
 	Expr * parse_if();
 	Expr * parse_scope();
 	Expr * parse_directive();
@@ -261,6 +262,18 @@ Expr * Parser::parse_lambda()
 	}
 }
 
+Expr * Parser::parse_loop()
+{
+	if (match(TOKEN_LOOP)) {
+		auto body = parse_expr();
+		auto loop = Expr::with_kind(EXPR_LOOP);
+		loop->loop.body = body;
+		return loop;
+	} else {
+		return parse_lambda();
+	}
+}
+
 Expr * Parser::parse_if()
 {
 	if (match(TOKEN_IF)) {
@@ -279,7 +292,7 @@ Expr * Parser::parse_if()
 		}
 		return expr;
 	} else {
-		return parse_lambda();
+		return parse_loop();
 	}
 }
 

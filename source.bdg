@@ -1,12 +1,9 @@
+let print = @builtin[print].
 let println = @builtin[println].
 
-let f = lambda () {
-	let Constructor = @struct[a, b, c].
-	Constructor(5, 4, 1)
-}.
+% infinite loop
 
-let obj = f().
-println(obj'b).
-
-set obj'b = 12.
-println(obj'b).
+println(loop {
+  println("action").
+  break "boo!".
+}).
