@@ -9,3 +9,8 @@ let obj = f().
 println(obj'a).
 println(obj'b).
 println(obj'c).
+
+set obj'c = "foo".
+println(obj'a).
+println(obj'b).
+println(obj'c).

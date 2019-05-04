@@ -42,6 +42,9 @@ struct Object {
 	void gc_mark()
 	{
 		fields.gc_mark();
+		for (int i = 0; i < fields.values.size; i++) {
+			fields.values[i].gc_mark();
+		}
 	}
 };
 
