@@ -5,3 +5,12 @@ $$ "functions.bdg" out
 @[function]
 @[function]
 2
+$$ "complex-lambdas.bdg" out
+10
+10
+@[function]
+@[function]
+@[function]
+5
+@[function]
+nothing
