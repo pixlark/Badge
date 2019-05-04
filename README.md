@@ -75,10 +75,10 @@ let println = @builtin[println].
 println(12). % Outputs 12
 ```
 
-**Constructors and Objects** are a simple way to store information together. The special `struct` expression is used to create new constructors:
+**Constructors and Objects** are a simple way to store information together. The `@struct` directive is used to create new constructors:
 
 ```
-let Point = struct[x, y].
+let Point = @struct[x, y].
 ```
 
 Constructors are used to instantiate objects:
