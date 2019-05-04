@@ -28,7 +28,8 @@ struct Parser {
 	Expr * parse_equal_not_equal();
 	Expr * parse_and();
 	Expr * parse_or();
-	List<Symbol> parse_symbol_list();
+	List<Symbol> parse_symbol_list(Token_Kind open, Token_Kind close);
+	Expr * parse_struct();
 	Expr * parse_lambda();
 	Expr * parse_if();
 	Expr * parse_scope();
@@ -213,41 +214,48 @@ Expr * Parser::parse_or()
 	return left;
 }
 
-List<Symbol> Parser::parse_symbol_list()
+List<Symbol> Parser::parse_symbol_list(Token_Kind open, Token_Kind close)
 {
-	expect('(');
+	expect(open);
 	List<Symbol> list;
 	list.alloc();
 	while (true) {
-		if (match(')')) {
+		if (match(close)) {
 			break;
 		}
 		weak_expect(TOKEN_SYMBOL);
 		list.push(peek.values.symbol);
 		advance();
 		if (!match(',')) {
-			expect(')');
+			expect(close);
 			break;
 		}
 	}
 	return list;
 }
 
+Expr * Parser::parse_struct()
+{
+	if (match(TOKEN_STRUCT)) {
+		auto expr = Expr::with_kind(EXPR_STRUCT);
+		expr->struct_expr.fields = parse_symbol_list((Token_Kind) '[',
+													 (Token_Kind) ']');
+		return expr;
+	} else {
+		return parse_or();
+	}
+}
+
 Expr * Parser::parse_lambda()
 {
 	if (match(TOKEN_LAMBDA)) {
 		auto lambda = Expr::with_kind(EXPR_LAMBDA);
-		lambda->lambda.parameters = parse_symbol_list();
+		lambda->lambda.parameters = parse_symbol_list((Token_Kind) '(',
+													  (Token_Kind) ')');
 		lambda->lambda.body = parse_expr();
-		/*
-		expect('{');
-		lambda->lambda.body.alloc();
-		while (!match('}')) {
-			lambda->lambda.body.push(parse_stmt());
-			}*/
 		return lambda;
 	} else {
-		return parse_or();
+		return parse_struct();
 	}
 }
 

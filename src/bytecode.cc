@@ -36,6 +36,8 @@ enum BC_Kind {
 	// scoping
 	BC_ENTER_SCOPE,
 	BC_EXIT_SCOPE,
+	// structs
+	BC_CONSTRUCT_CONSTRUCTOR,
 };
 
 static const char * BC_Kind_names[] = {
@@ -67,6 +69,7 @@ static const char * BC_Kind_names[] = {
 	"POP_JUMP",
 	"ENTER_SCOPE",
 	"EXIT_SCOPE",
+	"BC_CONSTRUCT_CONSTRUCTOR",
 };
 
 struct BC {

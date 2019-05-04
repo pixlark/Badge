@@ -65,6 +65,18 @@ struct VM {
 	{
 		return stack.pop();
 	}
+	int pop_integer()
+	{
+		auto val = pop();
+		val.assert_is(TYPE_INTEGER);
+		return val.integer;
+	}
+	Symbol pop_symbol()
+	{
+		auto val = pop();
+		val.assert_is(TYPE_SYMBOL);
+		return val.symbol;
+	}
 	size_t top_offset()
 	{
 		return stack.size - 1;
@@ -171,21 +183,18 @@ struct VM {
 			push(bc.arg.value);
 		} break;
 		case BC_CREATE_BINDING: {
-			auto symbol = pop();
-			symbol.assert_is(TYPE_SYMBOL);
+			auto symbol = pop_symbol();
 			auto value = pop();
-			create_binding(symbol.symbol, value);
+			create_binding(symbol, value);
 		} break;
 		case BC_UPDATE_BINDING: {
-			auto symbol = pop();
-			symbol.assert_is(TYPE_SYMBOL);
+			auto symbol = pop_symbol();
 			auto value = pop();
-			frame->environment->update_binding(symbol.symbol, value);
+			frame->environment->update_binding(symbol, value);
 		} break;
 		case BC_RESOLVE_BINDING: {
-			auto symbol = pop();
-			symbol.assert_is(TYPE_SYMBOL);
-			auto value = resolve_binding(symbol.symbol);
+			auto symbol = pop_symbol();
+			auto value = resolve_binding(symbol);
 			push(value);
 		} break;
 		case BC_ADD: {
@@ -253,19 +262,17 @@ struct VM {
 			push(Value::raise_bool(!a.truthy()));
 		} break;
 		case BC_CONSTRUCT_FUNCTION: {
-			auto count = pop();
-			count.assert_is(TYPE_INTEGER);
+			auto count = pop_integer();
 			
 			Function * func = (Function*) GC::alloc(sizeof(Function));
 			func->block_reference = bc.arg.block_reference;
 
 			// Insert parameters
-			func->parameter_count = count.integer;
-			func->parameters = (Symbol*) GC::alloc(sizeof(Symbol) * count.integer);
-			for (int i = 0; i < count.integer; i++) {
-				auto it = pop();
-				it.assert_is(TYPE_SYMBOL);
-				func->parameters[count.integer - i - 1] = it.symbol;
+			func->parameter_count = count;
+			func->parameters = (Symbol*) GC::alloc(sizeof(Symbol) * count);
+			for (int i = 0; i < count; i++) {
+				auto it = pop_symbol();
+				func->parameters[count - i - 1] = it;
 			}
 
 			// Close over local environment
@@ -281,12 +288,11 @@ struct VM {
 			if (func_val.is(TYPE_BUILTIN)) {
 				// If this is a builtin function, override everything and just do a builtin call
 				auto builtin = func_val.builtin;
-				auto passed_arg_count = pop();
-				passed_arg_count.assert_is(TYPE_INTEGER);
-				if (passed_arg_count.integer != builtin->arg_count) {
+				auto passed_arg_count = pop_integer();
+				if (passed_arg_count != builtin->arg_count) {
 					fatal("Function takes %d arguments; was passed %d",
 						  builtin->arg_count,
-						  passed_arg_count.integer);
+						  passed_arg_count);
 				}
 				Value * args = (Value*) malloc(sizeof(Value) * builtin->arg_count);
 				for (int i = 0; i < builtin->arg_count; i++) {
@@ -294,16 +300,17 @@ struct VM {
 				}
 				push((builtin->funcptr)(args));
 				free(args);
+			} else if (func_val.is(TYPE_CONSTRUCTOR)) {
+				assert(false);
 			} else {
 				// Otherwise, this is a normal function
 				func_val.assert_is(TYPE_FUNCTION);
 				auto func = func_val.ref_function;
-				auto passed_arg_count = pop();
-				passed_arg_count.assert_is(TYPE_INTEGER);
-				if (passed_arg_count.integer != func->parameter_count) {
+				auto passed_arg_count = pop_integer();
+				if (passed_arg_count != func->parameter_count) {
 					fatal("Function takes %d arguments; was passed %d",
 						  func->parameter_count,
-						  passed_arg_count.integer);
+						  passed_arg_count);
 				}
 
 				#if TAIL_CALL_OPTIMIZATION
@@ -331,7 +338,7 @@ struct VM {
 												  func, func->closure));
 			
 				// Create bindings to pushed arguments
-				for (int i = 0; i < passed_arg_count.integer; i++) {
+				for (int i = 0; i < passed_arg_count; i++) {
 					auto value = pop();
 					create_binding(func->parameters[i], value);
 				}
@@ -350,12 +357,11 @@ struct VM {
 			push(func);
 		} break;
 		case BC_SYMBOL_TO_STRING: {
-			auto symbol = pop();
-			symbol.assert_is(TYPE_SYMBOL);
+			auto symbol = pop_symbol();
 			auto string = (String*) GC::alloc(sizeof(String));
-			string->length = strlen(symbol.symbol);
+			string->length = strlen(symbol);
 			string->string = (char*) GC::alloc(sizeof(char) * string->length);
-			strncpy(string->string, symbol.symbol, string->length);
+			strncpy(string->string, symbol, string->length);
 			auto value = Value::create(TYPE_STRING);
 			value.ref_string = string;
 			push(value);
@@ -376,6 +382,18 @@ struct VM {
 		} break;
 		case BC_EXIT_SCOPE: {
 			frame->environment = frame->environment->next_env;
+		} break;
+		case BC_CONSTRUCT_CONSTRUCTOR: {
+			auto count = pop_integer();
+			auto ctor = (Constructor*) GC::alloc(sizeof(Constructor));
+			ctor->fields = (Symbol*) GC::alloc(sizeof(Symbol) * count);
+			ctor->field_count = count;
+			for (int i = 0; i < count; i++) {
+				ctor->fields[i] = pop_symbol();
+			}
+			auto val = Value::create(TYPE_CONSTRUCTOR);
+			val.ref_constructor = ctor;
+			push(val);
 		} break;
 		}
 

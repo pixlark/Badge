@@ -30,7 +30,7 @@ void work_from_source(const char * path)
 	const char * source;
 	
 	if (strcmp(path, "-") == 0) {
-		// Read from stdinb
+		// Read from stdin
 		String_Builder builder;
 		const int chunk_size = 64;
 		char buf[chunk_size];

@@ -5,11 +5,13 @@ enum Type {
 	TYPE_STRING,
 	TYPE_FUNCTION,
 	TYPE_BUILTIN,
+	TYPE_CONSTRUCTOR,
 };
 
 struct String;
 struct Function;
 struct Builtin;
+struct Constructor;
 
 struct Value {
 	Type type;
@@ -19,6 +21,7 @@ struct Value {
 		String * ref_string;
 		Function * ref_function;
 		Builtin * builtin;
+		Constructor * ref_constructor;
 	};
 	static Value create(Type type)
 	{

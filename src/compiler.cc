@@ -210,6 +210,13 @@ struct Compiler {
 		case EXPR_THIS: {
 			push(BC::create(BC_THIS_FUNCTION));
 		} break;
+		case EXPR_STRUCT: {
+			for (int i = expr->struct_expr.fields.size - 1; i >= 0; i--) {
+				push(BC::create(BC_LOAD_CONST, Value::raise(expr->struct_expr.fields[i])));
+			}
+			push(BC::create(BC_LOAD_CONST, Value::raise(expr->struct_expr.fields.size)));
+			push(BC::create(BC_CONSTRUCT_CONSTRUCTOR));
+		} break;
 		}
 	}
 	void compile_stmt(Stmt * stmt)

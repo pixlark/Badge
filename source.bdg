@@ -1,3 +1,5 @@
 let println = @builtin[println].
 
-println(this(1)).
+let Constructor = struct[a, b, c].
+%let instance = Constructor(1, 2, 3).
+println(Constructor).

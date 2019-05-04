@@ -28,6 +28,15 @@ struct Builtin {
 	Value(*funcptr)(Value *);
 };
 
+struct Constructor {
+	Symbol * fields;
+	size_t field_count;
+	void gc_mark()
+	{
+		GC::mark_opaque(fields);
+	}
+};
+
 char * Value::to_string()
 {
 	switch (type) {
@@ -47,6 +56,8 @@ char * Value::to_string()
 		return strdup("@[function]");
 	case TYPE_BUILTIN:
 		return strdup("@[builtin]");
+	case TYPE_CONSTRUCTOR:
+		return strdup("@[constructor]");
 	}
 	assert(false); // @linter
 }
@@ -69,6 +80,10 @@ void Value::gc_mark()
 		ref_function->gc_mark();
 		break;
 	case TYPE_BUILTIN:
+		break;
+	case TYPE_CONSTRUCTOR:
+		GC::mark_opaque(ref_constructor);
+		ref_constructor->gc_mark();
 		break;
 	}
 }
@@ -151,6 +166,8 @@ bool Value::equal(Value a, Value b)
 		return a.ref_function == b.ref_function;
 	case TYPE_BUILTIN:
 		return a.builtin == b.builtin;
+	case TYPE_CONSTRUCTOR:
+		return a.ref_constructor == b.ref_constructor;
 	}
 	assert(false); // @linter
 }
