@@ -16,7 +16,8 @@ struct Stmt_Let {
 };
 
 struct Stmt_Set {
-	Symbol left;
+	//Symbol left;
+	Expr * left;
 	Expr * right;
 	void destroy();
 };

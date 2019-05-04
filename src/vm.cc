@@ -427,6 +427,19 @@ struct VM {
 			auto resolved = obj->fields.lookup(symbol);
 			push(resolved);
 		} break;
+		case BC_UPDATE_FIELD: {
+			auto symbol = pop_symbol();
+			auto obj_val = pop();
+			if (!obj_val.is(TYPE_OBJECT)) {
+				fatal("Cannot access field of non-object");
+			}
+			auto obj = obj_val.ref_object;
+			if (!obj->fields.bound(symbol)) {
+				fatal("No such field %s on object", symbol);
+			}
+			auto val = pop();
+			obj->fields.update(symbol, val);
+		} break;
 		}
 
 		#if COLLECTION

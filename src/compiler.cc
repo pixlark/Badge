@@ -235,12 +235,28 @@ struct Compiler {
 							Value::raise(stmt->let.left)));
 			push(BC::create(BC_CREATE_BINDING));
 			break;
-		case STMT_SET:
+		case STMT_SET: {
 			compile_expr(stmt->set.right);
-			push(BC::create(BC_LOAD_CONST,
-							Value::raise(stmt->set.left)));
-			push(BC::create(BC_UPDATE_BINDING));
-			break;
+			// Deal with l-expr
+			auto left = stmt->set.left;
+			switch (left->kind) {
+			case EXPR_VARIABLE:
+				// Simple variable binding
+				push(BC::create(BC_LOAD_CONST,
+								Value::raise(left->variable)));
+				push(BC::create(BC_UPDATE_BINDING));
+				break;
+			case EXPR_FIELD:
+				// Field of an object
+				compile_expr(left->field.left);
+				push(BC::create(BC_LOAD_CONST,
+								Value::raise(left->field.right)));
+				push(BC::create(BC_UPDATE_FIELD));
+				break;
+			default:
+				fatal("Invalid l-expression");
+			}
+		} break;
 		case STMT_RETURN:
 			compile_expr(stmt->_return.expr);
 			push(BC::create(BC_RETURN));

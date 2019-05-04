@@ -355,8 +355,9 @@ Stmt * Parser::parse_set()
 	advance();
 	
 	weak_expect(TOKEN_SYMBOL);
-	stmt->set.left = peek.values.symbol;
-	advance();
+	//stmt->set.left = peek.values.symbol;
+	stmt->set.left = parse_expr();
+	//advance();
 
 	expect('=');
 
