@@ -20,3 +20,4 @@ char * itoa(int integer)
 	return buf;
 }
 
+bool int_comparator(int a, int b) { return a == b; }

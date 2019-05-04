@@ -1,3 +1,9 @@
+struct Builtin {
+	Symbol name;
+	size_t arg_count;
+	Value(*funcptr)(Value *);
+};
+
 struct String {
 	char * string;
 	size_t length;
@@ -22,18 +28,20 @@ struct Function {
 	}
 };
 
-struct Builtin {
-	Symbol name;
-	size_t arg_count;
-	Value(*funcptr)(Value *);
-};
-
 struct Constructor {
 	Symbol * fields;
 	size_t field_count;
 	void gc_mark()
 	{
 		GC::mark_opaque(fields);
+	}
+};
+
+struct Object {
+	GC_Map<Symbol, Value> fields;
+	void gc_mark()
+	{
+		fields.gc_mark();
 	}
 };
 
@@ -58,6 +66,8 @@ char * Value::to_string()
 		return strdup("@[builtin]");
 	case TYPE_CONSTRUCTOR:
 		return strdup("@[constructor]");
+	case TYPE_OBJECT:
+		return strdup("@[object]");
 	}
 	assert(false); // @linter
 }
@@ -84,6 +94,10 @@ void Value::gc_mark()
 	case TYPE_CONSTRUCTOR:
 		GC::mark_opaque(ref_constructor);
 		ref_constructor->gc_mark();
+		break;
+	case TYPE_OBJECT:
+		GC::mark_opaque(ref_object);
+		ref_object->gc_mark();
 		break;
 	}
 }
@@ -168,6 +182,8 @@ bool Value::equal(Value a, Value b)
 		return a.builtin == b.builtin;
 	case TYPE_CONSTRUCTOR:
 		return a.ref_constructor == b.ref_constructor;
+	case TYPE_OBJECT:
+		return a.ref_object == b.ref_object;
 	}
 	assert(false); // @linter
 }

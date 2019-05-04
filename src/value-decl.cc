@@ -2,26 +2,29 @@ enum Type {
 	TYPE_NOTHING,
 	TYPE_INTEGER,
 	TYPE_SYMBOL,
+	TYPE_BUILTIN,
 	TYPE_STRING,
 	TYPE_FUNCTION,
-	TYPE_BUILTIN,
 	TYPE_CONSTRUCTOR,
+	TYPE_OBJECT,
 };
 
+struct Builtin;
 struct String;
 struct Function;
-struct Builtin;
 struct Constructor;
+struct Object;
 
 struct Value {
 	Type type;
 	union {
 		int integer;
 		Symbol symbol;
+		Builtin * builtin;
 		String * ref_string;
 		Function * ref_function;
-		Builtin * builtin;
 		Constructor * ref_constructor;
+		Object * ref_object;
 	};
 	static Value create(Type type)
 	{

@@ -301,7 +301,26 @@ struct VM {
 				push((builtin->funcptr)(args));
 				free(args);
 			} else if (func_val.is(TYPE_CONSTRUCTOR)) {
-				assert(false);
+				auto ctor = func_val.ref_constructor;
+				auto object = (Object*) GC::alloc(sizeof(Object));
+				object->fields.alloc(symbol_comparator);
+
+				auto passed_arg_count = pop_integer();
+				if (passed_arg_count != ctor->field_count) {
+					fatal("Constructor has %d fields; was passed %d",
+						  ctor->field_count,
+						  passed_arg_count);
+				}
+
+				for (int i = 0; i < ctor->field_count; i++) {
+					auto val = pop();
+					auto symbol = ctor->fields[i];
+					object->fields.add(symbol, val);
+				}
+
+				auto val = Value::create(TYPE_OBJECT);
+				val.ref_object = object;
+				push(val);
 			} else {
 				// Otherwise, this is a normal function
 				func_val.assert_is(TYPE_FUNCTION);

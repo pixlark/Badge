@@ -135,7 +135,7 @@ int main(int argc, char ** argv)
 	Builtins::init();
 	
 	work_from_source(argv[1]);
-
+	
 	Builtins::destroy();
 	GC::destroy();
 	Intern::destroy();

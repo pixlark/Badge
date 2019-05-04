@@ -24,3 +24,7 @@ namespace Intern {
 		return interns[interns.size - 1];
 	}
 }
+
+bool symbol_comparator(Symbol a, Symbol b) {
+	return a == b;
+}
