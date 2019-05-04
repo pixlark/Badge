@@ -74,3 +74,22 @@ Built-in functions that can't be expressed in terms of pure Badge are imported u
 let println = @builtin[println].
 println(12). % Outputs 12
 ```
+
+**Constructors and Objects** are a simple way to store information together. The special `struct` expression is used to create new constructors:
+
+```
+let Point = struct[x, y].
+```
+
+Constructors are used to instantiate objects:
+
+```
+let p = Point(1, 2).
+```
+
+And finally, the `'` operator is used to access the fields of an object:
+
+```
+println(p'x).
+println(p'y).
+```
