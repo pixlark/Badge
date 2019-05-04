@@ -1,7 +1,7 @@
 let println = @builtin[println].
 
 let f = lambda () {
-	let Constructor = struct[a, b, c].
+	let Constructor = @struct[a, b, c].
 	Constructor(5, 4, 1)
 }.
 

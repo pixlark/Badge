@@ -71,7 +71,6 @@ enum Expr_Kind {
 	EXPR_IF,
 	EXPR_DIRECTIVE,
 	EXPR_THIS,
-	EXPR_STRUCT,
 	EXPR_FIELD,
 };
 
@@ -144,7 +143,6 @@ struct Expr {
 		Expr_Funcall funcall;
 		Expr_If if_expr;
 		Expr_Directive directive;
-		Expr_Struct struct_expr;
 		Expr_Field field;
 	};
 	static Expr * with_kind(Expr_Kind kind)
@@ -186,9 +184,6 @@ struct Expr {
 			directive.destroy();
 			break;
 		case EXPR_THIS:
-			break;
-		case EXPR_STRUCT:
-			struct_expr.destroy();
 			break;
 		case EXPR_FIELD:
 			field.destroy();
@@ -273,11 +268,6 @@ void Expr_Directive::destroy()
 		free(arguments[i]);
 	}
 	arguments.dealloc();
-}
-
-void Expr_Struct::destroy()
-{
-	fields.dealloc();
 }
 
 void Expr_Field::destroy()

@@ -30,7 +30,6 @@ struct Parser {
 	Expr * parse_and();
 	Expr * parse_or();
 	List<Symbol> parse_symbol_list(Token_Kind open, Token_Kind close);
-	Expr * parse_struct();
 	Expr * parse_lambda();
 	Expr * parse_if();
 	Expr * parse_scope();
@@ -249,18 +248,6 @@ List<Symbol> Parser::parse_symbol_list(Token_Kind open, Token_Kind close)
 	return list;
 }
 
-Expr * Parser::parse_struct()
-{
-	if (match(TOKEN_STRUCT)) {
-		auto expr = Expr::with_kind(EXPR_STRUCT);
-		expr->struct_expr.fields = parse_symbol_list((Token_Kind) '[',
-													 (Token_Kind) ']');
-		return expr;
-	} else {
-		return parse_or();
-	}
-}
-
 Expr * Parser::parse_lambda()
 {
 	if (match(TOKEN_LAMBDA)) {
@@ -270,7 +257,7 @@ Expr * Parser::parse_lambda()
 		lambda->lambda.body = parse_expr();
 		return lambda;
 	} else {
-		return parse_struct();
+		return parse_or();
 	}
 }
 

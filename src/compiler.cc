@@ -178,11 +178,9 @@ struct Compiler {
 		} break;
 		case EXPR_DIRECTIVE: {
 			auto name = expr->directive.name;
-			/*
-			 * @builtin directive
-			 */
+			auto args = expr->directive.arguments;
 			if (name == Intern::intern("builtin")) {
-				auto args = expr->directive.arguments;
+				// @builtin directive
 				if (args.size != 1) {
 					fatal("@builtin directive expects one argument");
 				}
@@ -197,11 +195,22 @@ struct Compiler {
 					fatal("@builtin directive expects constant symbol");
 				}
 				auto builtin_symbol = args[0]->variable;
-				// FFI binding
+				// Builtin binding
 				auto builtin = Builtins::get_builtin(builtin_symbol);
 				Value value = Value::create(TYPE_BUILTIN);
 				value.builtin = builtin;
 				push(BC::create(BC_LOAD_CONST, value));
+			} else if (name == Intern::intern("struct")) {
+				// @struct directive
+				auto args = expr->directive.arguments;
+				for (int i = args.size - 1; i >= 0; i--) {
+					if (args[i]->kind != EXPR_VARIABLE) {
+						fatal("@struct directive expects constant symbols");
+					}
+					push(BC::create(BC_LOAD_CONST, Value::raise(args[i]->variable)));
+				}
+				push(BC::create(BC_LOAD_CONST, Value::raise(args.size)));
+				push(BC::create(BC_CONSTRUCT_CONSTRUCTOR));
 			} else {
 				// No such directive
 				fatal("No such directive as '%s'", name);
@@ -209,13 +218,6 @@ struct Compiler {
 		} break;
 		case EXPR_THIS: {
 			push(BC::create(BC_THIS_FUNCTION));
-		} break;
-		case EXPR_STRUCT: {
-			for (int i = expr->struct_expr.fields.size - 1; i >= 0; i--) {
-				push(BC::create(BC_LOAD_CONST, Value::raise(expr->struct_expr.fields[i])));
-			}
-			push(BC::create(BC_LOAD_CONST, Value::raise(expr->struct_expr.fields.size)));
-			push(BC::create(BC_CONSTRUCT_CONSTRUCTOR));
 		} break;
 		case EXPR_FIELD: {
 			compile_expr(expr->field.left);

@@ -1,2 +1,2 @@
-let c = struct[a].
+let c = @struct[a].
 c'x.
