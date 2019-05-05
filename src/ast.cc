@@ -269,9 +269,11 @@ void Expr_If::destroy()
 		free(expressions[i]);
 	}
 	expressions.dealloc();
-	
-	else_expr->destroy();
-	free(else_expr);
+
+	if (else_expr) {
+		else_expr->destroy();
+		free(else_expr);
+	}
 }
 
 void Expr_Directive::destroy()
