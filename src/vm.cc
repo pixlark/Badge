@@ -449,6 +449,9 @@ struct VM {
 			body_stack.push(bc.arg.integer);
 		} break;
 		case BC_BREAK_BODY: {
+			if (body_stack.size == 0) {
+				fatal("Nothing to break out of");
+			}
 			int exit_pos = body_stack.pop();
 			frame->bc_pointer = exit_pos;
 		} break;
