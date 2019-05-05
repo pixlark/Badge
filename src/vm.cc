@@ -208,7 +208,9 @@ struct VM {
 		case BC_UPDATE_BINDING: {
 			auto symbol = pop_symbol();
 			auto value = pop();
-			frame->environment->update_binding(symbol, value);
+			if (!frame->environment->update_binding(symbol, value)) {
+				error("Tried to set unbound variable '%s'", symbol);
+			}
 		} break;
 		case BC_RESOLVE_BINDING: {
 			auto symbol = pop_symbol();
