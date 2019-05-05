@@ -1,3 +1,4 @@
 $$ "various-loops.bdg" out
 5
 89 144
+$$ "bad-break.bdg" error

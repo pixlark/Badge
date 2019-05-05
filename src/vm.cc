@@ -64,6 +64,8 @@ struct VM {
 	void destroy()
 	{
 		stack.dealloc();
+		// The call stack should be empty if we're destructing
+		assert(call_stack.size == 0);
 		call_stack.dealloc();
 	}
 	bool halted()
@@ -107,6 +109,7 @@ struct VM {
 	{
 		auto frame = call_stack.pop();
 		frame->destroy();
+		free(frame);
 	}
 	Call_Frame * frame_reference()
 	{
@@ -153,17 +156,11 @@ struct VM {
 			
 			// If our call frame has come to an implicit end
 			while (frame->bc_pointer >= frame->bc_length) {
-				// HACK: If we're exiting from global scope, push a
-				// dummy value to appease the assert up ahead.
 				if (call_stack.size == 1) {
-					push(Value::nothing());
+					assert(stack.size == 0);
+				} else {
+					assert(stack.size > 0);
 				}
-				
-				// There should *always* be something pushed to the stack
-				// at this point, because lambda bodies are expressions,
-				// and expressions always terminate with a value having
-				// been pushed to the stack.
-				assert(stack.size > 0);
 
 				return_function();
 				

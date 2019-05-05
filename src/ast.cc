@@ -288,11 +288,13 @@ void Expr_Directive::destroy()
 void Expr_Field::destroy()
 {
 	left->destroy();
+	free(left);
 }
 
 void Expr_Loop::destroy()
 {
 	body->destroy();
+	free(body);
 }
 
 /*
