@@ -40,6 +40,9 @@ enum BC_Kind {
 	BC_CONSTRUCT_CONSTRUCTOR,
 	BC_RESOLVE_FIELD,
 	BC_UPDATE_FIELD,
+	// bodies
+	BC_PUSH_BODY,
+	BC_BREAK_BODY,
 };
 
 static const char * BC_Kind_names[] = {
@@ -74,6 +77,8 @@ static const char * BC_Kind_names[] = {
 	"BC_CONSTRUCT_CONSTRUCTOR",
 	"BC_RESOLVE_FIELD",
 	"BC_UPDATE_FIELD",
+	"BC_PUSH_BODY",
+	"BC_BREAK_BODY",
 };
 
 struct BC {

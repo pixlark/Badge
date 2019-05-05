@@ -7,6 +7,7 @@ enum Stmt_Kind {
 	STMT_SET,
 	STMT_RETURN,
 	STMT_EXPR,
+	STMT_BREAK,
 };
 
 struct Stmt_Let {
@@ -34,6 +35,7 @@ struct Stmt {
 		Stmt_Set set;
 		Stmt_Return _return;
 		Expr * expr;
+		Expr * _break;
 	};
 	static Stmt * with_kind(Stmt_Kind kind);
 	void destroy();
@@ -341,5 +343,8 @@ void Stmt::destroy()
 		expr->destroy();
 		free(expr);
 		break;
+	case STMT_BREAK:
+		_break->destroy();
+		free(_break);
 	}
 }

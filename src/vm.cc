@@ -7,6 +7,7 @@ struct Call_Frame {
 	BC * bytecode;
 	size_t bc_pointer;
 	size_t bc_length;
+	
 	static Call_Frame * alloc(Blocks * blocks, size_t block_reference,
 							  Function * origin, Environment * closure)
 	{
@@ -19,6 +20,7 @@ struct Call_Frame {
 		frame->bytecode = blocks->retrieve_block(block_reference);
 		frame->bc_pointer = 0;
 		frame->bc_length = blocks->size_block(block_reference);
+
 		return frame;
 	}
 	void gc_mark()
@@ -38,6 +40,7 @@ struct VM {
 	Blocks * blocks;
 	List<Value> stack;
 	List<Call_Frame*> call_stack;
+	List<int> body_stack;
 	
 	void init(Blocks * blocks, size_t block_reference)
 	{
@@ -47,6 +50,8 @@ struct VM {
 		
 		call_stack.alloc();
 		call_stack.push(Call_Frame::alloc(blocks, block_reference, NULL, NULL));
+
+		body_stack.alloc();
 	}
 	void destroy()
 	{
@@ -439,6 +444,13 @@ struct VM {
 			}
 			auto val = pop();
 			obj->fields.update(symbol, val);
+		} break;
+		case BC_PUSH_BODY: {
+			body_stack.push(bc.arg.integer);
+		} break;
+		case BC_BREAK_BODY: {
+			int exit_pos = body_stack.pop();
+			frame->bc_pointer = exit_pos;
 		} break;
 		}
 

@@ -1,9 +1,11 @@
 let print = @builtin[print].
 let println = @builtin[println].
 
-% infinite loop
-
-println(loop {
-  println("action").
-  break "boo!".
-}).
+let z = 2.
+let x = loop {
+	if z == 5 then {
+		break z.
+	} else nothing. % todo: fix bug with no else statement
+	set z = z + 1.
+}.
+println(x).

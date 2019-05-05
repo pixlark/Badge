@@ -225,9 +225,14 @@ struct Compiler {
 			push(BC::create(BC_RESOLVE_FIELD));
 		} break;
 		case EXPR_LOOP: {
+			int push_body_pos = bytecode.size;
+			push(BC::create(BC_PUSH_BODY));
 			int jump_pos = bytecode.size;
 			compile_expr(expr->loop.body);
 			push(BC::create(BC_JUMP, jump_pos));
+			int exit_pos = bytecode.size;
+			push(BC::create(BC_NOP));
+			bytecode[push_body_pos].arg.integer = exit_pos;
 		} break;
 		}
 	}
@@ -269,6 +274,10 @@ struct Compiler {
 		case STMT_EXPR:
 			compile_expr(stmt->expr);
 			push(BC::create(BC_POP_AND_DISCARD));
+			break;
+		case STMT_BREAK:
+			compile_expr(stmt->expr);
+			push(BC::create(BC_BREAK_BODY));
 			break;
 		}
 	}

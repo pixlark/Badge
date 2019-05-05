@@ -21,6 +21,7 @@ enum Token_Kind {
 	TOKEN_ELSE,
 	TOKEN_THIS,
 	TOKEN_LOOP,
+	TOKEN_BREAK,
 	
 	TOKEN_SYMBOL,
 	TOKEN_INTEGER_LITERAL,
@@ -34,7 +35,7 @@ enum Token_Kind {
 static const char * reserved_words[RESERVED_WORDS_COUNT] = {
 	"let", "set", "lambda", "return",
 	"nothing", "or", "and", "if", "then", "elif",
-	"else", "this", "loop",
+	"else", "this", "loop", "break",
 };
 
 struct Token {

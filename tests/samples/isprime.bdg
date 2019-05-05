@@ -11,7 +11,7 @@ let isprime = lambda (n) {
 	helper(n, 2)
 }.
 
-let loop = lambda (n, m) {
+(lambda (n, m) {
 	if n >= 50
 	then nothing
 	else {
@@ -21,8 +21,6 @@ let loop = lambda (n, m) {
 		then print("prime!")
 		else print("not prime").
 		println("").
-		loop(n + 1, m).
+		this(n + 1, m).
 	}.
-}.
-
-loop(2, 50).
+})(2, 50).

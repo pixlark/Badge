@@ -40,6 +40,7 @@ struct Parser {
 	Stmt * parse_let();
 	Stmt * parse_set();
 	Stmt * parse_return();
+	Stmt * parse_break();
 	Stmt * parse_stmt();
 };
 
@@ -387,6 +388,14 @@ Stmt * Parser::parse_return()
 	return stmt;	
 }
 
+Stmt * Parser::parse_break()
+{
+	expect(TOKEN_BREAK);
+	auto stmt = Stmt::with_kind(STMT_BREAK);
+	stmt->_break = parse_expr();
+	return stmt;
+}
+
 Stmt * Parser::parse_stmt()
 {
 	Stmt * stmt;
@@ -396,11 +405,12 @@ Stmt * Parser::parse_stmt()
 		stmt = parse_set();
 	} else if (is(TOKEN_RETURN)) {
 		stmt = parse_return();
+	} else if (is(TOKEN_BREAK)) {
+		stmt = parse_break();
 	} else {
 		stmt = Stmt::with_kind(STMT_EXPR);
 		stmt->expr = parse_expr();
 	}
-	//expect('.');
 	return stmt;
 }
 
