@@ -310,6 +310,8 @@ void Stmt_Let::destroy()
 
 void Stmt_Set::destroy()
 {
+	left->destroy();
+	free(left);
 	right->destroy();
 	free(right);
 }
