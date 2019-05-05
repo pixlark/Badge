@@ -7,11 +7,17 @@ struct Call_Frame {
 	BC * bytecode;
 	size_t bc_pointer;
 	size_t bc_length;
-	
+
+	List<int> body_stack;
+	/* A note on allocation:
+	 *  Call frames themselves are managed manually through
+	 *  malloc/free. However, some components need to be garbage
+	 *  collected. These are marked with the gc_mark function.
+	 */
 	static Call_Frame * alloc(Blocks * blocks, size_t block_reference,
 							  Function * origin, Environment * closure)
 	{
-		Call_Frame * frame = (Call_Frame*) GC::alloc(sizeof(Call_Frame));
+		Call_Frame * frame = (Call_Frame*) malloc(sizeof(Call_Frame));
 		frame->origin = origin;
 		frame->environment = Environment::alloc();
 		frame->environment->next_env = closure;
@@ -21,6 +27,7 @@ struct Call_Frame {
 		frame->bc_pointer = 0;
 		frame->bc_length = blocks->size_block(block_reference);
 
+		frame->body_stack.alloc();
 		return frame;
 	}
 	void gc_mark()
@@ -34,13 +41,16 @@ struct Call_Frame {
 			environment->gc_mark();
 		}
 	}
+	void destroy()
+	{
+		body_stack.dealloc();
+	}
 };
 
 struct VM {
 	Blocks * blocks;
 	List<Value> stack;
 	List<Call_Frame*> call_stack;
-	List<int> body_stack;
 	
 	void init(Blocks * blocks, size_t block_reference)
 	{
@@ -50,8 +60,6 @@ struct VM {
 		
 		call_stack.alloc();
 		call_stack.push(Call_Frame::alloc(blocks, block_reference, NULL, NULL));
-
-		body_stack.alloc();
 	}
 	void destroy()
 	{
@@ -89,7 +97,6 @@ struct VM {
 	void mark_reachable()
 	{
 		for (int i = 0; i < call_stack.size; i++) {
-			GC::mark_opaque(call_stack[i]);
 			call_stack[i]->gc_mark();
 		}
 		for (int i = 0; i < stack.size; i++) {
@@ -98,7 +105,8 @@ struct VM {
 	}
 	void return_function()
 	{
-		call_stack.pop();
+		auto frame = call_stack.pop();
+		frame->destroy();
 	}
 	Call_Frame * frame_reference()
 	{
@@ -446,13 +454,13 @@ struct VM {
 			obj->fields.update(symbol, val);
 		} break;
 		case BC_PUSH_BODY: {
-			body_stack.push(bc.arg.integer);
+			frame->body_stack.push(bc.arg.integer);
 		} break;
 		case BC_BREAK_BODY: {
-			if (body_stack.size == 0) {
+			if (frame->body_stack.size == 0) {
 				fatal("Nothing to break out of");
 			}
-			int exit_pos = body_stack.pop();
+			int exit_pos = frame->body_stack.pop();
 			frame->bc_pointer = exit_pos;
 		} break;
 		}
@@ -533,6 +541,13 @@ struct VM {
 				printf("      .\n");
 			}
 		}
+		/*
+		printf(".............\n");
+		printf("Bodies: ");
+		for (int i = 0; i < body_stack.size; i++) {
+			printf("%d ", body_stack[i]);
+		}
+		printf("\n");*/
 		printf("-------------\n\n");
 	}
 };

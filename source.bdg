@@ -1,4 +1,10 @@
 let print = @builtin[print].
 let println = @builtin[println].
 
-break 5.
+let f = lambda () {
+	break 5.
+}.
+
+println(loop {
+	f().
+}).
