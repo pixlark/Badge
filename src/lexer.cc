@@ -40,17 +40,12 @@ static const char * reserved_words[RESERVED_WORDS_COUNT] = {
 
 struct Token {
 	Token_Kind kind;
+	Assoc assoc;
 	union {
 		int integer;
 		Symbol symbol;
 		Symbol string; // String literals are technically symbols
 	} values;
-	static Token eof()
-	{
-		Token token;
-		token.kind = TOKEN_EOF;
-		return token;
-	}
 	static Token with_kind(Token_Kind type)
 	{
 		Token token;
@@ -118,6 +113,7 @@ struct Lexer {
 	size_t source_length;
 	size_t cursor;
 	size_t line;
+	Token create_token(Token_Kind kind);
 	void init(const char * source);
 	char next();
 	char peek();
@@ -125,6 +121,13 @@ struct Lexer {
 	Token next_token();
 	Token_Kind read_double_token(char left, char right, Token_Kind double_type);
 };
+
+Token Lexer::create_token(Token_Kind kind)
+{
+	auto token = Token::with_kind(kind);
+	token.assoc = (Assoc) { source, source_length, cursor };
+	return token;
+}
 
 void Lexer::init(const char * source)
 {
@@ -164,7 +167,9 @@ Token Lexer::next_token()
 {
  reset:
 	if (peek() == '\0') {
-		return Token::eof();
+		Token token = create_token(TOKEN_EOF);
+		token.assoc.position -= 1; // Offset position since EOF is past the end of file
+		return token;
 	}
 	
 	if (isspace(peek())) {
@@ -190,8 +195,7 @@ Token Lexer::next_token()
 		buf[i++] = '\0';
 		advance();
 		
-		Token token;
-		token.kind = TOKEN_STRING_LITERAL;
+		Token token = create_token(TOKEN_STRING_LITERAL);
 		token.values.string = Intern::intern(buf); // string literals are technically symbols
 		return token;
 	}
@@ -207,12 +211,12 @@ Token Lexer::next_token()
 
 		for (int i = 0; i < RESERVED_WORDS_COUNT; i++) {
 			if (strcmp(buf, reserved_words[i]) == 0) {
-				return Token::with_kind((Token_Kind) (RESERVED_WORDS_BEGIN + i));
+				return create_token((Token_Kind) (RESERVED_WORDS_BEGIN + i));
+				//return Token::with_kind((Token_Kind) (RESERVED_WORDS_BEGIN + i));
 			}
 		}
 		
-		Token token;
-		token.kind = TOKEN_SYMBOL;
+		Token token = create_token(TOKEN_SYMBOL);
 		token.values.symbol = Intern::intern(buf);
 		return token;
 	}
@@ -225,8 +229,7 @@ Token Lexer::next_token()
 			buf[i++] = next();
 		}
 		buf[i++] = '\0';
-		Token token;
-		token.kind = TOKEN_INTEGER_LITERAL;
+		Token token = create_token(TOKEN_INTEGER_LITERAL);
 		token.values.integer = strtol(buf, NULL, 10);
 		return token;
 	}
@@ -244,17 +247,18 @@ Token Lexer::next_token()
 	case '}':
 	case '@':
 	case '\'':
-		return Token::with_kind((Token_Kind) next());
+		return create_token((Token_Kind) next());
+		//return Token::with_kind((Token_Kind) next());
 	case '=':
-		return Token::with_kind(read_double_token('=', '=', TOKEN_EQUAL));
+		return create_token(read_double_token('=', '=', TOKEN_EQUAL));
 	case '!':
-		return Token::with_kind(read_double_token('!', '=', TOKEN_NOT_EQUAL));
+		return create_token(read_double_token('!', '=', TOKEN_NOT_EQUAL));
 	case '>':
-		return Token::with_kind(read_double_token('>', '=', TOKEN_GTE));
+		return create_token(read_double_token('>', '=', TOKEN_GTE));
 	case '<':
-		return Token::with_kind(read_double_token('<', '=', TOKEN_LTE));
+		return create_token(read_double_token('<', '=', TOKEN_LTE));
 	case ']':
-		return Token::with_kind((Token_Kind) next());
+		return create_token((Token_Kind) next());
 	case '[':
 		advance();
 		if (peek() == '-') {
@@ -274,10 +278,12 @@ Token Lexer::next_token()
 			}
 			goto reset;
 		} else {
-			return Token::with_kind((Token_Kind) '[');
+			return create_token((Token_Kind) '[');
+			//return Token::with_kind((Token_Kind) '[');
 		}
 	default:
-		fatal("Line %d\nMisplaced character %c (%d)", line, peek(), peek());
+		fatal_assoc((Assoc) { source, source_length, cursor },
+					"Line %d\nMisplaced character %c (%d)", line, peek(), peek());
 		/*
 	case ';':
 		return Token::with_kind(read_double_token(';', ';', TOKEN_DOUBLE_SEMICOLON));*/

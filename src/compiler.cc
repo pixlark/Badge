@@ -182,7 +182,7 @@ struct Compiler {
 			if (name == Intern::intern("builtin")) {
 				// @builtin directive
 				if (args.size != 1) {
-					fatal("@builtin directive expects one argument");
+					fatal_assoc(expr->assoc, "@builtin directive expects one argument");
 				}
 				// TODO(pixlark): This is a little bit hacky because
 				// it's not really a variable, it's meant to be a
@@ -192,7 +192,7 @@ struct Compiler {
 				// parsed for something else. Maybe there should be a
 				// new subtree type for compile-time expressions.
 				if (args[0]->kind != EXPR_VARIABLE) {
-					fatal("@builtin directive expects constant symbol");
+					fatal_assoc(args[0]->assoc, "@builtin directive expects constant symbol");
 				}
 				auto builtin_symbol = args[0]->variable;
 				// Builtin binding
@@ -205,7 +205,7 @@ struct Compiler {
 				auto args = expr->directive.arguments;
 				for (int i = args.size - 1; i >= 0; i--) {
 					if (args[i]->kind != EXPR_VARIABLE) {
-						fatal("@struct directive expects constant symbols");
+						fatal_assoc(args[i]->assoc, "@struct directive expects constant symbols");
 					}
 					push(BC::create(BC_LOAD_CONST, Value::raise(args[i]->variable)));
 				}
@@ -213,7 +213,7 @@ struct Compiler {
 				push(BC::create(BC_CONSTRUCT_CONSTRUCTOR));
 			} else {
 				// No such directive
-				fatal("No such directive as '%s'", name);
+				fatal_assoc(expr->assoc, "No such directive as '%s'", name);
 			}
 		} break;
 		case EXPR_THIS: {
@@ -266,7 +266,7 @@ struct Compiler {
 				push(BC::create(BC_UPDATE_FIELD));
 				break;
 			default:
-				fatal("Invalid l-expression");
+				fatal_assoc(left->assoc, "Invalid l-expression");
 			}
 		} break;
 		case STMT_RETURN:

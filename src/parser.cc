@@ -6,6 +6,8 @@ struct Parser {
 		this->lexer = lexer;
 		advance();
 	}
+	Stmt * create_stmt(Stmt_Kind kind);
+	Expr * create_expr(Expr_Kind kind);
 	bool is(Token_Kind type);
 	bool at_end();
 	Token next();
@@ -55,35 +57,35 @@ Expr * Parser::parse_atom()
 	}
 	switch (peek.kind) {
 	case TOKEN_NOTHING: {
-		auto atom = Expr::with_kind(EXPR_NOTHING);
+		auto atom = create_expr(EXPR_NOTHING);
 		advance();
 		return atom;
 	} break;
 	case TOKEN_INTEGER_LITERAL: {
-		auto atom = Expr::with_kind(EXPR_INTEGER);
+		auto atom = create_expr(EXPR_INTEGER);
 		atom->integer = peek.values.integer;
 		advance();
 		return atom;
 	} break;
 	case TOKEN_STRING_LITERAL: {
-		auto atom = Expr::with_kind(EXPR_STRING);
+		auto atom = create_expr(EXPR_STRING);
 		atom->string = peek.values.string;
 		advance();
 		return atom;
 	} break;
 	case TOKEN_SYMBOL: {
-		auto atom = Expr::with_kind(EXPR_VARIABLE);
+		auto atom = create_expr(EXPR_VARIABLE);
 		atom->variable = peek.values.symbol;
 		advance();
 		return atom;
 	} break;
 	case TOKEN_THIS: {
-		auto atom = Expr::with_kind(EXPR_THIS);
+		auto atom = create_expr(EXPR_THIS);
 		advance();
 		return atom;
 	} break;
 	default:
-		fatal("Expected <int>, <symbol>; got %s", peek.to_string());
+		fatal_assoc(peek.assoc, "Expected <int>, <symbol>; got %s", peek.to_string());
 	}
 	return NULL; // @linter
 }
@@ -92,7 +94,7 @@ Expr * Parser::parse_field_access()
 {
 	auto left = parse_atom();
 	while (match('\'')) {
-		auto expr = Expr::with_kind(EXPR_FIELD);
+		auto expr = create_expr(EXPR_FIELD);
 		expr->field.left = left;
 		weak_expect(TOKEN_SYMBOL);
 		expr->field.right = peek.values.symbol;
@@ -106,7 +108,7 @@ Expr * Parser::parse_function_call()
 {
 	auto left = parse_field_access();
 	while (match('(')) {
-		auto expr = Expr::with_kind(EXPR_FUNCALL);
+		auto expr = create_expr(EXPR_FUNCALL);
 		expr->funcall.func = left;
 		expr->funcall.args.alloc();
 		while (true) {
@@ -134,7 +136,7 @@ Expr * Parser::parse_multiply_divide()
 		} else if (match('/')) {
 			op = OP_DIVIDE;
 		} else assert(false);
-		auto expr = Expr::with_kind(EXPR_BINARY);
+		auto expr = create_expr(EXPR_BINARY);
 		expr->binary.left = left;
 		expr->binary.op = op;
 		expr->binary.right = parse_function_call();
@@ -153,7 +155,7 @@ Expr * Parser::parse_add_subtract()
 		} else if (match('-')) {
 			op = OP_SUBTRACT;
 		} else assert(false);
-		auto expr = Expr::with_kind(EXPR_BINARY);
+		auto expr = create_expr(EXPR_BINARY);
 		expr->binary.left = left;
 		expr->binary.op = op;
 		expr->binary.right = parse_multiply_divide();
@@ -176,7 +178,7 @@ Expr * Parser::parse_comparisons()
 		} else if (match(TOKEN_GTE)) {
 			op = OP_GREATER_THAN_OR_EQUAL_TO;
 		} else assert(false);
-		auto expr = Expr::with_kind(EXPR_BINARY);
+		auto expr = create_expr(EXPR_BINARY);
 		expr->binary.left = left;
 		expr->binary.op = op;
 		expr->binary.right = parse_add_subtract();
@@ -195,7 +197,7 @@ Expr * Parser::parse_equal_not_equal()
 		} else if (match(TOKEN_NOT_EQUAL)) {
 			op = OP_NOT_EQUAL;
 		} else assert(false);
-		auto expr = Expr::with_kind(EXPR_BINARY);
+		auto expr = create_expr(EXPR_BINARY);
 		expr->binary.left = left;
 		expr->binary.op = op;
 		expr->binary.right = parse_comparisons();
@@ -208,7 +210,7 @@ Expr * Parser::parse_and()
 {
 	auto left = parse_equal_not_equal();
 	while (match(TOKEN_AND)) {
-		auto expr = Expr::with_kind(EXPR_BINARY);
+		auto expr = create_expr(EXPR_BINARY);
 		expr->binary.left = left;
 		expr->binary.op = OP_AND;
 		expr->binary.right = parse_equal_not_equal();
@@ -221,7 +223,7 @@ Expr * Parser::parse_or()
 {
 	auto left = parse_and();
 	while (match(TOKEN_OR)) {
-		auto expr = Expr::with_kind(EXPR_BINARY);
+		auto expr = create_expr(EXPR_BINARY);
 		expr->binary.left = left;
 		expr->binary.op = OP_OR;
 		expr->binary.right = parse_and();
@@ -253,7 +255,7 @@ List<Symbol> Parser::parse_symbol_list(Token_Kind open, Token_Kind close)
 Expr * Parser::parse_lambda()
 {
 	if (match(TOKEN_LAMBDA)) {
-		auto lambda = Expr::with_kind(EXPR_LAMBDA);
+		auto lambda = create_expr(EXPR_LAMBDA);
 		lambda->lambda.parameters = parse_symbol_list((Token_Kind) '(',
 													  (Token_Kind) ')');
 		lambda->lambda.body = parse_expr();
@@ -267,7 +269,7 @@ Expr * Parser::parse_loop()
 {
 	if (match(TOKEN_LOOP)) {
 		auto body = parse_expr();
-		auto loop = Expr::with_kind(EXPR_LOOP);
+		auto loop = create_expr(EXPR_LOOP);
 		loop->loop.body = body;
 		return loop;
 	} else {
@@ -278,7 +280,7 @@ Expr * Parser::parse_loop()
 Expr * Parser::parse_if()
 {
 	if (match(TOKEN_IF)) {
-		auto expr = Expr::with_kind(EXPR_IF);
+		auto expr = create_expr(EXPR_IF);
 		expr->if_expr.conditions.alloc();
 		expr->if_expr.expressions.alloc();
 		do {
@@ -300,7 +302,7 @@ Expr * Parser::parse_if()
 Expr * Parser::parse_directive()
 {
 	if (match('@')) {
-		auto expr = Expr::with_kind(EXPR_DIRECTIVE);
+		auto expr = create_expr(EXPR_DIRECTIVE);
 		expr->directive.name = expect(TOKEN_SYMBOL).values.symbol;
 		expr->directive.arguments.alloc();
 		expect('[');
@@ -323,7 +325,7 @@ Expr * Parser::parse_directive()
 Expr * Parser::parse_scope()
 {
 	if (match('{')) {
-		auto scope = Expr::with_kind(EXPR_SCOPE);
+		auto scope = create_expr(EXPR_SCOPE);
 		scope->scope.body.alloc();
 		scope->scope.terminator = NULL;
 		while (!match('}')) {
@@ -349,7 +351,7 @@ Expr * Parser::parse_expr()
 
 Stmt * Parser::parse_let()
 {
-	Stmt * stmt = Stmt::with_kind(STMT_LET);
+	Stmt * stmt = create_stmt(STMT_LET);
 	advance();
 	
 	weak_expect(TOKEN_SYMBOL);
@@ -365,10 +367,9 @@ Stmt * Parser::parse_let()
 
 Stmt * Parser::parse_set()
 {
-	Stmt * stmt = Stmt::with_kind(STMT_SET);
+	Stmt * stmt = create_stmt(STMT_SET);
 	advance();
 	
-	weak_expect(TOKEN_SYMBOL);
 	//stmt->set.left = peek.values.symbol;
 	stmt->set.left = parse_expr();
 	//advance();
@@ -382,7 +383,7 @@ Stmt * Parser::parse_set()
 
 Stmt * Parser::parse_return()
 {
-	Stmt * stmt = Stmt::with_kind(STMT_RETURN);
+	Stmt * stmt = create_stmt(STMT_RETURN);
 	advance();
 	stmt->_return.expr = parse_expr();
 	return stmt;	
@@ -391,7 +392,7 @@ Stmt * Parser::parse_return()
 Stmt * Parser::parse_break()
 {
 	expect(TOKEN_BREAK);
-	auto stmt = Stmt::with_kind(STMT_BREAK);
+	auto stmt = create_stmt(STMT_BREAK);
 	stmt->_break = parse_expr();
 	return stmt;
 }
@@ -408,13 +409,25 @@ Stmt * Parser::parse_stmt()
 	} else if (is(TOKEN_BREAK)) {
 		stmt = parse_break();
 	} else {
-		stmt = Stmt::with_kind(STMT_EXPR);
+		stmt = create_stmt(STMT_EXPR);
 		stmt->expr = parse_expr();
 	}
 	return stmt;
 }
 
 // Parser utility
+
+Stmt * Parser::create_stmt(Stmt_Kind kind)
+{
+	auto stmt = Stmt::with_kind(kind, peek.assoc);
+	return stmt;
+}
+
+Expr * Parser::create_expr(Expr_Kind kind)
+{
+	auto expr = Expr::with_kind(kind, peek.assoc);
+	return expr;
+}
 
 bool Parser::is(Token_Kind type)
 {
@@ -436,9 +449,10 @@ Token Parser::next()
 Token Parser::expect(Token_Kind type)
 {
 	if (!is(type)) {
-		fatal("Expected %s, got %s",
-			  Token::type_to_string(type),
-			  peek.to_string());
+		fatal_assoc(peek.assoc,
+					"Expected %s, got %s",
+					Token::type_to_string(type),
+					peek.to_string());
 	}
 	return next();
 }
@@ -446,9 +460,10 @@ Token Parser::expect(Token_Kind type)
 Token Parser::weak_expect(Token_Kind type)
 {
 	if (!is(type)) {
-		fatal("Expected %s, got %s",
-			  Token::type_to_string(type),
-			  peek.to_string());
+		fatal_assoc(peek.assoc,
+					"Expected %s, got %s",
+					Token::type_to_string(type),
+					peek.to_string());
 	}
 	return peek;
 }

@@ -30,6 +30,7 @@ struct Stmt_Return {
 
 struct Stmt {
 	Stmt_Kind kind;
+	Assoc assoc;
 	union {
 		Stmt_Let let;
 		Stmt_Set set;
@@ -37,7 +38,7 @@ struct Stmt {
 		Expr * expr;
 		Expr * _break;
 	};
-	static Stmt * with_kind(Stmt_Kind kind);
+	static Stmt * with_kind(Stmt_Kind kind, Assoc assoc);
 	void destroy();
 };
 
@@ -141,6 +142,7 @@ struct Expr_Loop {
 
 struct Expr {
 	Expr_Kind kind;
+	Assoc assoc;
 	union {
 		int integer;
 		Symbol variable;
@@ -155,10 +157,11 @@ struct Expr {
 		Expr_Field field;
 		Expr_Loop loop;
 	};
-	static Expr * with_kind(Expr_Kind kind)
+	static Expr * with_kind(Expr_Kind kind, Assoc assoc)
 	{
 		Expr * expr = (Expr*) malloc(sizeof(Expr));
 		expr->kind = kind;
+		expr->assoc = assoc;
 		return expr;
 	}
 	void destroy()
@@ -326,10 +329,11 @@ void Stmt_Return::destroy()
  * Stmt
  */
 
-Stmt * Stmt::with_kind(Stmt_Kind kind)
+Stmt * Stmt::with_kind(Stmt_Kind kind, Assoc assoc)
 {
 	Stmt * stmt = (Stmt*) malloc(sizeof(Stmt));
 	stmt->kind = kind;
+	stmt->assoc = assoc;
 	return stmt;
 }
 
