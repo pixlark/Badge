@@ -229,6 +229,8 @@ struct Compiler {
 			push(BC::create(BC_PUSH_BODY));
 			int jump_pos = bytecode.size;
 			compile_expr(expr->loop.body);
+			// Discard last value
+			push(BC::create(BC_POP_AND_DISCARD));
 			push(BC::create(BC_JUMP, jump_pos));
 			int exit_pos = bytecode.size;
 			push(BC::create(BC_NOP));

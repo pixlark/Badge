@@ -1,24 +1,35 @@
 let print = @builtin[print].
 let println = @builtin[println].
 
-let f = lambda (x) {
-	return lambda () 10.
+%% something simple
+
+let z = 2.
+let x = loop {
+	if z == 5 then {
+		break z.
+	}.
+	set z = z + 1.
 }.
-
-println((f(1))()).
-
-set f = lambda (x) lambda () 10.
-println((f(1))()).
+println(x).
 
 [-
+%% fibonacci
+% note: this is terrible Badge code; loops should not be used for
+% something that's so easy recursively...
 
-let g = lambda () lambda () lambda () 5.
-println(g).
-println(g()).
-println(g()()).
-println(g()()()).
-
-let h = lambda () nothing.
-println(h).
-println(h()).
+let a = 0.
+let b = 1.
+let c = 0.
+loop {
+	let tmp = b.
+	set b = a + b.
+	set a = tmp.
+	if c == 10 then {
+	   break nothing.
+	}.
+	set c = c + 1.
+}.
+print(a).
+print(" ").
+println(b).
 -]
