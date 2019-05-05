@@ -24,47 +24,47 @@ struct Compiler {
 	{
 		bytecode.push(bc);
 	}	
-	void compile_operator(Operator op)
+	void compile_operator(Operator op, Assoc assoc)
 	{
 		switch (op) {
 		case OP_NEGATE:
 			fatal("Unimplemented");
 			break;
 		case OP_ADD:
-			push(BC::create(BC_ADD));
+			push(BC::create(BC_ADD, assoc));
 			break;
 		case OP_SUBTRACT:
-			push(BC::create(BC_SUBTRACT));
+			push(BC::create(BC_SUBTRACT, assoc));
 			break;
 		case OP_MULTIPLY:
-			push(BC::create(BC_MULTIPLY));
+			push(BC::create(BC_MULTIPLY, assoc));
 			break;
 		case OP_DIVIDE:
-			push(BC::create(BC_DIVIDE));
+			push(BC::create(BC_DIVIDE, assoc));
 			break;
 		case OP_EQUAL:
-			push(BC::create(BC_EQUAL));
+			push(BC::create(BC_EQUAL, assoc));
 			break;
 		case OP_NOT_EQUAL:
-			push(BC::create(BC_NOT_EQUAL));
+			push(BC::create(BC_NOT_EQUAL, assoc));
 			break;
 		case OP_LESS_THAN:
-			push(BC::create(BC_LESS_THAN));
+			push(BC::create(BC_LESS_THAN, assoc));
 			break;
 		case OP_GREATER_THAN:
-			push(BC::create(BC_GREATER_THAN));
+			push(BC::create(BC_GREATER_THAN, assoc));
 			break;
 		case OP_LESS_THAN_OR_EQUAL_TO:
-			push(BC::create(BC_LESS_THAN_OR_EQUAL_TO));
+			push(BC::create(BC_LESS_THAN_OR_EQUAL_TO, assoc));
 			break;
 		case OP_GREATER_THAN_OR_EQUAL_TO:
-			push(BC::create(BC_GREATER_THAN_OR_EQUAL_TO));
+			push(BC::create(BC_GREATER_THAN_OR_EQUAL_TO, assoc));
 			break;
 		case OP_AND:
-			push(BC::create(BC_AND));
+			push(BC::create(BC_AND, assoc));
 			break;
 		case OP_OR:
-			push(BC::create(BC_OR));
+			push(BC::create(BC_OR, assoc));
 			break;
 		}
 	}
@@ -73,35 +73,41 @@ struct Compiler {
 		switch (expr->kind) {
 		case EXPR_NOTHING:
 			push(BC::create(BC_LOAD_CONST,
-							Value::nothing()));
+							Value::nothing(),
+							expr->assoc));
 			break;
 		case EXPR_UNARY:
 			compile_expr(expr->unary.expr);
-			compile_operator(expr->unary.op);
+			compile_operator(expr->unary.op, expr->assoc);
 			break;
 		case EXPR_BINARY:
 			compile_expr(expr->binary.left);
 			compile_expr(expr->binary.right);
-			compile_operator(expr->binary.op);
+			compile_operator(expr->binary.op, expr->assoc);
 			break;
 		case EXPR_INTEGER:
 			push(BC::create(BC_LOAD_CONST,
-							Value::raise(expr->integer)));
+							Value::raise(expr->integer),
+							expr->assoc));
 			break;
 		case EXPR_STRING:
 			push(BC::create(BC_LOAD_CONST,
-							Value::raise(expr->string)));
-			push(BC::create(BC_SYMBOL_TO_STRING));
+							Value::raise(expr->string),
+							expr->assoc));
+			push(BC::create(BC_SYMBOL_TO_STRING,
+							expr->assoc));
 			break;
 		case EXPR_VARIABLE:
 			push(BC::create(BC_LOAD_CONST,
-							Value::raise(expr->variable)));
-			push(BC::create(BC_RESOLVE_BINDING));
+							Value::raise(expr->variable),
+							expr->assoc));
+			push(BC::create(BC_RESOLVE_BINDING,
+							expr->assoc));
 			break;
 		case EXPR_SCOPE: {
 			auto body = expr->scope.body;
 			auto terminator = expr->scope.terminator;
-			push(BC::create(BC_ENTER_SCOPE));
+			push(BC::create(BC_ENTER_SCOPE, expr->assoc));
 			for (int i = 0; i < body.size; i++) {
 				compile_stmt(body[i]);
 			}
@@ -109,18 +115,21 @@ struct Compiler {
 				compile_expr(terminator);
 			} else {
 				push(BC::create(BC_LOAD_CONST,
-								Value::nothing()));
+								Value::nothing(),
+								expr->assoc));
 			}
-			push(BC::create(BC_EXIT_SCOPE));
+			push(BC::create(BC_EXIT_SCOPE, expr->assoc));
 		} break;
 		case EXPR_LAMBDA: {
 			auto params = expr->lambda.parameters;
 			for (int i = 0; i < params.size; i++) {
 				push(BC::create(BC_LOAD_CONST,
-								Value::raise(params[i])));
+								Value::raise(params[i]),
+								expr->assoc));
 			}
 			push(BC::create(BC_LOAD_CONST,
-							Value::raise(params.size)));
+							Value::raise(params.size),
+							expr->assoc));
 			Compiler compiler;
 			compiler.init(blocks);
 			/*
@@ -133,7 +142,8 @@ struct Compiler {
 			compiler.destroy();
 			
 			push(BC::create(BC_CONSTRUCT_FUNCTION,
-							compiler.block_reference));
+							compiler.block_reference,
+							expr->assoc));
 		} break;
 		case EXPR_FUNCALL: {
 			auto args = expr->funcall.args;
@@ -142,9 +152,11 @@ struct Compiler {
 				compile_expr(args[i]);
 			}
 			push(BC::create(BC_LOAD_CONST,
-							Value::raise(args.size)));
+							Value::raise(args.size),
+							expr->assoc));
 			compile_expr(expr->funcall.func);
-			push(BC::create(BC_POP_AND_CALL_FUNCTION));
+			push(BC::create(BC_POP_AND_CALL_FUNCTION,
+							expr->assoc));
 		} break;
 		case EXPR_IF: {
 			List<int> end_jumps;
@@ -154,11 +166,11 @@ struct Compiler {
 			assert(_if.conditions.size == _if.expressions.size);
 			for (int i = 0; i < _if.conditions.size; i++) {
 				compile_expr(_if.conditions[i]);
-				push(BC::create(BC_NOT));
-				push(BC::create(BC_POP_JUMP));
+				push(BC::create(BC_NOT, _if.conditions[i]->assoc));
+				push(BC::create(BC_POP_JUMP, _if.conditions[i]->assoc));
 				int skip_pos = bytecode.size - 1;
 				compile_expr(_if.expressions[i]);
-				push(BC::create(BC_JUMP));
+				push(BC::create(BC_JUMP, _if.conditions[i]->assoc));
 				end_jumps.push(bytecode.size - 1);
 				bytecode[skip_pos].arg.integer = bytecode.size;
 			}
@@ -166,9 +178,10 @@ struct Compiler {
 				compile_expr(_if.else_expr);
 			} else {
 				push(BC::create(BC_LOAD_CONST,
-								Value::nothing()));
+								Value::nothing(),
+								expr->assoc));
 			}
-			push(BC::create(BC_NOP));
+			push(BC::create(BC_NOP, expr->assoc));
 			for (int i = 0; i < end_jumps.size; i++) {
 				assert(bytecode[end_jumps[i]].kind == BC_JUMP);
 				bytecode[end_jumps[i]].arg.integer = bytecode.size - 1;
@@ -199,7 +212,7 @@ struct Compiler {
 				auto builtin = Builtins::get_builtin(builtin_symbol);
 				Value value = Value::create(TYPE_BUILTIN);
 				value.builtin = builtin;
-				push(BC::create(BC_LOAD_CONST, value));
+				push(BC::create(BC_LOAD_CONST, value, expr->assoc));
 			} else if (name == Intern::intern("struct")) {
 				// @struct directive
 				auto args = expr->directive.arguments;
@@ -207,33 +220,33 @@ struct Compiler {
 					if (args[i]->kind != EXPR_VARIABLE) {
 						fatal_assoc(args[i]->assoc, "@struct directive expects constant symbols");
 					}
-					push(BC::create(BC_LOAD_CONST, Value::raise(args[i]->variable)));
+					push(BC::create(BC_LOAD_CONST, Value::raise(args[i]->variable), args[i]->assoc));
 				}
-				push(BC::create(BC_LOAD_CONST, Value::raise(args.size)));
-				push(BC::create(BC_CONSTRUCT_CONSTRUCTOR));
+				push(BC::create(BC_LOAD_CONST, Value::raise(args.size), expr->assoc));
+				push(BC::create(BC_CONSTRUCT_CONSTRUCTOR, expr->assoc));
 			} else {
 				// No such directive
 				fatal_assoc(expr->assoc, "No such directive as '%s'", name);
 			}
 		} break;
 		case EXPR_THIS: {
-			push(BC::create(BC_THIS_FUNCTION));
+			push(BC::create(BC_THIS_FUNCTION, expr->assoc));
 		} break;
 		case EXPR_FIELD: {
 			compile_expr(expr->field.left);
-			push(BC::create(BC_LOAD_CONST, Value::raise(expr->field.right)));
-			push(BC::create(BC_RESOLVE_FIELD));
+			push(BC::create(BC_LOAD_CONST, Value::raise(expr->field.right), expr->assoc));
+			push(BC::create(BC_RESOLVE_FIELD, expr->assoc));
 		} break;
 		case EXPR_LOOP: {
 			int push_body_pos = bytecode.size;
-			push(BC::create(BC_PUSH_BODY));
+			push(BC::create(BC_PUSH_BODY, expr->assoc));
 			int jump_pos = bytecode.size;
 			compile_expr(expr->loop.body);
 			// Discard last value
-			push(BC::create(BC_POP_AND_DISCARD));
-			push(BC::create(BC_JUMP, jump_pos));
+			push(BC::create(BC_POP_AND_DISCARD, expr->assoc));
+			push(BC::create(BC_JUMP, jump_pos, expr->assoc));
 			int exit_pos = bytecode.size;
-			push(BC::create(BC_NOP));
+			push(BC::create(BC_NOP, expr->assoc));
 			bytecode[push_body_pos].arg.integer = exit_pos;
 		} break;
 		}
@@ -244,8 +257,10 @@ struct Compiler {
 		case STMT_LET:
 			compile_expr(stmt->let.right);
 			push(BC::create(BC_LOAD_CONST,
-							Value::raise(stmt->let.left)));
-			push(BC::create(BC_CREATE_BINDING));
+							Value::raise(stmt->let.left),
+							stmt->assoc));
+			push(BC::create(BC_CREATE_BINDING,
+							stmt->assoc));
 			break;
 		case STMT_SET: {
 			compile_expr(stmt->set.right);
@@ -255,15 +270,19 @@ struct Compiler {
 			case EXPR_VARIABLE:
 				// Simple variable binding
 				push(BC::create(BC_LOAD_CONST,
-								Value::raise(left->variable)));
-				push(BC::create(BC_UPDATE_BINDING));
+								Value::raise(left->variable),
+								stmt->assoc));
+				push(BC::create(BC_UPDATE_BINDING,
+								stmt->assoc));
 				break;
 			case EXPR_FIELD:
 				// Field of an object
 				compile_expr(left->field.left);
 				push(BC::create(BC_LOAD_CONST,
-								Value::raise(left->field.right)));
-				push(BC::create(BC_UPDATE_FIELD));
+								Value::raise(left->field.right),
+								stmt->assoc));
+				push(BC::create(BC_UPDATE_FIELD,
+								stmt->assoc));
 				break;
 			default:
 				fatal_assoc(left->assoc, "Invalid l-expression");
@@ -271,15 +290,15 @@ struct Compiler {
 		} break;
 		case STMT_RETURN:
 			compile_expr(stmt->_return.expr);
-			push(BC::create(BC_RETURN));
+			push(BC::create(BC_RETURN, stmt->assoc));
 			break;
 		case STMT_EXPR:
 			compile_expr(stmt->expr);
-			push(BC::create(BC_POP_AND_DISCARD));
+			push(BC::create(BC_POP_AND_DISCARD, stmt->assoc));
 			break;
 		case STMT_BREAK:
 			compile_expr(stmt->expr);
-			push(BC::create(BC_BREAK_BODY));
+			push(BC::create(BC_BREAK_BODY, stmt->assoc));
 			break;
 		}
 	}

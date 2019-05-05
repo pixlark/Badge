@@ -80,18 +80,23 @@ void print_assoc(Assoc assoc)
 	printf(RED("^") "\n");
 }
 
+void v_fatal_assoc(Assoc assoc, const char * fmt, va_list args)
+{
+	fprintf(stderr, RED(BOLD("encountered error")) ":\n");
+	vfprintf(stderr, fmt, args);
+	printf("\n");
+	print_assoc(assoc);
+	abort();
+}
+
 void fatal_assoc(Assoc assoc, const char * fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
 
-	fprintf(stderr, RED(BOLD("encountered error")) ":\n");
-	vfprintf(stderr, fmt, args);
-	printf("\n");
-	print_assoc(assoc);
+	v_fatal_assoc(assoc, fmt, args);
 	
 	va_end(args);
-	abort();
 }
 
 /** TODO(pixlark): Do this without GCC dependency... like so? https://stackoverflow.com/questions/18777843/variadic-macro-with-empty-argument-in-c11

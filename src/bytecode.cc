@@ -83,36 +83,41 @@ static const char * BC_Kind_names[] = {
 
 struct BC {
 	BC_Kind kind;
+	Assoc assoc;
 	union {
 		Value value;
 		int integer;
 		size_t block_reference;
 	} arg;
-	static BC create(BC_Kind kind)
+	static BC create(BC_Kind kind, Assoc assoc)
 	{
 		BC bc;
 		bc.kind = kind;
+		bc.assoc = assoc;
 		return bc;
 	}
-	static BC create(BC_Kind kind, Value arg)
+	static BC create(BC_Kind kind, Value arg, Assoc assoc)
 	{
 		BC bc;
 		bc.kind = kind;
 		bc.arg.value = arg;
+		bc.assoc = assoc;
 		return bc;
 	}
-	static BC create(BC_Kind kind, int arg)
+	static BC create(BC_Kind kind, int arg, Assoc assoc)
 	{
 		BC bc;
 		bc.kind = kind;
 		bc.arg.integer = arg;
+		bc.assoc = assoc;
 		return bc;
 	}
-	static BC create(BC_Kind kind, size_t arg)
+	static BC create(BC_Kind kind, size_t arg, Assoc assoc)
 	{
 		BC bc;
 		bc.kind = kind;
 		bc.arg.block_reference = arg;
+		bc.assoc = assoc;
 		return bc;
 	}
 	char * to_string()
@@ -135,6 +140,13 @@ struct BC {
 		default:
 			break;
 		}
+		/*
+		builder.append(" : ");
+		{
+			char buf[512];
+			sprintf(buf, "%p %zu", assoc.source, assoc.position);
+			builder.append(buf);
+			}*/
 		return builder.final_string();
 	}
 	bool no_interference_with_tail_calls()

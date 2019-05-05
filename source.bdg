@@ -1,4 +1,3 @@
-let a = 2.
-set 3 = a.
+let println = @builtin[println].
 
-
+println(x).

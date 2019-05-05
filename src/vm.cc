@@ -51,6 +51,7 @@ struct VM {
 	Blocks * blocks;
 	List<Value> stack;
 	List<Call_Frame*> call_stack;
+	Assoc current_assoc;
 	
 	void init(Blocks * blocks, size_t block_reference)
 	{
@@ -60,6 +61,12 @@ struct VM {
 		
 		call_stack.alloc();
 		call_stack.push(Call_Frame::alloc(blocks, block_reference, NULL, NULL));
+	}
+	void error(const char * fmt, ...) {
+		va_list args;
+		va_start(args, fmt);
+		v_fatal_assoc(current_assoc, fmt, args);
+		va_end(args);
 	}
 	void destroy()
 	{
@@ -121,7 +128,7 @@ struct VM {
 		auto frame = frame_reference();
 		bool success = frame->environment->create_binding(symbol, value);
 		if (!success) {
-			fatal("Can't create new variable '%s' -- already bound in this scope!",
+			error("Can't create new variable '%s' -- already bound in this scope!",
 				  symbol);
 		}
 	}
@@ -139,7 +146,7 @@ struct VM {
 		if (global->environment->resolve_binding(symbol, &value)) {
 			return value;
 		}
-		fatal("Variable '%s' is not bound", symbol);
+		error("Variable '%s' is not bound", symbol);
 		assert(false); // @linter
 	}
 	void step()
@@ -183,6 +190,7 @@ struct VM {
 		}
 		
 		BC bc = frame->bytecode[frame->bc_pointer++];
+		current_assoc = bc.assoc;
 		
 		switch (bc.kind) {
 		case BC_NOP: break;
@@ -300,7 +308,7 @@ struct VM {
 				auto builtin = func_val.builtin;
 				auto passed_arg_count = pop_integer();
 				if (passed_arg_count != builtin->arg_count) {
-					fatal("Function takes %d arguments; was passed %d",
+					error("Function takes %d arguments; was passed %d",
 						  builtin->arg_count,
 						  passed_arg_count);
 				}
@@ -317,7 +325,7 @@ struct VM {
 
 				auto passed_arg_count = pop_integer();
 				if (passed_arg_count != ctor->field_count) {
-					fatal("Constructor has %d fields; was passed %d",
+					error("Constructor has %d fields; was passed %d",
 						  ctor->field_count,
 						  passed_arg_count);
 				}
@@ -337,7 +345,7 @@ struct VM {
 				auto func = func_val.ref_function;
 				auto passed_arg_count = pop_integer();
 				if (passed_arg_count != func->parameter_count) {
-					fatal("Function takes %d arguments; was passed %d",
+					error("Function takes %d arguments; was passed %d",
 						  func->parameter_count,
 						  passed_arg_count);
 				}
@@ -380,7 +388,7 @@ struct VM {
 		case BC_THIS_FUNCTION: {
 			auto func = Value::create(TYPE_FUNCTION);
 			if (!frame->origin) {
-				fatal("Invalid use of this -- not in a function!");
+				error("Invalid use of this -- not in a function!");
 			}
 			func.ref_function = frame->origin;
 			push(func);
@@ -428,11 +436,11 @@ struct VM {
 			auto symbol = pop_symbol();
 			auto obj_val = pop();
 			if (!obj_val.is(TYPE_OBJECT)) {
-				fatal("Cannot access field of non-object");
+				error("Cannot access field of non-object");
 			}
 			auto obj = obj_val.ref_object;
 			if (!obj->fields.bound(symbol)) {
-				fatal("No such field %s on object", symbol);
+				error("No such field %s on object", symbol);
 			}
 			auto resolved = obj->fields.lookup(symbol);
 			push(resolved);
@@ -441,11 +449,11 @@ struct VM {
 			auto symbol = pop_symbol();
 			auto obj_val = pop();
 			if (!obj_val.is(TYPE_OBJECT)) {
-				fatal("Cannot access field of non-object");
+				error("Cannot access field of non-object");
 			}
 			auto obj = obj_val.ref_object;
 			if (!obj->fields.bound(symbol)) {
-				fatal("No such field %s on object", symbol);
+				error("No such field %s on object", symbol);
 			}
 			auto val = pop();
 			obj->fields.update(symbol, val);
@@ -455,7 +463,7 @@ struct VM {
 		} break;
 		case BC_BREAK_BODY: {
 			if (frame->body_stack.size == 0) {
-				fatal("Nothing to break out of");
+				error("Nothing to break out of");
 			}
 			int exit_pos = frame->body_stack.pop();
 			frame->bc_pointer = exit_pos;
