@@ -22,7 +22,7 @@
 #include "compiler.cc"
 #include "vm.cc"
 
-#define OUTPUT_BYTECODE false
+#define OUTPUT_BYTECODE true
 #define DEBUG_OUTPUT false
 
 void work_from_source(const char * path)

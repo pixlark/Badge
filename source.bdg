@@ -1,3 +1,5 @@
 let println = @builtin[println].
 
-println(not nothing).
+println(loop for 1 {
+	println("test").
+}).

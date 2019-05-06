@@ -138,6 +138,7 @@ struct Expr_Field {
 
 struct Expr_Loop {
 	Expr * body;
+	Expr * for_expr;
 	void destroy();
 };
 
@@ -299,6 +300,10 @@ void Expr_Loop::destroy()
 {
 	body->destroy();
 	free(body);
+	if (for_expr) {
+		for_expr->destroy();
+		free(for_expr);
+	}
 }
 
 /*

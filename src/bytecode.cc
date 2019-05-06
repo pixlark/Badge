@@ -3,6 +3,7 @@ enum BC_Kind {
 	BC_NOP = 0,
 	BC_POP_AND_DISCARD,
 	BC_LOAD_CONST,
+	BC_DUPLICATE,
 	// binding
 	BC_CREATE_BINDING,
 	BC_UPDATE_BINDING,
@@ -50,6 +51,7 @@ static const char * BC_Kind_names[] = {
 	"NOP",
 	"POP_AND_DISCARD",
 	"LOAD_CONST",
+	"DUPLICATE",
 	"CREATE_BINDING",
 	"UPDATE_BINDING",
 	"RESOLVE_BINDING",

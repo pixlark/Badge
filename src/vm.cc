@@ -150,7 +150,7 @@ struct VM {
 		assert(false); // @linter
 	}
 	void step()
-	{
+	{	
 		if (halted()) {
 			return;
 		}
@@ -199,6 +199,9 @@ struct VM {
 		} break;
 		case BC_LOAD_CONST: {
 			push(bc.arg.value);
+		} break;
+		case BC_DUPLICATE: {
+			push(stack[stack.size - 1]);
 		} break;
 		case BC_CREATE_BINDING: {
 			auto symbol = pop_symbol();
@@ -409,14 +412,14 @@ struct VM {
 			value.ref_string = string;
 			push(value);
 		} break;
-		case BC_POP_JUMP: {
-			auto a = pop();
-			if (a.type == TYPE_NOTHING) {
-				break;
-			}
-		} /* FALLTHROUGH */
 		case BC_JUMP: {
 			frame->bc_pointer = bc.arg.integer;
+		} break;
+		case BC_POP_JUMP: {
+			auto a = pop();
+			if (a.type != TYPE_NOTHING) {
+				frame->bc_pointer = bc.arg.integer;
+			}
 		} break;
 		case BC_ENTER_SCOPE: {
 			auto new_env = Environment::alloc();
@@ -554,11 +557,14 @@ struct VM {
 		}
 		/*
 		printf(".............\n");
-		printf("Bodies: ");
-		for (int i = 0; i < body_stack.size; i++) {
-			printf("%d ", body_stack[i]);
-		}
-		printf("\n");*/
+		{
+			printf("Bodies: ");
+			auto frame = frame_reference();
+			for (int i = 0; i < frame->body_stack.size; i++) {
+				printf("%d ", frame->body_stack[i]);
+			}
+			printf("\n");
+			}*/
 		printf("-------------\n\n");
 	}
 };

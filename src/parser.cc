@@ -286,9 +286,14 @@ Expr * Parser::parse_lambda()
 Expr * Parser::parse_loop()
 {
 	if (match(TOKEN_LOOP)) {
-		auto body = parse_expr();
+		// Check for `for` expression
 		auto loop = create_expr(EXPR_LOOP);
-		loop->loop.body = body;
+		if (match(TOKEN_FOR)) {
+			loop->loop.for_expr = parse_expr();
+		} else {
+			loop->loop.for_expr = NULL;
+		}
+		loop->loop.body = parse_expr();
 		return loop;
 	} else {
 		return parse_lambda();
