@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+
+<valgrindoutput>
+
+<protocolversion>4</protocolversion>
+<protocoltool>memcheck</protocoltool>
+
+<preamble>
+  <line>Memcheck, a memory error detector</line>
+  <line>Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.</line>
+  <line>Using Valgrind-3.12.0.SVN and LibVEX; rerun with -h for copyright info</line>
+  <line>Command: badge source.bdg</line>
+</preamble>
+
+<pid>3007</pid>
+<ppid>1154</ppid>
+<tool>memcheck</tool>
+
+<args>
+  <vargv>
+    <exe>/usr/bin/valgrind.bin</exe>
+    <arg>--leak-check=full</arg>
+    <arg>--xml=yes</arg>
+    <arg>--xml-file=valgrind.xml</arg>
+    <arg>--show-leak-kinds=all</arg>
+  </vargv>
+  <argv>
+    <exe>badge</exe>
+    <arg>source.bdg</arg>
+  </argv>
+</args>
+
+<status>
+  <state>RUNNING</state>
+  <time>00:00:00:00.148 </time>
+</status>
+
+
+<status>
+  <state>FINISHED</state>
+  <time>00:00:00:00.743 </time>
+</status>
+
+<error>
+  <unique>0x0</unique>
+  <tid>1</tid>
+  <kind>Leak_StillReachable</kind>
+  <xwhat>
+    <text>32 bytes in 1 blocks are still reachable in loss record 1 of 1</text>
+    <leakedbytes>32</leakedbytes>
+    <leakedblocks>1</leakedblocks>
+  </xwhat>
+  <stack>
+    <frame>
+      <ip>0x4C2BBAF</ip>
+      <obj>/usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so</obj>
+      <fn>malloc</fn>
+      <dir>./coregrind/m_replacemalloc</dir>
+      <file>vg_replace_malloc.c</file>
+      <line>299</line>
+    </frame>
+    <frame>
+      <ip>0x1125AD</ip>
+      <obj>/home/pixlark/prog/C++/badge/badge</obj>
+      <fn>List&lt;void*&gt;::alloc(Allocator)</fn>
+      <dir>/home/pixlark/prog/C++/badge/src</dir>
+      <file>list.cc</file>
+      <line>43</line>
+    </frame>
+    <frame>
+      <ip>0x10C45E</ip>
+      <obj>/home/pixlark/prog/C++/badge/badge</obj>
+      <fn>GC::free_unmarked()</fn>
+      <dir>/home/pixlark/prog/C++/badge/src</dir>
+      <file>gc.cc</file>
+      <line>52</line>
+    </frame>
+    <frame>
+      <ip>0x10D553</ip>
+      <obj>/home/pixlark/prog/C++/badge/badge</obj>
+      <fn>work_from_source(char const*)</fn>
+      <dir>/home/pixlark/prog/C++/badge/src</dir>
+      <file>main.cc</file>
+      <line>120</line>
+    </frame>
+    <frame>
+      <ip>0x10D5F3</ip>
+      <obj>/home/pixlark/prog/C++/badge/badge</obj>
+      <fn>main</fn>
+      <dir>/home/pixlark/prog/C++/badge/src</dir>
+      <file>main.cc</file>
+      <line>138</line>
+    </frame>
+  </stack>
+</error>
+
+<errorcounts>
+</errorcounts>
+
+<suppcounts>
+</suppcounts>
+
+</valgrindoutput>
+

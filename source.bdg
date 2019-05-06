@@ -1,2 +1,5 @@
 let println = @builtin[println].
 
+loop for 5 {
+	 println("hello there!").
+}.
