@@ -1,5 +1,3 @@
 let println = @builtin[println].
 
-println(loop for 1 {
-	println("test").
-}).
+print(nothing < nothing).

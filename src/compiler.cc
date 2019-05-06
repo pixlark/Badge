@@ -24,7 +24,7 @@ struct Compiler {
 	{
 		bytecode.push(bc);
 	}	
-	void compile_operator(Operator op, Assoc assoc)
+	void compile_operator(Operator op, Assoc_Ptr assoc)
 	{
 		switch (op) {
 		case OP_NEGATE:

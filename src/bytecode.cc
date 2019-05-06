@@ -87,20 +87,20 @@ static const char * BC_Kind_names[] = {
 
 struct BC {
 	BC_Kind kind;
-	Assoc assoc;
+	Assoc_Ptr assoc;
 	union {
 		Value value;
 		int integer;
 		size_t block_reference;
 	} arg;
-	static BC create(BC_Kind kind, Assoc assoc)
+	static BC create(BC_Kind kind, Assoc_Ptr assoc)
 	{
 		BC bc;
 		bc.kind = kind;
 		bc.assoc = assoc;
 		return bc;
 	}
-	static BC create(BC_Kind kind, Value arg, Assoc assoc)
+	static BC create(BC_Kind kind, Value arg, Assoc_Ptr assoc)
 	{
 		BC bc;
 		bc.kind = kind;
@@ -108,7 +108,7 @@ struct BC {
 		bc.assoc = assoc;
 		return bc;
 	}
-	static BC create(BC_Kind kind, int arg, Assoc assoc)
+	static BC create(BC_Kind kind, int arg, Assoc_Ptr assoc)
 	{
 		BC bc;
 		bc.kind = kind;
@@ -116,7 +116,7 @@ struct BC {
 		bc.assoc = assoc;
 		return bc;
 	}
-	static BC create(BC_Kind kind, size_t arg, Assoc assoc)
+	static BC create(BC_Kind kind, size_t arg, Assoc_Ptr assoc)
 	{
 		BC bc;
 		bc.kind = kind;

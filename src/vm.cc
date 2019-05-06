@@ -51,7 +51,7 @@ struct VM {
 	Blocks * blocks;
 	List<Value> stack;
 	List<Call_Frame*> call_stack;
-	Assoc current_assoc;
+	Assoc_Ptr current_assoc;
 	
 	void init(Blocks * blocks, size_t block_reference)
 	{
@@ -223,66 +223,66 @@ struct VM {
 		case BC_ADD: {
 			auto b = pop();
 			auto a = pop();
-			push(Value::add(a, b));
+			push(Value::add(a, b, bc.assoc));
 		} break;
 		case BC_SUBTRACT: {
 			auto b = pop();
 			auto a = pop();
-			push(Value::subtract(a, b));
+			push(Value::subtract(a, b, bc.assoc));
 		} break;
 		case BC_MULTIPLY: {
 			auto b = pop();
 			auto a = pop();
-			push(Value::multiply(a, b));
+			push(Value::multiply(a, b, bc.assoc));
 		} break;
 		case BC_DIVIDE: {
 			auto b = pop();
 			auto a = pop();
-			push(Value::divide(a, b));
+			push(Value::divide(a, b, bc.assoc));
 		} break;
 		case BC_NEGATE: {
 			auto a = pop();
-			push(Value::subtract(Value::raise(0), a));
+			push(Value::subtract(Value::raise(0), a, bc.assoc));
 		} break;
 		case BC_EQUAL: {
 			auto b = pop();
 			auto a = pop();
-			push(Value::raise_bool(Value::equal(a, b)));
+			push(Value::raise_bool(Value::equal(a, b, bc.assoc)));
 		} break;
 		case BC_NOT_EQUAL: {
 			auto b = pop();
 			auto a = pop();
-			push(Value::raise_bool(!Value::equal(a, b)));
+			push(Value::raise_bool(!Value::equal(a, b, bc.assoc)));
 		} break;
 		case BC_GREATER_THAN: {
 			auto b = pop();
 			auto a = pop();
-			push(Value::raise_bool(Value::greater_than(a, b)));
+			push(Value::raise_bool(Value::greater_than(a, b, bc.assoc)));
 		} break;
 		case BC_LESS_THAN: {
 			auto b = pop();
 			auto a = pop();
-			push(Value::raise_bool(Value::less_than(a, b)));
+			push(Value::raise_bool(Value::less_than(a, b, bc.assoc)));
 		} break;
 		case BC_GREATER_THAN_OR_EQUAL_TO: {
 			auto b = pop();
 			auto a = pop();
-			push(Value::raise_bool(Value::greater_than_or_equal_to(a, b)));
+			push(Value::raise_bool(Value::greater_than_or_equal_to(a, b, bc.assoc)));
 		} break;
 		case BC_LESS_THAN_OR_EQUAL_TO: {
 			auto b = pop();
 			auto a = pop();
-			push(Value::raise_bool(Value::less_than_or_equal_to(a, b)));
+			push(Value::raise_bool(Value::less_than_or_equal_to(a, b, bc.assoc)));
 		} break;
 		case BC_AND: {
 			auto b = pop();
 			auto a = pop();
-			push(Value::raise_bool(Value::_and(a, b)));
+			push(Value::raise_bool(Value::_and(a, b, bc.assoc)));
 		} break;
 		case BC_OR: {
 			auto b = pop();
 			auto a = pop();
-			push(Value::raise_bool(Value::_or(a, b)));
+			push(Value::raise_bool(Value::_or(a, b, bc.assoc)));
 		} break;
 		case BC_NOT: {
 			auto a = pop();

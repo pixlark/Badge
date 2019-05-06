@@ -42,7 +42,7 @@ static const char * reserved_words[RESERVED_WORDS_COUNT] = {
 
 struct Token {
 	Token_Kind kind;
-	Assoc assoc;
+	Assoc_Ptr assoc;
 	union {
 		int integer;
 		Symbol symbol;
@@ -127,7 +127,7 @@ struct Lexer {
 Token Lexer::create_token(Token_Kind kind)
 {
 	auto token = Token::with_kind(kind);
-	token.assoc = (Assoc) { source, source_length, cursor };
+	token.assoc = Assoc_Allocator::make(source, source_length, cursor);
 	return token;
 }
 
@@ -170,7 +170,8 @@ Token Lexer::next_token()
  reset:
 	if (peek() == '\0') {
 		Token token = create_token(TOKEN_EOF);
-		token.assoc.position -= 1; // Offset position since EOF is past the end of file
+		// Offset position since EOF is past the end of file
+		Assoc_Allocator::ptr(token.assoc)->position -= 1;
 		return token;
 	}
 	
@@ -284,7 +285,7 @@ Token Lexer::next_token()
 			//return Token::with_kind((Token_Kind) '[');
 		}
 	default:
-		fatal_assoc((Assoc) { source, source_length, cursor },
+		fatal_assoc(Assoc_Allocator::make(source, source_length, cursor),
 					"Line %d\nMisplaced character %c (%d)", line, peek(), peek());
 		/*
 	case ';':

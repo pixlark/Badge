@@ -105,62 +105,62 @@ void Value::gc_mark()
 	}
 }
 
-static void validate_same_type(Value a, Value b)
+static void validate_same_type(Value a, Value b, Assoc_Ptr assoc = -1)
 {
 	if (!a.same_type(b)) {
-		fatal("Values must be of same type");
+		fatal_assoc(assoc, "Values must be of the same type");
 	}
 }
 
-Value Value::add(Value a, Value b)
+Value Value::add(Value a, Value b, Assoc_Ptr assoc)
 {
-	validate_same_type(a, b);
+	validate_same_type(a, b, assoc);
 	switch (a.type) {
 	case TYPE_INTEGER:
 		return Value::raise(a.integer + b.integer);
 	default:
-		fatal("+ not valid for type");
+		fatal_assoc(assoc, "+ not valid for type");
 	}
 	assert(false); // @linter
 }
 
-Value Value::subtract(Value a, Value b)
+Value Value::subtract(Value a, Value b, Assoc_Ptr assoc)
 {
-	validate_same_type(a, b);
+	validate_same_type(a, b, assoc);
 	switch (a.type) {
 	case TYPE_INTEGER:
 		return Value::raise(a.integer - b.integer);
 	default:
-		fatal("- not valid for type");
+		fatal_assoc(assoc, "- not valid for type");
 	}
 	assert(false); // @linter
 }
 
-Value Value::multiply(Value a, Value b)
+Value Value::multiply(Value a, Value b, Assoc_Ptr assoc)
 {
-	validate_same_type(a, b);
+	validate_same_type(a, b, assoc);
 	switch (a.type) {
 	case TYPE_INTEGER:
 		return Value::raise(a.integer * b.integer);
 	default:
-		fatal("* not valid for type");
+		fatal_assoc(assoc, "* not valid for type");
 	}
 	assert(false); // @linter
 }
 
-Value Value::divide(Value a, Value b)
+Value Value::divide(Value a, Value b, Assoc_Ptr assoc)
 {
-	validate_same_type(a, b);
+	validate_same_type(a, b, assoc);
 	switch (a.type) {
 	case TYPE_INTEGER:
 		return Value::raise(a.integer / b.integer);
 	default:
-		fatal("/ not valid for type");
+		fatal_assoc(assoc, "/ not valid for type");
 	}
 	assert(false); // @linter
 }
 
-bool Value::equal(Value a, Value b)
+bool Value::equal(Value a, Value b, Assoc_Ptr assoc)
 {
 	if (a.type != b.type) {
 		return false;
@@ -191,60 +191,60 @@ bool Value::equal(Value a, Value b)
 	assert(false); // @linter
 }
 
-bool Value::_and(Value a, Value b)
+bool Value::_and(Value a, Value b, Assoc_Ptr assoc)
 {
 	return a.truthy() && b.truthy();
 }
 
-bool Value::_or(Value a, Value b)
+bool Value::_or(Value a, Value b, Assoc_Ptr assoc)
 {
 	return a.truthy() || b.truthy();
 }
 
-bool Value::less_than(Value a, Value b)
+bool Value::less_than(Value a, Value b, Assoc_Ptr assoc)
 {
-	validate_same_type(a, b);
+	validate_same_type(a, b, assoc);
 	switch (a.type) {
 	case TYPE_INTEGER:
 		return a.integer < b.integer;
 	default:
-		fatal("< not valid for type");
+		fatal_assoc(assoc, "< not valid for type");
 	}
 	assert(false); // @linter
 }
 
-bool Value::greater_than(Value a, Value b)
+bool Value::greater_than(Value a, Value b, Assoc_Ptr assoc)
 {
-	validate_same_type(a, b);
+	validate_same_type(a, b, assoc);
 	switch (a.type) {
 	case TYPE_INTEGER:
 		return a.integer > b.integer;
 	default:
-		fatal("> not valid for type");
+		fatal_assoc(assoc, "> not valid for type");
 	}
 	assert(false); // @linter
 }
 
-bool Value::less_than_or_equal_to(Value a, Value b)
+bool Value::less_than_or_equal_to(Value a, Value b, Assoc_Ptr assoc)
 {
-	validate_same_type(a, b);
+	validate_same_type(a, b, assoc);
 	switch (a.type) {
 	case TYPE_INTEGER:
 		return a.integer <= b.integer;
 	default:
-		fatal("<= not valid for type");
+		fatal_assoc(assoc, "<= not valid for type");
 	}
 	assert(false); // @linter
 }
 
-bool Value::greater_than_or_equal_to(Value a, Value b)
+bool Value::greater_than_or_equal_to(Value a, Value b, Assoc_Ptr assoc)
 {
-	validate_same_type(a, b);
+	validate_same_type(a, b, assoc);
 	switch (a.type) {
 	case TYPE_INTEGER:
 		return a.integer >= b.integer;
 	default:
-		fatal(">= not valid for type");
+		fatal_assoc(assoc, ">= not valid for type");
 	}
 	assert(false); // @linter
 }

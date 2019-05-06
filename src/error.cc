@@ -4,6 +4,33 @@ struct Assoc {
 	size_t position;
 };
 
+typedef int Assoc_Ptr;
+
+namespace Assoc_Allocator {
+	List<Assoc> assocs;
+	void init()
+	{
+		assocs.alloc();
+	}
+	void destroy()
+	{
+		assocs.dealloc();
+	}
+	Assoc_Ptr make(const char * source, size_t source_length, size_t position)
+	{
+		assocs.push((Assoc) { source, source_length, position });
+		return assocs.size - 1;
+	}
+	Assoc get(Assoc_Ptr pointer)
+	{
+		return assocs[pointer];
+	}
+	Assoc * ptr(Assoc_Ptr pointer)
+	{
+		return &assocs[pointer];
+	}
+};
+
 #define RESET         "\e[0m"
 #define SET_BOLD      "\e[1m"
 #define SET_DIM       "\e[2m"
@@ -75,21 +102,27 @@ void print_assoc(Assoc assoc)
 	// Pointer char
 	printf("  ");
 	for (int i = 0; i < assoc.position - start; i++) {
-		printf(" ");
+		if (selection[i] == '\t') {
+			printf("\t");
+		} else {
+			printf(" ");
+		}
 	}
 	printf(RED("^") "\n");
 }
 
-void v_fatal_assoc(Assoc assoc, const char * fmt, va_list args)
+void v_fatal_assoc(Assoc_Ptr assoc, const char * fmt, va_list args)
 {
 	fprintf(stderr, RED(BOLD("encountered error")) ":\n");
 	vfprintf(stderr, fmt, args);
 	printf("\n");
-	print_assoc(assoc);
+	if (assoc != -1) {
+		print_assoc(Assoc_Allocator::get(assoc));
+	}
 	abort();
 }
 
-void fatal_assoc(Assoc assoc, const char * fmt, ...)
+void fatal_assoc(Assoc_Ptr assoc, const char * fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);

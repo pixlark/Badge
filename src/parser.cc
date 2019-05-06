@@ -167,15 +167,13 @@ Expr * Parser::parse_add_subtract()
 {
 	auto left = parse_multiply_divide();
 	while (is('+') || is('-')) {
-		Operator op;
-		if (match('+')) {
-			op = OP_ADD;
-		} else if (match('-')) {
-			op = OP_SUBTRACT;
-		} else assert(false);
 		auto expr = create_expr(EXPR_BINARY);
+		if (match('+')) {
+			expr->binary.op = OP_ADD;
+		} else if (match('-')) {
+			expr->binary.op = OP_SUBTRACT;
+		} else assert(false);
 		expr->binary.left = left;
-		expr->binary.op = op;
 		expr->binary.right = parse_multiply_divide();
 		left = expr;
 	}
@@ -186,19 +184,17 @@ Expr * Parser::parse_comparisons()
 {
 	auto left = parse_add_subtract();
 	while (is('<') || is('>') || is(TOKEN_LTE) || is(TOKEN_GTE)) {
-		Operator op;
-		if (match('<')) {
-			op = OP_LESS_THAN;
-		} else if (match('>')) {
-			op = OP_GREATER_THAN;
-		} else if (match(TOKEN_LTE)) {
-			op = OP_LESS_THAN_OR_EQUAL_TO;
-		} else if (match(TOKEN_GTE)) {
-			op = OP_GREATER_THAN_OR_EQUAL_TO;
-		} else assert(false);
 		auto expr = create_expr(EXPR_BINARY);
+		if (match('<')) {
+			expr->binary.op = OP_LESS_THAN;
+		} else if (match('>')) {
+			expr->binary.op = OP_GREATER_THAN;
+		} else if (match(TOKEN_LTE)) {
+			expr->binary.op = OP_LESS_THAN_OR_EQUAL_TO;
+		} else if (match(TOKEN_GTE)) {
+			expr->binary.op = OP_GREATER_THAN_OR_EQUAL_TO;
+		} else assert(false);
 		expr->binary.left = left;
-		expr->binary.op = op;
 		expr->binary.right = parse_add_subtract();
 		left = expr;
 	}

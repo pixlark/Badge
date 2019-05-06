@@ -22,7 +22,7 @@
 #include "compiler.cc"
 #include "vm.cc"
 
-#define OUTPUT_BYTECODE true
+#define OUTPUT_BYTECODE false
 #define DEBUG_OUTPUT false
 
 void work_from_source(const char * path)
@@ -133,9 +133,11 @@ int main(int argc, char ** argv)
 	Intern::init();
 	GC::init();
 	Builtins::init();
+	Assoc_Allocator::init();
 	
 	work_from_source(argv[1]);
-	
+
+	Assoc_Allocator::destroy();
 	Builtins::destroy();
 	GC::destroy();
 	Intern::destroy();

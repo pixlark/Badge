@@ -74,15 +74,15 @@ struct Value {
 	char * to_string();
 	void gc_mark();
 
-	static Value add(Value a, Value b);
-	static Value subtract(Value a, Value b);
-	static Value multiply(Value a, Value b);
-	static Value divide(Value a, Value b);
-	static bool equal(Value a, Value b);
-	static bool less_than(Value a, Value b);
-	static bool greater_than(Value a, Value b);
-	static bool less_than_or_equal_to(Value a, Value b);
-	static bool greater_than_or_equal_to(Value a, Value b);
-	static bool _and(Value a, Value b);
-	static bool _or(Value a, Value b);
+	static Value add(Value a, Value b, Assoc_Ptr assoc = -1);
+	static Value subtract(Value a, Value b, Assoc_Ptr assoc = -1);
+	static Value multiply(Value a, Value b, Assoc_Ptr assoc = -1);
+	static Value divide(Value a, Value b, Assoc_Ptr assoc = -1);
+	static bool equal(Value a, Value b, Assoc_Ptr assoc = -1);
+	static bool less_than(Value a, Value b, Assoc_Ptr assoc = -1);
+	static bool greater_than(Value a, Value b, Assoc_Ptr assoc = -1);
+	static bool less_than_or_equal_to(Value a, Value b, Assoc_Ptr assoc = -1);
+	static bool greater_than_or_equal_to(Value a, Value b, Assoc_Ptr assoc = -1);
+	static bool _and(Value a, Value b, Assoc_Ptr assoc = -1);
+	static bool _or(Value a, Value b, Assoc_Ptr assoc = -1);
 };
