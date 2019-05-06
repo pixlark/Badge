@@ -1,3 +1,2 @@
 let println = @builtin[println].
 
-print(nothing < nothing).

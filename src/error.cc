@@ -2,6 +2,7 @@ struct Assoc {
 	const char * source;
 	size_t source_length;
 	size_t position;
+	size_t extents;
 };
 
 typedef int Assoc_Ptr;
@@ -16,9 +17,9 @@ namespace Assoc_Allocator {
 	{
 		assocs.dealloc();
 	}
-	Assoc_Ptr make(const char * source, size_t source_length, size_t position)
+	Assoc_Ptr make(const char * source, size_t source_length, size_t position, size_t extents)
 	{
-		assocs.push((Assoc) { source, source_length, position });
+		assocs.push((Assoc) { source, source_length, position, extents });
 		return assocs.size - 1;
 	}
 	Assoc get(Assoc_Ptr pointer)
@@ -108,7 +109,10 @@ void print_assoc(Assoc assoc)
 			printf(" ");
 		}
 	}
-	printf(RED("^") "\n");
+	for (int i = 0; i < assoc.extents; i++) {
+		printf(RED("^"));
+	}
+	printf("\n");
 }
 
 void v_fatal_assoc(Assoc_Ptr assoc, const char * fmt, va_list args)
