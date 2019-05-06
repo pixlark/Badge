@@ -237,6 +237,10 @@ struct VM {
 			auto a = pop();
 			push(Value::divide(a, b));
 		} break;
+		case BC_NEGATE: {
+			auto a = pop();
+			push(Value::subtract(Value::raise(0), a));
+		} break;
 		case BC_EQUAL: {
 			auto b = pop();
 			auto a = pop();

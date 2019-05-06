@@ -25,6 +25,7 @@ struct Parser {
 	Expr * parse_atom();
 	Expr * parse_field_access();
 	Expr * parse_function_call();
+	Expr * parse_unary();
 	Expr * parse_multiply_divide();
 	Expr * parse_add_subtract();
 	Expr * parse_comparisons();
@@ -126,9 +127,26 @@ Expr * Parser::parse_function_call()
 	return left;
 }
 
+Expr * Parser::parse_unary()
+{
+	if (is('-') || is(TOKEN_NOT)) {
+		Operator op;
+		if (match('-')) {
+			op = OP_NEGATE;
+		} else if (match(TOKEN_NOT)) {
+			op = OP_NOT;
+		} else assert(false);
+		auto expr = create_expr(EXPR_UNARY);
+		expr->unary.op = op;
+		expr->unary.expr = parse_unary();
+		return expr;
+	}
+	return parse_function_call();
+}
+
 Expr * Parser::parse_multiply_divide()
 {
-	auto left = parse_function_call();
+	auto left = parse_unary();
 	while (is('*') || is('/')) {
 		Operator op;
 		if (match('*')) {
@@ -139,7 +157,7 @@ Expr * Parser::parse_multiply_divide()
 		auto expr = create_expr(EXPR_BINARY);
 		expr->binary.left = left;
 		expr->binary.op = op;
-		expr->binary.right = parse_function_call();
+		expr->binary.right = parse_unary();
 		left = expr;
 	}
 	return left;

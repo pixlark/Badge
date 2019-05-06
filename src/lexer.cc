@@ -15,6 +15,7 @@ enum Token_Kind {
 	TOKEN_NOTHING,
 	TOKEN_OR,
 	TOKEN_AND,
+	TOKEN_NOT,
 	TOKEN_IF,
 	TOKEN_THEN,
 	TOKEN_ELIF,
@@ -34,7 +35,7 @@ enum Token_Kind {
 
 static const char * reserved_words[RESERVED_WORDS_COUNT] = {
 	"let", "set", "lambda", "return",
-	"nothing", "or", "and", "if", "then", "elif",
+	"nothing", "or", "and", "not", "if", "then", "elif",
 	"else", "this", "loop", "break",
 };
 

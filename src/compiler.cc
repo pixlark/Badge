@@ -28,7 +28,7 @@ struct Compiler {
 	{
 		switch (op) {
 		case OP_NEGATE:
-			fatal("Unimplemented");
+			push(BC::create(BC_NEGATE, assoc));
 			break;
 		case OP_ADD:
 			push(BC::create(BC_ADD, assoc));
@@ -65,6 +65,9 @@ struct Compiler {
 			break;
 		case OP_OR:
 			push(BC::create(BC_OR, assoc));
+			break;
+		case OP_NOT:
+			push(BC::create(BC_NOT, assoc));
 			break;
 		}
 	}

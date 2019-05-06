@@ -12,6 +12,7 @@ enum BC_Kind {
 	BC_SUBTRACT,
 	BC_MULTIPLY,
 	BC_DIVIDE,
+	BC_NEGATE,
 	// comparison
 	BC_EQUAL,
 	BC_NOT_EQUAL,
@@ -56,6 +57,7 @@ static const char * BC_Kind_names[] = {
 	"SUBTRACT",
 	"MULTIPLY",
 	"DIVIDE",
+	"NEGATE",
 	"EQUAL",
 	"NOT_EQUAL",
 	"GREATER_THAN",

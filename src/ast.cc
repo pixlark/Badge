@@ -60,6 +60,7 @@ enum Operator {
 	OP_GREATER_THAN_OR_EQUAL_TO,
 	OP_AND,
 	OP_OR,
+	OP_NOT,
 };
 
 enum Expr_Kind {
