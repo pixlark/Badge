@@ -1,0 +1,3 @@
+$$ "import_export.bdg" out
+5040
+$$ "bad_export.bdg" error
