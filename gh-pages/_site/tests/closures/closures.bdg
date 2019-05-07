@@ -1,7 +1,0 @@
-let println = @builtin[println].
-
-let simple_closure = lambda (x) lambda () x.
-println(simple_closure(111)()).
-
-let curry = lambda (x) (lambda (y) (lambda (z) (z + y + x))).
-println(curry(1)(2)(4)).

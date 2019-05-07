@@ -1,7 +1,0 @@
-let println = @builtin[println].
-
-println((1 + 2) * 3).
-println(9 / 3).
-println(9 / 4).
-println(9 - 4 - 3).
-println(15 / 5 / 5).

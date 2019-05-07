@@ -1,3 +1,0 @@
-let println = @builtin[println].
-let abs = @builtin[abs].
-println(abs(0 - 32)).

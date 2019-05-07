@@ -1,1 +1,0 @@
-let fact = @builtin[fact]

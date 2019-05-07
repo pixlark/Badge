@@ -1,4 +1,0 @@
-let println = @builtin[println].
-
-set x = 15.
-print(x).
