@@ -1,0 +1,20 @@
+let println = @builtin[println].
+
+let f = lambda (x) {
+	return lambda () 10.
+}.
+
+println((f(1))()).
+
+set f = lambda (x) lambda () 10.
+println((f(1))()).
+
+let g = lambda () lambda () lambda () 5.
+println(g).
+println(g()).
+println(g()()).
+println(g()()()).
+
+let h = lambda () nothing.
+println(h).
+println(h()).

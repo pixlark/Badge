@@ -1,0 +1,9 @@
+let println = @builtin[println].
+
+let fact =
+  lambda (x) if x == 0
+  		 	 then 1
+			 else x * fact(x - 1).
+
+println(fact(0)).
+println(fact(7)).

@@ -1,0 +1,14 @@
+let println = @builtin[println].
+
+let t = 1.
+let f = nothing.
+
+println(f or f).
+println(f or t).
+println(t or f).
+println(t or t).
+
+println(f and f).
+println(f and t).
+println(t and f).
+println(t and t).

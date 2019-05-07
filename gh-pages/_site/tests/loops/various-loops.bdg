@@ -1,0 +1,33 @@
+let print = @builtin[print].
+let println = @builtin[println].
+
+%% something simple
+
+let z = 2.
+let x = loop {
+	if z == 5 then {
+		break z.
+	}.
+	set z = z + 1.
+}.
+println(x).
+
+%% fibonacci
+% note: this is terrible Badge code; loops should not be used for
+% something that's so easy recursively...
+
+let a = 0.
+let b = 1.
+let c = 0.
+loop {
+	let tmp = b.
+	set b = a + b.
+	set a = tmp.
+	if c == 10 then {
+	   break nothing.
+	}.
+	set c = c + 1.
+}.
+print(a).
+print(" ").
+println(b).

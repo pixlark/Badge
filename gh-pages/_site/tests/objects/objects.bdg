@@ -1,0 +1,16 @@
+let println = @builtin[println].
+
+let f = lambda () {
+	let Constructor = @struct[a, b, c].
+	Constructor(5, 4, 1)
+}.
+
+let obj = f().
+println(obj'a).
+println(obj'b).
+println(obj'c).
+
+set obj'c = "foo".
+println(obj'a).
+println(obj'b).
+println(obj'c).

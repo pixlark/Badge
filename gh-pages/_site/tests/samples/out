@@ -1,0 +1,65 @@
+$$ "helloworld.bdg" out
+hello, world!
+$$ "factorial.bdg" out
+1
+5040
+$$ "gcd.bdg" out
+4998
+$$ "fibonacci.bdg" out
+1
+1
+2
+3
+5
+8
+13
+21
+$$ "isprime.bdg" out
+2 prime!
+3 prime!
+4 not prime
+5 prime!
+6 not prime
+7 prime!
+8 not prime
+9 not prime
+10 not prime
+11 prime!
+12 not prime
+13 prime!
+14 not prime
+15 not prime
+16 not prime
+17 prime!
+18 not prime
+19 prime!
+20 not prime
+21 not prime
+22 not prime
+23 prime!
+24 not prime
+25 not prime
+26 not prime
+27 not prime
+28 not prime
+29 prime!
+30 not prime
+31 prime!
+32 not prime
+33 not prime
+34 not prime
+35 not prime
+36 not prime
+37 prime!
+38 not prime
+39 not prime
+40 not prime
+41 prime!
+42 not prime
+43 prime!
+44 not prime
+45 not prime
+46 not prime
+47 prime!
+48 not prime
+49 not prime
