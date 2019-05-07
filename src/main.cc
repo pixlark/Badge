@@ -124,10 +124,9 @@ void work_from_source(const char * path)
 		case VM_OK:
 			break;
 		case VM_HALTED: {
-			VM old_vm = vm_stack.pop();
-			old_vm.destroy();
-			continue;
-		}
+			vm->destroy();
+			vm_stack.pop();
+		} break;
 		case VM_SWITCH: {
 			VM new_vm;
 			new_vm.init(&blocks, vm->block_reference_to_push);
@@ -137,6 +136,8 @@ void work_from_source(const char * path)
 			assert(false);
 		}
 
+		// This should ALWAYS run before the loop breaks, that way
+		// anything that needs to get cleaned up, will be.
 		#if COLLECTION
 		do {
 			#if RELEASE
@@ -153,21 +154,8 @@ void work_from_source(const char * path)
 		#endif
 	}
 
-	/*
-	while (!vm.halted()) {
-		vm.step();
-		#if DEBUG_OUTPUT
-		vm.print_debug_info();
-		#endif
-		}*/
-	#if DEBUG_OUTPUT
-	vm.print_debug_info();
-	#endif
-
-	/*
-	GC::unmark_all();
-	vm.mark_reachable();
-	GC::free_unmarked();*/
+	assert(vm_stack.size == 0);
+	vm_stack.dealloc();
 	
 	blocks.destroy();
 }
