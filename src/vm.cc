@@ -47,11 +47,18 @@ struct Call_Frame {
 	}
 };
 
+enum VM_Response {
+	VM_OK,
+	VM_HALTED,
+	VM_SWITCH,
+};
+
 struct VM {
 	Blocks * blocks;
 	List<Value> stack;
 	List<Call_Frame*> call_stack;
 	Assoc_Ptr current_assoc;
+	size_t block_reference_to_push;
 	
 	void init(Blocks * blocks, size_t block_reference)
 	{
@@ -149,10 +156,10 @@ struct VM {
 		error("Variable '%s' is not bound", symbol);
 		assert(false); // @linter
 	}
-	void step()
+	VM_Response step()
 	{	
 		if (halted()) {
-			return;
+			return VM_HALTED;
 		}
 		
 		/* Manage call stack and VM halting */
@@ -177,7 +184,7 @@ struct VM {
 					for (int i = 0; i < remaining; i++) {
 						pop();
 					}
-					return;
+					return VM_HALTED;
 				}
 				
 				// Update frame reference
@@ -474,34 +481,13 @@ struct VM {
 			frame->bc_pointer = exit_pos;
 		} break;
 		case BC_RUN_FILE_UNIT: {
-			int block_reference = pop_integer();
-			// Run a new VM from this block
-			/* This means that every new file we open up does a huge
-			   stack increase... is there any other way to do it
-			   though? Maybe we can pre-run these files or something.
-			   -Paul T. Mon May 6 23:23:33 2019 */
-			// this whole thing is fucking dumb...
-			VM vm;
-			vm.init(blocks, block_reference);
-			while (!vm.halted()) {
-				vm.step();
-			}
-			vm.destroy();
+			block_reference_to_push = pop_integer();
+			push(Value::nothing());
+			return VM_SWITCH;
 		} break;
 		}
 
-		#if COLLECTION
-		do {
-			#if RELEASE
-			if (GC::past_watermark()) {
-				break;
-			}
-			#endif
-			GC::unmark_all();
-			mark_reachable();
-			GC::free_unmarked();
-		} while(0);
-		#endif
+		return VM_OK;
 	}
 	// TODO(pixlark): This function is a right mess. Clean this up at
 	// some point.

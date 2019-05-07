@@ -108,24 +108,68 @@ void work_from_source(const char * path)
 	
 	// Finally, just run our bytecode through the VM, starting with
 	// `block_reference` 0
-	VM vm;
-	vm.init(&blocks, 0);
+	List<VM> vm_stack;
+	vm_stack.alloc();
+
+	{
+		VM vm;
+		vm.init(&blocks, 0);
+		vm_stack.push(vm);
+	}
+
+	while (vm_stack.size > 0) {
+		auto vm = &vm_stack[vm_stack.size - 1];
+		auto response = vm->step();
+		switch (response) {
+		case VM_OK:
+			break;
+		case VM_HALTED: {
+			VM old_vm = vm_stack.pop();
+			old_vm.destroy();
+			continue;
+		}
+		case VM_SWITCH: {
+			VM new_vm;
+			new_vm.init(&blocks, vm->block_reference_to_push);
+			vm_stack.push(new_vm);
+		} break;
+		default:
+			assert(false);
+		}
+
+		#if COLLECTION
+		do {
+			#if RELEASE
+			if (GC::past_watermark()) {
+				break;
+			}
+			#endif
+			GC::unmark_all();
+			for (int i = 0; i < vm_stack.size; i++) {
+				vm_stack[i].mark_reachable();
+			}
+			GC::free_unmarked();
+		} while(0);
+		#endif
+	}
+
+	/*
 	while (!vm.halted()) {
 		vm.step();
 		#if DEBUG_OUTPUT
 		vm.print_debug_info();
 		#endif
-	}
+		}*/
 	#if DEBUG_OUTPUT
 	vm.print_debug_info();
 	#endif
-	
+
+	/*
 	GC::unmark_all();
 	vm.mark_reachable();
-	GC::free_unmarked();
+	GC::free_unmarked();*/
 	
 	blocks.destroy();
-	vm.destroy();
 }
 
 int main(int argc, char ** argv)
