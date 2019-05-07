@@ -1,9 +1,8 @@
-;;(load "/usr/share/emacs/24.5/lisp/emacs-lisp/regexp-opt.el")
-
 (defvar badge-mode-hook nil)
 
 (defvar badge-mode-map
   (let ((map (make-keymap)))
+	(define-key map (kbd "TAB") 'self-insert-command)
     map)
   "Keymap for Badge major mode")
 

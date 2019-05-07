@@ -6,3 +6,12 @@ let factorial = lambda (x) if   x == 0
 
 println(factorial(7)). % should be 4040
 
+[-
+  multiline comment
+-]
+
+let Object = @struct[a, b, c].
+let o = Object(1, 2, 3).
+println(o'b).
+
+println("string literal!")
