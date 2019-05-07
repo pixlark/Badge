@@ -42,6 +42,7 @@ font-lock-warning-face"
 			`(,(get-badge-builtins) (0 font-lock-builtin-face))
 			`(,(get-badge-constants) (0 font-lock-constant-face))
 			'("\\(@\\)\\([_A-Za-z0-9]+\\)" (0 font-lock-preprocessor-face))
+			'("'" (0 font-lock-constant-face))
 			;;'("%[^\n]*" (0 font-lock-comment-face))))
 			))
 
@@ -51,6 +52,7 @@ font-lock-warning-face"
 	  (let ((table (make-syntax-table)))
 		(modify-syntax-entry ?% "<" table)
 		(modify-syntax-entry ?\n ">" table)
+		(modify-syntax-entry ?\" "\"" table)
 		(modify-syntax-entry ?\[ ". 1b" table)  ; `.` indicates
 												; punctuation. `1b`
 												; indicates that it is
