@@ -3,6 +3,7 @@
 #include "includes.cc"
 #include "allocator.cc"
 #include "list.cc"
+#include "global_alloc.cc"
 #include "map.cc"
 #include "string-builder.cc"
 #include "intern.cc"
@@ -25,49 +26,19 @@
 #define OUTPUT_BYTECODE false
 #define DEBUG_OUTPUT false
 
-void work_from_source(const char * path)
+const char * load_and_compile_file(Blocks * blocks, const char * filename)
 {
-	const char * source;
-	
-	if (strcmp(path, "-") == 0) {
-		// Read from stdin
-		String_Builder builder;
-		const int chunk_size = 64;
-		char buf[chunk_size];
-		
-		size_t read;
-		while ((read = fread(buf, sizeof(char), chunk_size, stdin)) == chunk_size) {
-			builder.append_size(buf, chunk_size);
-		}
-		if (ferror(stdin)) {
-			fatal("Error reading from stdin");
-		}
-		assert(read <= chunk_size);
-		builder.append_size(buf, read);
-		source = builder.final_string();
-	} else {
-		// Read from file
-		source = load_string_from_file(path);
-		if (!source) {
-			fatal("File does not exist");
-		}
+	const char * source = load_string_from_file(filename);
+	if (!source) {
+		return NULL;
 	}
-
 	Lexer lexer;
 	lexer.init(source);
 	Parser parser;
 	parser.init(&lexer);
 
-	// `Blocks` stores all compiled bytecode in reverse dependent
-	// order. This is for freeing/serialization, as well as
-	// references from the VM.
-	Blocks blocks;
-	blocks.init();
-
-	// Our main compiler; will have `block_reference` of 0
 	Compiler compiler;
-	compiler.init(&blocks);
-
+	compiler.init(blocks);
 	while (!parser.is(TOKEN_EOF)) {
 		// The parser feeds from the lexer and returns one
 		// statement's worth of abstract syntax tree
@@ -84,9 +55,43 @@ void work_from_source(const char * path)
 		free(stmt);
 	}
 
-	// Finalize our zeroth block and clean up compiler
+	// Because file scopes are called just like functions, they need
+	// to leave something behind on the stack.
+	compiler.push(BC::create(BC_LOAD_CONST, Value::nothing(), -1));
+	
 	compiler.finalize();
 	compiler.destroy();
+
+	return source;
+}
+
+void work_from_source(const char * path)
+{
+	/*
+	if (strcmp(path, "-") == 0) {
+		// Read from stdin
+		String_Builder builder;
+		const int chunk_size = 64;
+		char buf[chunk_size];
+		
+		size_t read;
+		while ((read = fread(buf, sizeof(char), chunk_size, stdin)) == chunk_size) {
+			builder.append_size(buf, chunk_size);
+		}
+		if (ferror(stdin)) {
+			fatal("Error reading from stdin");
+		}
+		assert(read <= chunk_size);
+		builder.append_size(buf, read);
+		source = builder.final_string();
+		}*/
+
+	Blocks blocks;
+	blocks.init();
+	const char * source = load_and_compile_file(&blocks, path);
+	if (!source) {
+		fatal("File '%s' does not exist!", path);
+	}
 
 	#if OUTPUT_BYTECODE
 	for (int i = 0; i < blocks.blocks.size; i++) {
@@ -121,7 +126,6 @@ void work_from_source(const char * path)
 	
 	blocks.destroy();
 	vm.destroy();
-	free((char*) source);
 }
 
 int main(int argc, char ** argv)
@@ -130,6 +134,7 @@ int main(int argc, char ** argv)
 		fatal("Provide one source file");
 	}
 
+	Global_Alloc::init();
 	Intern::init();
 	GC::init();
 	Builtins::init();
@@ -141,6 +146,7 @@ int main(int argc, char ** argv)
 	Builtins::destroy();
 	GC::destroy();
 	Intern::destroy();
+	Global_Alloc::destroy();
 	
 	return 0;
 }

@@ -163,11 +163,7 @@ struct VM {
 			
 			// If our call frame has come to an implicit end
 			while (frame->bc_pointer >= frame->bc_length) {
-				if (call_stack.size == 1) {
-					assert(stack.size == 0);
-				} else {
-					assert(stack.size > 0);
-				}
+				assert(stack.size > 0);
 
 				return_function();
 				

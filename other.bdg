@@ -1,0 +1,3 @@
+let println = @builtin[println].
+
+print("other.bdg").

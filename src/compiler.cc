@@ -135,11 +135,6 @@ struct Compiler {
 							expr->assoc));
 			Compiler compiler;
 			compiler.init(blocks);
-			/*
-			auto body = expr->lambda.body;
-			for (int i = 0; i < body.size; i++) {
-				compiler.compile_stmt(body[i]);
-				}*/
 			compiler.compile_expr(expr->lambda.body);
 			compiler.finalize();
 			compiler.destroy();
@@ -227,6 +222,28 @@ struct Compiler {
 				}
 				push(BC::create(BC_LOAD_CONST, Value::raise(args.size), expr->assoc));
 				push(BC::create(BC_CONSTRUCT_CONSTRUCTOR, expr->assoc));
+			} else if (name == Intern::intern("import")) {
+				// @import directive
+				if (args.size != 1) {
+					fatal_assoc(expr->assoc, "@import directive expects one argument");
+				}
+				if (args[0]->kind != EXPR_STRING) {
+					fatal_assoc(args[0]->assoc, "@import directive expects constant string");
+				}
+				// Compile file into our global Blocks
+				auto filename = args[0]->string;
+				size_t block_reference = blocks->upcoming_block();
+				auto source = load_and_compile_file(blocks, filename);
+				if (!source) {
+					fatal_assoc(args[0]->assoc, "Source file '%s' does not exist", filename);
+				}
+				// Create dummy function to call the root block
+				push(BC::create(BC_LOAD_CONST, Value::raise(0), expr->assoc));
+				push(BC::create(BC_LOAD_CONST, Value::raise(0), expr->assoc));
+				push(BC::create(BC_CONSTRUCT_FUNCTION,
+								block_reference,
+								expr->assoc));
+				push(BC::create(BC_POP_AND_CALL_FUNCTION, expr->assoc));
 			} else {
 				// No such directive
 				fatal_assoc(expr->assoc, "No such directive as '%s'", name);

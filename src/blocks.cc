@@ -12,6 +12,10 @@ struct Blocks {
 		sizes.push(0);
 		return blocks.size - 1;
 	}
+	size_t upcoming_block()
+	{
+		return blocks.size;
+	}
 	void finalize_block(size_t reference, BC * block, size_t size)
 	{
 		blocks[reference] = block;
@@ -35,3 +39,5 @@ struct Blocks {
 		sizes.dealloc();
 	}
 };
+
+const char * load_and_compile_file(Blocks * blocks, const char * filename);
