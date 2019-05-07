@@ -1,4 +1,6 @@
-let println = @builtin[println].
-println("source.bdg").
-
 @import["other.bdg"].
+
+let println = @builtin[println].
+println(x).
+println(y).
+

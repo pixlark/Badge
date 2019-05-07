@@ -240,14 +240,14 @@ struct Compiler {
 				// @Warning: Implicit cast from size_t->int
 				push(BC::create(BC_LOAD_CONST, Value::raise(block_reference), expr->assoc));
 				push(BC::create(BC_RUN_FILE_UNIT, expr->assoc));
-				/*
-				// Create dummy function to call the root block
-				push(BC::create(BC_LOAD_CONST, Value::raise(0), expr->assoc));
-				push(BC::create(BC_LOAD_CONST, Value::raise(0), expr->assoc));
-				push(BC::create(BC_CONSTRUCT_FUNCTION,
-								block_reference,
-								expr->assoc));
-								push(BC::create(BC_POP_AND_CALL_FUNCTION, expr->assoc));*/
+			} else if (name == Intern::intern("export")) {
+				for (int i = 0; i < args.size; i++) {
+					if (args[i]->kind != EXPR_VARIABLE) {
+						fatal_assoc(args[i]->assoc, "@export directive expects constant symbols");
+					}
+					push(BC::create(BC_LOAD_CONST, Value::raise(args[i]->variable), args[i]->assoc));
+					push(BC::create(BC_EXPORT_SYMBOL, args[i]->assoc));
+				}
 			} else {
 				// No such directive
 				fatal_assoc(expr->assoc, "No such directive as '%s'", name);

@@ -1,3 +1,4 @@
-let println = @builtin[println].
+@export[x, y].
 
-println("other.bdg").
+let x = 1500.
+let y = 12.

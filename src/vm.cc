@@ -53,17 +53,26 @@ enum VM_Response {
 	VM_SWITCH,
 };
 
+struct Export {
+	Symbol symbol;
+	Assoc_Ptr assoc;
+};
+
 struct VM {
 	Blocks * blocks;
+	Environment * export_scope;
+	List<Export> export_queue;
 	List<Value> stack;
 	List<Call_Frame*> call_stack;
 	Assoc_Ptr current_assoc;
 	size_t block_reference_to_push;
 	
-	void init(Blocks * blocks, size_t block_reference)
+	void init(Blocks * blocks, Environment * export_scope, size_t block_reference)
 	{
 		this->blocks = blocks;
-		
+		this->export_scope = export_scope;
+
+		export_queue.alloc();
 		stack.alloc();
 		
 		call_stack.alloc();
@@ -77,6 +86,7 @@ struct VM {
 	}
 	void destroy()
 	{
+		export_queue.dealloc();
 		stack.dealloc();
 		// The call stack should be empty if we're destructing
 		assert(call_stack.size == 0);
@@ -112,6 +122,8 @@ struct VM {
 	}
 	void mark_reachable()
 	{
+		GC::mark_opaque(export_scope);
+		export_scope->gc_mark();
 		for (int i = 0; i < call_stack.size; i++) {
 			call_stack[i]->gc_mark();
 		}
@@ -153,8 +165,28 @@ struct VM {
 		if (global->environment->resolve_binding(symbol, &value)) {
 			return value;
 		}
+		// Finally, check in our export scope
+		if (export_scope->resolve_binding(symbol, &value)) {
+			return value;
+		}
 		error("Variable '%s' is not bound", symbol);
 		assert(false); // @linter
+	}
+	void do_halting_tasks()
+	{
+		// Push exported names to export_scope
+		for (int i = 0; i < export_queue.size; i++) {
+			auto _export = export_queue[i];
+			current_assoc = _export.assoc;
+			auto val = resolve_binding(_export.symbol);
+			export_scope->create_binding(_export.symbol, val);
+		}
+		// Clear out the stack so that the garbage
+		// collector can clean everything up
+		size_t remaining = stack.size;
+		for (int i = 0; i < remaining; i++) {
+			pop();
+		}
 	}
 	VM_Response step()
 	{	
@@ -172,20 +204,14 @@ struct VM {
 			while (frame->bc_pointer >= frame->bc_length) {
 				assert(stack.size > 0);
 
-				return_function();
-				
-				if (halted()) { // If we've just returned from global
-								// scope, we're halted and should
-								// return
-					
-					// First, clear out the stack so that the garbage
-					// collector can clean everything up
-					size_t remaining = stack.size;
-					for (int i = 0; i < remaining; i++) {
-						pop();
-					}
+				if (call_stack.size == 1) {
+					// If we're about to return from global scope, we
+					// need to do some special stuff
+					do_halting_tasks();
+					return_function();
 					return VM_HALTED;
 				}
+				return_function();
 				
 				// Update frame reference
 				frame = frame_reference();
@@ -484,6 +510,11 @@ struct VM {
 			block_reference_to_push = pop_integer();
 			push(Value::nothing());
 			return VM_SWITCH;
+		} break;
+		case BC_EXPORT_SYMBOL: {
+			auto symbol = pop_symbol();
+			export_queue.push((Export) { symbol, bc.assoc });
+			push(Value::nothing());
 		} break;
 		}
 

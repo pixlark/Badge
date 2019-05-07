@@ -105,6 +105,8 @@ void work_from_source(const char * path)
 		}
 	}
 	#endif
+
+	auto export_scope = Environment::alloc();
 	
 	// Finally, just run our bytecode through the VM, starting with
 	// `block_reference` 0
@@ -113,7 +115,7 @@ void work_from_source(const char * path)
 
 	{
 		VM vm;
-		vm.init(&blocks, 0);
+		vm.init(&blocks, export_scope, 0);
 		vm_stack.push(vm);
 	}
 
@@ -129,13 +131,13 @@ void work_from_source(const char * path)
 		} break;
 		case VM_SWITCH: {
 			VM new_vm;
-			new_vm.init(&blocks, vm->block_reference_to_push);
+			new_vm.init(&blocks, export_scope, vm->block_reference_to_push);
 			vm_stack.push(new_vm);
 		} break;
 		default:
 			assert(false);
 		}
-
+		
 		// This should ALWAYS run before the loop breaks, that way
 		// anything that needs to get cleaned up, will be.
 		#if COLLECTION
