@@ -232,11 +232,13 @@ struct Compiler {
 				}
 				// Compile file into our global Blocks
 				auto filename = args[0]->string;
+				auto path = Files::path_for_file(filename);
 				size_t block_reference = blocks->upcoming_block();
-				auto source = load_and_compile_file(blocks, filename);
+				auto source = load_and_compile_file(blocks, path);
 				if (!source) {
-					fatal_assoc(args[0]->assoc, "Source file '%s' does not exist", filename);
+					fatal_assoc(args[0]->assoc, "Source file '%s' does not exist", path);
 				}
+				free((void*) path);
 				// @Warning: Implicit cast from size_t->int
 				push(BC::create(BC_LOAD_CONST, Value::raise(block_reference), expr->assoc));
 				push(BC::create(BC_RUN_FILE_UNIT, expr->assoc));

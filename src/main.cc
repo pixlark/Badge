@@ -6,6 +6,7 @@
 #include "global_alloc.cc"
 #include "map.cc"
 #include "string-builder.cc"
+#include "files.cc"
 #include "intern.cc"
 #include "utility.cc"
 #include "error.cc"
@@ -163,11 +164,12 @@ void work_from_source(const char * path)
 }
 
 int main(int argc, char ** argv)
-{
+{	
 	if (argc != 2) {
 		fatal("Provide one source file");
 	}
 
+	Files::init(argv[1]);
 	Global_Alloc::init();
 	Intern::init();
 	GC::init();
@@ -181,6 +183,7 @@ int main(int argc, char ** argv)
 	GC::destroy();
 	Intern::destroy();
 	Global_Alloc::destroy();
+	Files::destroy();
 	
 	return 0;
 }
