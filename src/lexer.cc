@@ -127,7 +127,7 @@ struct Lexer {
 Token Lexer::create_token(Token_Kind kind, size_t size)
 {
 	auto token = Token::with_kind(kind);
-	token.assoc = Assoc_Allocator::make(source, source_length, cursor - size, size);
+	token.assoc = Assoc_Allocator::make(source, source_length, cursor - size, size, line);
 	return token;
 }
 
@@ -284,7 +284,7 @@ Token Lexer::next_token()
 			//return Token::with_kind((Token_Kind) '[');
 		}
 	default:
-		fatal_assoc(Assoc_Allocator::make(source, source_length, cursor, 1),
+		fatal_assoc(Assoc_Allocator::make(source, source_length, cursor, 1, line),
 					"Line %d\nMisplaced character %c (%d)", line, peek(), peek());
 		/*
 	case ';':

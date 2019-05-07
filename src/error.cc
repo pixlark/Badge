@@ -3,6 +3,7 @@ struct Assoc {
 	size_t source_length;
 	size_t position;
 	size_t extents;
+	size_t line;
 };
 
 typedef int Assoc_Ptr;
@@ -17,9 +18,9 @@ namespace Assoc_Allocator {
 	{
 		assocs.dealloc();
 	}
-	Assoc_Ptr make(const char * source, size_t source_length, size_t position, size_t extents)
+	Assoc_Ptr make(const char * source, size_t source_length, size_t position, size_t extents, size_t line)
 	{
-		assocs.push((Assoc) { source, source_length, position, extents });
+		assocs.push((Assoc) { source, source_length, position, extents, line });
 		return assocs.size - 1;
 	}
 	Assoc get(Assoc_Ptr pointer)
@@ -76,6 +77,7 @@ void fatal(const char * fmt, ...)
 
 void print_assoc(Assoc assoc)
 {
+	printf(DIM(":%zu\n"), assoc.line);
 	size_t start = assoc.position;
 	while (true) {
 		if (start == 0) {

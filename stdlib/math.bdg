@@ -1,0 +1,4 @@
+@export[abs, mod].
+
+let abs = @builtin[abs].
+let mod = @builtin[mod].

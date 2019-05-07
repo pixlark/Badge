@@ -1,4 +1,0 @@
-@export[x, y].
-
-let x = 1500.
-let y = 12.
