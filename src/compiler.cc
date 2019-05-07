@@ -237,13 +237,17 @@ struct Compiler {
 				if (!source) {
 					fatal_assoc(args[0]->assoc, "Source file '%s' does not exist", filename);
 				}
+				// @Warning: Implicit cast from size_t->int
+				push(BC::create(BC_LOAD_CONST, Value::raise(block_reference), expr->assoc));
+				push(BC::create(BC_RUN_FILE_UNIT, expr->assoc));
+				/*
 				// Create dummy function to call the root block
 				push(BC::create(BC_LOAD_CONST, Value::raise(0), expr->assoc));
 				push(BC::create(BC_LOAD_CONST, Value::raise(0), expr->assoc));
 				push(BC::create(BC_CONSTRUCT_FUNCTION,
 								block_reference,
 								expr->assoc));
-				push(BC::create(BC_POP_AND_CALL_FUNCTION, expr->assoc));
+								push(BC::create(BC_POP_AND_CALL_FUNCTION, expr->assoc));*/
 			} else {
 				// No such directive
 				fatal_assoc(expr->assoc, "No such directive as '%s'", name);

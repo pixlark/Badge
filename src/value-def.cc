@@ -48,6 +48,10 @@ struct Object {
 	}
 };
 
+struct File_Unit {
+	size_t block_reference;
+};
+
 char * Value::to_string()
 {
 	switch (type) {
@@ -71,6 +75,8 @@ char * Value::to_string()
 		return strdup("@[constructor]");
 	case TYPE_OBJECT:
 		return strdup("@[object]");
+	case TYPE_FILE_UNIT:
+		assert(false);
 	}
 	assert(false); // @linter
 }
@@ -101,6 +107,9 @@ void Value::gc_mark()
 	case TYPE_OBJECT:
 		GC::mark_opaque(ref_object);
 		ref_object->gc_mark();
+		break;
+	case TYPE_FILE_UNIT:
+		GC::mark_opaque(ref_file_unit);
 		break;
 	}
 }
@@ -187,6 +196,8 @@ bool Value::equal(Value a, Value b, Assoc_Ptr assoc)
 		return a.ref_constructor == b.ref_constructor;
 	case TYPE_OBJECT:
 		return a.ref_object == b.ref_object;
+	case TYPE_FILE_UNIT:
+		assert(false);
 	}
 	assert(false); // @linter
 }

@@ -473,6 +473,21 @@ struct VM {
 			int exit_pos = frame->body_stack.pop();
 			frame->bc_pointer = exit_pos;
 		} break;
+		case BC_RUN_FILE_UNIT: {
+			int block_reference = pop_integer();
+			// Run a new VM from this block
+			/* This means that every new file we open up does a huge
+			   stack increase... is there any other way to do it
+			   though? Maybe we can pre-run these files or something.
+			   -Paul T. Mon May 6 23:23:33 2019 */
+			// this whole thing is fucking dumb...
+			VM vm;
+			vm.init(blocks, block_reference);
+			while (!vm.halted()) {
+				vm.step();
+			}
+			vm.destroy();
+		} break;
 		}
 
 		#if COLLECTION

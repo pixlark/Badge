@@ -7,6 +7,7 @@ enum Type {
 	TYPE_FUNCTION,
 	TYPE_CONSTRUCTOR,
 	TYPE_OBJECT,
+	TYPE_FILE_UNIT,
 };
 
 struct Builtin;
@@ -14,6 +15,7 @@ struct String;
 struct Function;
 struct Constructor;
 struct Object;
+struct File_Unit;
 
 struct Value {
 	Type type;
@@ -25,6 +27,7 @@ struct Value {
 		Function * ref_function;
 		Constructor * ref_constructor;
 		Object * ref_object;
+		File_Unit * ref_file_unit;
 	};
 	static Value create(Type type)
 	{

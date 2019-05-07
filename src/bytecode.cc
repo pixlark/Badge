@@ -45,6 +45,8 @@ enum BC_Kind {
 	// bodies
 	BC_PUSH_BODY,
 	BC_BREAK_BODY,
+	// file units
+	BC_RUN_FILE_UNIT,
 };
 
 static const char * BC_Kind_names[] = {
@@ -78,11 +80,12 @@ static const char * BC_Kind_names[] = {
 	"POP_JUMP",
 	"ENTER_SCOPE",
 	"EXIT_SCOPE",
-	"BC_CONSTRUCT_CONSTRUCTOR",
-	"BC_RESOLVE_FIELD",
-	"BC_UPDATE_FIELD",
-	"BC_PUSH_BODY",
-	"BC_BREAK_BODY",
+	"CONSTRUCT_CONSTRUCTOR",
+	"RESOLVE_FIELD",
+	"UPDATE_FIELD",
+	"PUSH_BODY",
+	"BREAK_BODY",
+	"RUN_FILE_UNIT",
 };
 
 struct BC {
