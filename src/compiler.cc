@@ -227,12 +227,17 @@ struct Compiler {
 				if (args.size != 1) {
 					fatal_assoc(expr->assoc, "@import directive expects one argument");
 				}
-				if (args[0]->kind != EXPR_STRING) {
-					fatal_assoc(args[0]->assoc, "@import directive expects constant string");
+				const char * path;
+				if (args[0]->kind == EXPR_STRING) {
+					auto filename = args[0]->string;
+					path = Files::path_for_file(filename);
+				} else if (args[0]->kind == EXPR_VARIABLE) {
+					auto filename = args[0]->variable;
+					path = Files::stdlib_file(filename);
+				} else {
+					fatal_assoc(args[0]->assoc, "@import directive expects constant string or symbol");
 				}
 				// Compile file into our global Blocks
-				auto filename = args[0]->string;
-				auto path = Files::path_for_file(filename);
 				size_t block_reference = blocks->upcoming_block();
 				auto source = load_and_compile_file(blocks, path);
 				if (!source) {

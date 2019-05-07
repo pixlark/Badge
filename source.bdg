@@ -1,6 +1,5 @@
+@import[prelude].
 @import["other.bdg"].
 
-let println = @builtin[println].
 println(x).
 println(y).
-

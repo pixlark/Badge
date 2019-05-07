@@ -3,6 +3,7 @@ namespace Files {
 	const char * first_file;
 	const char * cwd;
 	const char * running_dir;
+	const char * stdlib_dir;
 	void init(const char * first_file)
 	{
 		Files::first_file = strdup(first_file);
@@ -33,6 +34,18 @@ namespace Files {
 			
 			running_dir = builder.final_string();
 		}
+		{ // set stdlib dir
+			String_Builder builder;
+			auto env_variable = getenv("BADGE_STDLIB_PATH");
+			if (!env_variable) {
+				fatal("$BADGE_STDLIB_PATH not set!");
+			}
+			builder.append(env_variable);
+			if (builder.at(builder.size() - 1) != '/') {
+				builder.append("/");
+			}
+			stdlib_dir = builder.final_string();
+		}
 	}
 	void destroy()
 	{
@@ -40,11 +53,19 @@ namespace Files {
 		free((void*) cwd);
 		free((void*) first_file);
 	}
-
+	const char * stdlib_file(const char * name)
+	{
+		String_Builder builder;
+		builder.append(stdlib_dir);
+		builder.append(name);
+		builder.append(".bdg");
+		return builder.final_string();
+	}
 	const char * path_for_file(const char * filename)
 	{
-		char buf[path_max];
-		sprintf(buf, "%s%s", running_dir, filename);
-		return strdup(buf);
+		String_Builder builder;
+		builder.append(running_dir);
+		builder.append(filename);
+		return builder.final_string();
 	}
 }

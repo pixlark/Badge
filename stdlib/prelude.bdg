@@ -1,0 +1,4 @@
+@export[print, println].
+
+let print = @builtin[print].
+let println = @builtin[println].

@@ -6,6 +6,8 @@ struct String_Builder {
 	~String_Builder();
 	void append(const char * s);
 	void append_size(const char * s, size_t size);
+	size_t size();
+	char at(size_t i);
 	char * final_string();
 };
 
@@ -39,6 +41,17 @@ char * String_Builder::final_string()
 	strncpy(str, builder.arr, builder.size);
 	str[builder.size] = '\0';
 	return str;
+}
+
+size_t String_Builder::size()
+{
+	return builder.size;
+}
+
+char String_Builder::at(size_t i)
+{
+	assert(i < builder.size);
+	return builder[i];
 }
 
 //

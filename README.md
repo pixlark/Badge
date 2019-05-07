@@ -112,3 +112,13 @@ The `@export` directive defines which names from your file you want to be export
 let println = @builtin[println].
 ```
 
+To run any program, you need to point to the **standard library**. This is done by setting the environment variable `BADGE_STDLIB_PATH` to the path of the library before running the interpreter.
+
+To use something from the standard library, use an `@import` directive using a symbol rather than a string:
+
+```
+@import[prelude].
+
+println("Hello, world!").
+```
+
