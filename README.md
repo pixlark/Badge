@@ -93,3 +93,22 @@ And finally, the `'` operator is used to access the fields of an object:
 println(p'x).
 println(p'y).
 ```
+
+**Imports and Exports** are the way you split code up among multiple files.
+
+The `@import` directive takes a path to some file, in relation to the file you're currently running, and runs it. Anything exported by that file gets pulled into your global namespace:
+
+```
+@import["print_routines.bdg"].
+
+println("Hello!").
+```
+
+The `@export` directive defines which names from your file you want to be exported:
+
+```
+@export[println].
+
+let println = @builtin[println].
+```
+
