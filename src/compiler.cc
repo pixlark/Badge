@@ -269,6 +269,7 @@ struct Compiler {
 			push(BC::create(BC_RESOLVE_FIELD, expr->assoc));
 		} break;
 		case EXPR_LOOP: {
+			#if 0
 			if (expr->loop.for_expr) {
 				/*
 				 * Limited loop
@@ -302,24 +303,24 @@ struct Compiler {
 				push(BC::create(BC_POP_AND_DISCARD, expr->assoc));
 				// If we exit without a break, the loop evaluates to `nothing`
 				push(BC::create(BC_LOAD_CONST, Value::nothing(), expr->assoc));
-			} else {
-				/*
-				 * Infinite loop
-				 */
-				int push_body_pos = bytecode.size;
-				push(BC::create(BC_PUSH_BODY, expr->assoc));
-			
-				int jump_pos = bytecode.size;
-				compile_expr(expr->loop.body);
-			
-				push(BC::create(BC_POP_AND_DISCARD, expr->assoc));
-				push(BC::create(BC_JUMP, jump_pos, expr->assoc));
-			
-				int exit_pos = bytecode.size;
-				push(BC::create(BC_NOP, expr->assoc));
-			
-				bytecode[push_body_pos].arg.integer = exit_pos;
 			}
+			#endif
+			/*
+			 * Infinite loop
+			 */
+			int push_body_pos = bytecode.size;
+			push(BC::create(BC_PUSH_BODY, expr->assoc));
+			
+			int jump_pos = bytecode.size;
+			compile_expr(expr->loop.body);
+			
+			push(BC::create(BC_POP_AND_DISCARD, expr->assoc));
+			push(BC::create(BC_JUMP, jump_pos, expr->assoc));
+			
+			int exit_pos = bytecode.size;
+			push(BC::create(BC_NOP, expr->assoc));
+			
+			bytecode[push_body_pos].arg.integer = exit_pos;
 		} break;
 		}
 	}

@@ -284,11 +284,6 @@ Expr * Parser::parse_loop()
 	if (match(TOKEN_LOOP)) {
 		// Check for `for` expression
 		auto loop = create_expr(EXPR_LOOP);
-		if (match(TOKEN_FOR)) {
-			loop->loop.for_expr = parse_expr();
-		} else {
-			loop->loop.for_expr = NULL;
-		}
 		loop->loop.body = parse_expr();
 		return loop;
 	} else {

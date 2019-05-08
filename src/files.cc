@@ -49,6 +49,7 @@ namespace Files {
 	}
 	void destroy()
 	{
+		free((void*) stdlib_dir);
 		free((void*) running_dir);
 		free((void*) cwd);
 		free((void*) first_file);
