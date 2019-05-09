@@ -2,7 +2,7 @@
 
 Badge is a mostly-functional programming language inspired variously by Scheme, OCaml, Python, and Rust.
 
-## Overview
+## The Language
 
 The main workhorse of Badge is the expression; pretty much everything you want to do can be expressed as a type of expression.
 
@@ -35,6 +35,8 @@ Here are some examples of scopes:
 } % Prints `nothing`, evaluates to `nothing`
 ```
 
+Our basic **types** are few: integers (`let x = 1`) and strings (`let s = "string"`).
+
 **Statements**, which can only exist at top-level or inside scopes, involve more imperative paradigms that any traditional programmer will be familiar with. They are terminated with a period (`.`):
 
 ```
@@ -48,6 +50,28 @@ println(x).
 
 % outputs 12, followed by `nothing`
 ```
+
+**If expressions** are our branching control structure. They take the following form:
+
+```
+if   <condition>
+then <consequence>
+elif <condition
+then <consequence>
+...
+else <consequence>
+```
+
+An if expression is an *expression* because it will evaluate to the evaluation of whichever path is chosen.
+
+The conditions of an if expression can evaluate to anything, as we take the Lisp route of having everything except for the `nothing` value mean true, and the `nothing` value mean false:
+
+```
+println(1 == 0). % 'nothing'
+println(1 == 1). % Could be anything, in practice the default truth value is '1'
+```
+
+The standard library defines two constants, `true` and `false`, which are equivalent to `1` and `nothing`, respectively.
 
 **Lambdas** are an important type of expression, and the only way to create new functions:
 
@@ -68,11 +92,26 @@ let complex = lambda (x, y) {
 println(complex(1, 2)). % Outputs 484
 ```
 
-Built-in functions that can't be expressed in terms of pure Badge are imported using the `@builtin` directive as so:
+The **this** keyword is used inside of lambda expressions to indicate recursion. This is generally preferred to using the name of the function directly, although that is also possible:
 
 ```
-let println = @builtin[println].
-println(12). % Outputs 12
+let factorial = lambda (n) if   n == 0
+                           then 1
+						   else n * this(n - 1).
+```
+
+**Loop expressions** are a simple looping control structure, for when recursion is a bit overkill. In general, however, recursion is the preferred way to do thing. Loop expressions take the following simple form:
+
+```
+loop <expr>
+```
+
+`<expr>` will repeat infinitely, until a `break` statement is run from within. A break statement needs to have some value passed to it, which is what the loop expression itself evaluates to. For example:
+
+```
+println(loop {
+	break 15.
+}). % This will print '15'
 ```
 
 **Constructors and Objects** are a simple way to store information together. The `@struct` directive is used to create new constructors:
@@ -121,4 +160,13 @@ To use something from the standard library, use an `@import` directive using a s
 
 println("Hello, world!").
 ```
+
+**Built-in functions** that can't be expressed in terms of pure Badge are imported using the `@builtin` directive as so:
+
+```
+let println = @builtin[println].
+println(12). % Outputs 12
+```
+
+Although this is done for you most of the time via the standard library.
 
