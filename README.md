@@ -92,7 +92,7 @@ let complex = lambda (x, y) {
 println(complex(1, 2)). % Outputs 484
 ```
 
-The **this** keyword is used inside of lambda expressions to indicate recursion. This is generally preferred to using the name of the function directly, although that is also possible:
+The **this** keyword is used inside of lambda expressions to indicate recursion. This is better practice than using the name of the function directly, although that is also possible:
 
 ```
 let factorial = lambda (n) if   n == 0
