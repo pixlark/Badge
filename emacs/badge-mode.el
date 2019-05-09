@@ -25,12 +25,12 @@ font-lock-warning-face"
   (regexp-opt badge-keywords 'symbols))
 
 (defconst badge-builtins
-  (list "for" "this" "or" "and" "not" "print" "println"))
+  (list "this" "or" "and" "not" "print" "println"))
 (defun get-badge-builtins ()
   (regexp-opt badge-builtins 'symbols))
 
 (defconst badge-constants
-  (list "nothing"))
+  (list "nothing" "true" "false"))
 (defun get-badge-constants ()
   (regexp-opt badge-constants 'symbols))
 

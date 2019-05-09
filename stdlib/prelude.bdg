@@ -1,4 +1,7 @@
-@export[print, println].
+@export[print, println, true, false].
 
 let print = @builtin[print].
 let println = @builtin[println].
+
+let true = 1.
+let false = nothing.

@@ -26,3 +26,6 @@ println(euler1(1000)).
 
 % Project Euler problem 2
 
+loop for 5 {
+	println("hola!").
+}.
