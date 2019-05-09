@@ -170,3 +170,11 @@ println(12). % Outputs 12
 
 Although this is done for you most of the time via the standard library.
 
+Finally, we have two types of **comments:**
+
+```
+% Line comment
+[-
+  block comment
+-]
+```
