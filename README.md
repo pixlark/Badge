@@ -1,6 +1,6 @@
 # Badge
 
-Badge is a mostly-functional programming language inspired variously by Scheme, OCaml, Python, and Rust.
+Badge is a primarily functional programming language inspired variously by Scheme, OCaml, Python, and Rust.
 
 ## The Language
 
