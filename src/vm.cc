@@ -351,11 +351,11 @@ struct VM {
 						  passed_arg_count);
 				}
 				Value * args = (Value*) malloc(sizeof(Value) * builtin->arg_count);
+				defer { free(args); };
 				for (int i = 0; i < builtin->arg_count; i++) {
 					args[i] = pop();
 				}
 				push((builtin->funcptr)(args));
-				free(args);
 			} else if (func_val.is(TYPE_CONSTRUCTOR)) {
 				auto ctor = func_val.ref_constructor;
 				auto object = (Object*) GC::alloc(sizeof(Object));
@@ -532,15 +532,15 @@ struct VM {
 			if (index < frame->bc_length) {
 				if (index > 0) {
 					char * s = frame->bytecode[index - 1].to_string();
+					defer { free(s); };
 					printf("%s\n", s);
-					free(s);
 				} else {
 					printf("POP_AND_CALL_FUNCTION\n"); // HACK
 				}
 			} else {
 				char * s = frame->bytecode[index - 1].to_string();
+				defer { free(s); };
 				printf("%s\n", s);
-				free(s);
 			}
 		} else {
 			printf(".HALTED.\n");
@@ -549,6 +549,7 @@ struct VM {
 		printf("    Stack\n");
 		for (int i = top_offset(); i >= 0; i--) {
 			char * s = stack[i].to_string();
+			defer { free(s); };
 			size_t len = strlen(s);
 
 			if (len < width) {
@@ -559,7 +560,6 @@ struct VM {
 			}
 
 			printf("%s\n", s);
-			free(s);
 		}
 		printf(".............\n");
 		printf("    Vars\n");
@@ -573,8 +573,8 @@ struct VM {
 					Value val;
 					env->resolve_binding(sym, &val);
 					char * s = val.to_string();
+					defer { free(s); };
 					printf("%s: %s\n", sym, s);
-					free(s);
 				}
 				env = env->next_env;
 				index++;

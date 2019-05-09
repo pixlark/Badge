@@ -34,9 +34,9 @@ enum Token_Kind {
 #define RESERVED_WORDS_COUNT (RESERVED_WORDS_END - RESERVED_WORDS_BEGIN)
 
 static const char * reserved_words[RESERVED_WORDS_COUNT] = {
-	"let", "set", "lambda", "return",
-	"nothing", "or", "and", "not", "if", "then", "elif",
-	"else", "this", "loop", "break",
+	"let",  "set",  "lambda", "return", "nothing",
+	"or",   "and",  "not",    "if",     "then",
+	"elif", "else", "this",   "loop",   "break",
 };
 
 struct Token {

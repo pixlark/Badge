@@ -45,16 +45,17 @@ const char * load_and_compile_file(Blocks * blocks, const char * filename)
 		// The parser feeds from the lexer and returns one
 		// statement's worth of abstract syntax tree
 		auto stmt = parser.parse_stmt();
+		defer {
+			stmt->destroy();
+			free(stmt);
+		};
+		
 		// Top-level expects terminators for every statement
 		parser.expect('.');
 
 		// Here we generate bytecode from our abstract syntax tree
 		// (one statement's worth)
 		compiler.compile_stmt(stmt);
-
-		// Abstract syntax tree gets freed
-		stmt->destroy();
-		free(stmt);
 	}
 
 	// Because file scopes are called just like functions, they need
