@@ -1,4 +1,10 @@
-Big changes:
+Definite changes:
 
-Try removing the break statement and replacing it with this idea: https://www.reddit.com/r/ProgrammingLanguages/comments/bmdfd6/finally_hit_a_point_with_a_language_where_im/emxo9xt/
+[ ] Tail-call optimization
+[ ] Garbage collection heuristics
 
+Experimental changes:
+
+[ ] Try removing the break statement and replacing it with this idea: https://www.reddit.com/r/ProgrammingLanguages/comments/bmdfd6/finally_hit_a_point_with_a_language_where_im/emxo9xt/
+
+[ ] Foreign function interface
