@@ -4,6 +4,7 @@ struct String_Builder {
 	List<char> builder;
 	String_Builder();
 	~String_Builder();
+	void add(char c);
 	void append(const char * s);
 	void append_size(const char * s, size_t size);
 	size_t size();
@@ -19,6 +20,11 @@ String_Builder::String_Builder()
 String_Builder::~String_Builder()
 {
 	builder.dealloc();
+}
+
+void String_Builder::add(char c)
+{
+	builder.push(c);
 }
 
 void String_Builder::append(const char * s)

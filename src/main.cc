@@ -1,6 +1,7 @@
 #define TAIL_CALL_OPTIMIZATION false
 
 #include "includes.cc"
+#include "defer.cc"
 #include "allocator.cc"
 #include "list.cc"
 #include "global_alloc.cc"
