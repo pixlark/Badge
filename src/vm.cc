@@ -195,7 +195,6 @@ struct VM {
 		}
 		
 		/* Manage call stack and VM halting */
-		// TODO(pixlark): Clean this mess up
 		Call_Frame * frame;
 		{
 			frame = frame_reference();
@@ -520,8 +519,6 @@ struct VM {
 
 		return VM_OK;
 	}
-	// TODO(pixlark): This function is a right mess. Clean this up at
-	// some point.
 	void print_debug_info()
 	{
 		printf("--- Frame ---\n");
