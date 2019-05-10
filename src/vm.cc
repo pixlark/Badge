@@ -387,31 +387,11 @@ struct VM {
 						  func->parameter_count,
 						  passed_arg_count);
 				}
-
-				#if TAIL_CALL_OPTIMIZATION
-				bool tail_call = false;
-				int i = frame->bc_pointer;
-				// Push past any non-interfering instructions
-				while (true) {
-					//while (frame->bytecode[i++].kind == BC_EXIT_SCOPE) {
-					if (i >= frame->bc_length ||
-						frame->bytecode[i].kind == BC_RETURN) {
-						tail_call = true;
-						break;
-					}
-					if (!frame->bytecode[i++].no_interference_with_tail_calls()) {
-						break;
-					}
-				}
-				if (tail_call) {
-					call_stack.pop();
-				}
-				#endif
-
+				
 				// Create our new call frame
 				call_stack.push(Call_Frame::alloc(blocks, func->block_reference,
 												  func, func->closure));
-			
+				
 				// Create bindings to pushed arguments
 				for (int i = 0; i < passed_arg_count; i++) {
 					auto value = pop();
