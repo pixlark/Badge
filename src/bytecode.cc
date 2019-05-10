@@ -158,4 +158,13 @@ struct BC {
 			}*/
 		return builder.final_string();
 	}
+	/* TODO(pixlark): Figure out what makes an instruction tail-call
+	 * safe, because this only covers the simplest of cases.
+	 */
+	static bool tail_call_safe(BC_Kind kind)
+	{
+		return
+			kind == BC_NOP ||
+			kind == BC_EXIT_SCOPE;
+	}
 };

@@ -1,0 +1,50 @@
+@import[prelude].
+
+[- Tail-call tests
+    These functions should take about one second (non-release build)
+    each to execute. If it takes longer (probably MUCH longer), then
+    tail-call optimization is not working properly.
+-]
+
+let N = 30000.
+
+% Simple implicit tail call
+let t0 = lambda (acc, n)
+			if n == 0
+			then acc
+			else this(acc + 1, n - 1).
+println(t0(0, N)).
+
+% Scope-based tail call
+let t1 = lambda (acc, n) {
+	if n == 0
+	then acc
+	else this(acc + 1, n - 1)
+}.
+println(t1(0, N)).
+
+% Explicit return statement
+let t2 = lambda (acc, n) {
+	return if n == 0
+		   then acc
+		   else this(acc + 1, n - 1).
+}.
+println(t2(0, N)).
+
+% Nested scopes tail call
+let t3 = lambda (acc, n) {
+	{
+		if n == 0
+		then acc
+		else this(acc + 1, n - 1)
+	}
+}.
+println(t3(0, N)).
+
+% Loop tail call
+let t4 = lambda (acc, n) loop {
+	if n == 0
+	then { break acc. }
+	else { break this(acc + 1, n - 1). }.
+}.
+println(t4(0, N)).

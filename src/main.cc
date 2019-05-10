@@ -1,4 +1,4 @@
-#define TAIL_CALL_OPTIMIZATION false
+#define TAIL_CALL_OPTIMIZATION true
 
 #include "includes.cc"
 #include "defer.cc"
@@ -25,7 +25,7 @@
 #include "compiler.cc"
 #include "vm.cc"
 
-#define OUTPUT_BYTECODE false
+#define OUTPUT_BYTECODE true
 #define DEBUG_OUTPUT false
 
 const char * load_and_compile_file(Blocks * blocks, const char * filename)
@@ -96,6 +96,19 @@ void work_from_source(const char * path)
 		fatal("File '%s' does not exist!", path);
 	}
 
+	#if OUTPUT_BYTECODE
+	for (int i = 0; i < blocks.blocks.size; i++) {
+		auto block = blocks.blocks[i];
+		auto size = blocks.sizes[i];
+		printf("Block %d:\n", i);
+		for (int j = 0; j < size; j++) {
+			char * s = block[j].to_string();
+			printf("%02d %s\n", j, s);
+			free(s);
+		}
+	}
+	#endif
+	
 	auto export_scope = Environment::alloc();
 	
 	// Finally, just run our bytecode through the VM, starting with
@@ -150,19 +163,6 @@ void work_from_source(const char * path)
 		} while(0);
 		#endif
 	}
-
-	#if OUTPUT_BYTECODE
-	for (int i = 0; i < blocks.blocks.size; i++) {
-		auto block = blocks.blocks[i];
-		auto size = blocks.sizes[i];
-		printf("Block %d:\n", i);
-		for (int j = 0; j < size; j++) {
-			char * s = block[j].to_string();
-			printf("%02d %s\n", j, s);
-			free(s);
-		}
-	}
-	#endif
 	
 	assert(vm_stack.size == 0);
 	vm_stack.dealloc();

@@ -393,7 +393,11 @@ struct VM {
 					bool is_tail_call = true;
 					size_t ptr = frame->bc_pointer;
 					while (ptr < frame->bc_length) {
-						if (frame->bytecode[ptr].kind != BC_NOP) {
+						auto kind = frame->bytecode[ptr].kind;
+						if (kind == BC_RETURN) {
+							break;
+						}
+						if (!BC::tail_call_safe(kind)) {
 							is_tail_call = false;
 							break;
 						}
