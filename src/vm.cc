@@ -387,6 +387,23 @@ struct VM {
 						  func->parameter_count,
 						  passed_arg_count);
 				}
+
+				#if TAIL_CALL_OPTIMIZATION
+				{
+					bool is_tail_call = true;
+					size_t ptr = frame->bc_pointer;
+					while (ptr < frame->bc_length) {
+						if (frame->bytecode[ptr].kind != BC_NOP) {
+							is_tail_call = false;
+							break;
+						}
+						ptr++;
+					}
+					if (is_tail_call) {
+						return_function();
+					}
+				}
+				#endif
 				
 				// Create our new call frame
 				call_stack.push(Call_Frame::alloc(blocks, func->block_reference,
