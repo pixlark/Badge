@@ -1,0 +1,74 @@
+@import[prelude].
+@import[math].
+
+let Node = @struct[data, next].
+
+let cons = lambda (head, tail)
+			Node(head, tail).
+
+let car = lambda (list)
+			list'data.
+
+let cdr = lambda (list)
+			list'next.
+
+let printlist = lambda (list)
+					if list == nothing
+					then println("nil")
+					else {
+						print(list'data).
+						print(" ").
+						this(list'next).
+					}.
+
+let length = lambda (list)
+				if list == nothing
+				then 0
+				else 1 + this(list'next).
+
+let largest_in_list = lambda (list) {
+	if length(list) == 0
+	then {
+		return nothing.
+	}.
+	
+	let helper = lambda (largest, list)
+					if list == nothing
+					then largest
+					else this(max(largest, list'data), list'next).
+	
+	helper(0, list)
+}.
+
+let filter = lambda (predicate, list)
+				if list == nothing
+				then nothing
+				else if predicate(list'data)
+					 then cons(list'data, this(predicate, list'next))
+					 else this(predicate, list'next).
+
+let runtests = lambda (name, list) {
+	println(name).
+
+	printlist(list).
+
+	print("Length: ").
+	println(length(list)).
+
+	print("Largest: ").
+	println(largest_in_list(list)).
+
+	print("Odds only: ").
+	printlist(filter(lambda (x) mod(x, 2) != 0, list)).
+
+	println("").
+}.
+
+runtests("Ascending",
+	cons(1, cons(2, cons(3, cons(4, cons(5, nothing)))))).
+runtests("Descending",
+	cons(5, cons(4, cons(3, cons(2, cons(1, nothing)))))).
+runtests("Arbitrary",
+	cons(10, cons(23, cons(5, cons(56, cons(17, nothing)))))).
+runtests("Empty",
+	nothing).

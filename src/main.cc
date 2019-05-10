@@ -25,7 +25,7 @@
 #include "compiler.cc"
 #include "vm.cc"
 
-#define OUTPUT_BYTECODE true
+#define OUTPUT_BYTECODE false
 #define DEBUG_OUTPUT false
 
 const char * load_and_compile_file(Blocks * blocks, const char * filename)

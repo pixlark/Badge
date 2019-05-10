@@ -1,7 +1,15 @@
-@export[print, println, true, false].
+@export[print, println, max, min, true, false].
 
 let print = @builtin[print].
 let println = @builtin[println].
+let max = lambda (a, b)
+	if a > b
+	then a
+	else b.
+let min = lambda (a, b)
+	if a < b
+	then a
+	else b.
 
 let true = 1.
 let false = nothing.
