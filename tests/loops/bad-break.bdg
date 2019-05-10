@@ -2,9 +2,9 @@ let print = @builtin[print].
 let println = @builtin[println].
 
 let f = lambda () {
-	break 5.
+    break 5.
 }.
 
 println(loop {
-	f().
+    f().
 }).

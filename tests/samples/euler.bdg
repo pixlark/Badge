@@ -4,22 +4,22 @@
 % Project Euler problem 1
 
 let euler1 =
-	lambda (n) {
-		let i = 1.
-		let acc = 0.
-		loop {
-			if i >= n
-			then {
-				break acc.
-			}.
-			if mod(i, 3) == 0 or
-			   mod(i, 5) == 0
-			then {
-				set acc = acc + i.
-			}.
-			set i = i + 1.
-		}
-	}.
+    lambda (n) {
+        let i = 1.
+        let acc = 0.
+        loop {
+            if i >= n
+            then {
+                break acc.
+            }.
+            if mod(i, 3) == 0 or
+               mod(i, 5) == 0
+            then {
+                set acc = acc + i.
+            }.
+            set i = i + 1.
+        }
+    }.
 
 % Should print '233168'
 println(euler1(1000)).

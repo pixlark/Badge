@@ -1,7 +1,7 @@
 let println = @builtin[println].
 
 let f = lambda (x) {
-	return lambda () 10.
+    return lambda () 10.
 }.
 
 println((f(1))()).

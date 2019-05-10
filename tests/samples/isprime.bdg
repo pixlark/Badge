@@ -3,24 +3,24 @@ let println = @builtin[println].
 let mod = @builtin[mod].
 
 let isprime = lambda (n) {
-	let helper = lambda (n, i) if   i == n
-			   	 			   then 1
-							   elif mod(n, i) == 0
-		   	 			   	   then nothing
-						   	   else helper(n, i + 1).
-	helper(n, 2)
+    let helper = lambda (n, i) if   i == n
+                               then 1
+                               elif mod(n, i) == 0
+                               then nothing
+                               else helper(n, i + 1).
+    helper(n, 2)
 }.
 
 (lambda (n, m) {
-	if n >= 50
-	then nothing
-	else {
-		print(n).
-		print(" ").
-		if isprime(n)
-		then print("prime!")
-		else print("not prime").
-		println("").
-		this(n + 1, m).
-	}.
+    if n >= 50
+    then nothing
+    else {
+        print(n).
+        print(" ").
+        if isprime(n)
+        then print("prime!")
+        else print("not prime").
+        println("").
+        this(n + 1, m).
+    }.
 })(2, 50).

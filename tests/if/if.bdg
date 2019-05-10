@@ -1,12 +1,12 @@
 let println = @builtin[println].
 
 println(if 1
-	    then 100
-	    else 200).
+        then 100
+        else 200).
 
 println(if nothing
-	    then 100
-	    else 200).
+        then 100
+        else 200).
 
 if nothing
 then nothing

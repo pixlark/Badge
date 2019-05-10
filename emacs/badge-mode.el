@@ -2,7 +2,7 @@
 
 (defvar badge-mode-map
   (let ((map (make-keymap)))
-	(define-key map (kbd "TAB") 'self-insert-command)
+	(define-key map (kbd "TAB") (lambda () (interactive) (insert "    ")))
     map)
   "Keymap for Badge major mode")
 

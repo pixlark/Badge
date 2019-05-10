@@ -5,10 +5,10 @@ let println = @builtin[println].
 
 let z = 2.
 let x = loop {
-	if z == 5 then {
-		break z.
-	}.
-	set z = z + 1.
+    if z == 5 then {
+        break z.
+    }.
+    set z = z + 1.
 }.
 println(x).
 
@@ -20,13 +20,13 @@ let a = 0.
 let b = 1.
 let c = 0.
 loop {
-	let tmp = b.
-	set b = a + b.
-	set a = tmp.
-	if c == 10 then {
-	   break nothing.
-	}.
-	set c = c + 1.
+    let tmp = b.
+    set b = a + b.
+    set a = tmp.
+    if c == 10 then {
+       break nothing.
+    }.
+    set c = c + 1.
 }.
 print(a).
 print(" ").
