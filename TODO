@@ -1,7 +1,7 @@
 Definite changes:
 
 [ ] Tail-call optimization
-[ ] Garbage collection heuristics
+[x] Garbage collection heuristics
 
 Experimental changes:
 

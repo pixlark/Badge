@@ -21,6 +21,14 @@ namespace GC {
 		probability_acc = 0.0;
 		allocation_acc = 0;
 	}
+	void heuristic_return()
+	{
+		probability_acc += 0.1;
+	}
+	void heuristic_exit_scope()
+	{
+		probability_acc += 0.05;
+	}
 	
 	void init()
 	{

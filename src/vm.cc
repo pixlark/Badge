@@ -133,6 +133,7 @@ struct VM {
 	}
 	void return_function()
 	{
+		GC::heuristic_return();
 		auto frame = call_stack.pop();
 		frame->destroy();
 		free(frame);
@@ -456,6 +457,7 @@ struct VM {
 		} break;
 		case BC_EXIT_SCOPE: {
 			frame->environment = frame->environment->next_env;
+			GC::heuristic_exit_scope();
 		} break;
 		case BC_CONSTRUCT_CONSTRUCTOR: {
 			auto count = pop_integer();
