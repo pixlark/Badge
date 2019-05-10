@@ -144,9 +144,10 @@ void work_from_source(const char * path)
 		#if COLLECTION
 		do {
 			#if RELEASE
-			if (GC::past_watermark()) {
+			if (!GC::should_collect()) {
 				break;
 			}
+			GC::reset_heuristics();
 			#endif
 			GC::unmark_all();
 			for (int i = 0; i < vm_stack.size; i++) {

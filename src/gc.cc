@@ -1,14 +1,31 @@
 #define COLLECTION true
-#define COLLECT_WATERMARK 20
 #define SHOW_TOTAL_ALLOCATIONS false
 #define SHOW_COLLECTIONS false
 
 namespace GC {
 	List<void*> allocations;
+
+	float  probability_acc;
+	size_t allocation_acc;
+	// Collect at least every N allocated bytes
+	const size_t allocation_tip_pt = 1024;
+
+	bool should_collect()
+	{
+		return
+			probability_acc >= 1.0 ||
+			allocation_acc >= allocation_tip_pt;
+	}
+	void reset_heuristics()
+	{
+		probability_acc = 0.0;
+		allocation_acc = 0;
+	}
 	
 	void init()
 	{
 		allocations.alloc();
+		reset_heuristics();
 	}
 	void destroy()
 	{
@@ -24,6 +41,7 @@ namespace GC {
 	}
 	void * alloc(size_t size)
 	{
+		allocation_acc += size;
 		void * ptr = malloc(size + 1);
 		allocations.push(ptr);
 		return raw_to_opaque(ptr);
@@ -66,10 +84,6 @@ namespace GC {
 		allocations.dealloc();
 		allocations = new_allocations;
 	}
-	bool past_watermark()
-	{
-		return allocations.size >= COLLECT_WATERMARK;
-	}
-
+	
 	Allocator allocator = Allocator::construct(alloc, release);
 }
