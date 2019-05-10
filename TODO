@@ -1,6 +1,6 @@
 Definite changes:
 
-[ ] Tail-call optimization
+[x] Tail-call optimization
 [x] Garbage collection heuristics
 
 Experimental changes:

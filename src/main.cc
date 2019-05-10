@@ -1,4 +1,4 @@
-#define TAIL_CALL_OPTIMIZATION true
+#define TAIL_CALL_OPTIMIZATION false
 
 #include "includes.cc"
 #include "defer.cc"
