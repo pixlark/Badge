@@ -237,13 +237,13 @@ struct Compiler {
 				} else {
 					fatal_assoc(args[0]->assoc, "@import directive expects constant string or symbol");
 				}
+				defer { free((void*) path); };
 				// Compile file into our global Blocks
 				size_t block_reference = blocks->upcoming_block();
 				auto source = load_and_compile_file(blocks, path);
 				if (!source) {
 					fatal_assoc(args[0]->assoc, "Source file '%s' does not exist", path);
 				}
-				free((void*) path);
 				// @Warning: Implicit cast from size_t->int
 				push(BC::create(BC_LOAD_CONST, Value::raise(block_reference), expr->assoc));
 				push(BC::create(BC_RUN_FILE_UNIT, expr->assoc));

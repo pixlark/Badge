@@ -23,7 +23,6 @@ enum Token_Kind {
 	TOKEN_THIS,
 	TOKEN_LOOP,
 	TOKEN_BREAK,
-	TOKEN_WHILE,
 	
 	TOKEN_SYMBOL,
 	TOKEN_INTEGER_LITERAL,
@@ -35,9 +34,9 @@ enum Token_Kind {
 #define RESERVED_WORDS_COUNT (RESERVED_WORDS_END - RESERVED_WORDS_BEGIN)
 
 static const char * reserved_words[RESERVED_WORDS_COUNT] = {
-	"let", "set", "lambda", "return",
-	"nothing", "or", "and", "not", "if", "then", "elif",
-	"else", "this", "loop", "break", "while",
+	"let",  "set",  "lambda", "return", "nothing",
+	"or",   "and",  "not",    "if",     "then",
+	"elif", "else", "this",   "loop",   "break",
 };
 
 struct Token {
@@ -188,51 +187,48 @@ Token Lexer::next_token()
 	if (peek() == '"') {
 		size_t start = cursor;
 		advance();
-		// TODO(pixlark): Buffer overflow
-		char buf[512];
-		size_t i = 0;
+		
+		String_Builder builder;
 		while (peek() != '"') {
-			buf[i++] = next();
+			builder.add(next());
 		}
-		buf[i++] = '\0';
 		advance();
+		char * s = builder.final_string();
+		defer { free(s); };
 		
 		Token token = create_token(TOKEN_STRING_LITERAL, cursor - start);
-		token.values.string = Intern::intern(buf); // string literals are technically symbols
+		token.values.string = Intern::intern(s); // string literals are technically symbols
 		return token;
 	}
 	
 	if (isalpha(peek()) || peek() == '_') {
-		// TODO(pixlark): Buffer overflow
-		char buf[512];
-		size_t i = 0;
+		String_Builder builder;
 		while (isalnum(peek()) || peek() == '_') {
-			buf[i++] = next();
+			builder.add(next());
 		}
-		buf[i++] = '\0';
-
+		char * s = builder.final_string();
+		defer { free(s); };
+		
 		for (int i = 0; i < RESERVED_WORDS_COUNT; i++) {
-			if (strcmp(buf, reserved_words[i]) == 0) {
-				return create_token((Token_Kind) (RESERVED_WORDS_BEGIN + i), strlen(buf));
-				//return Token::with_kind((Token_Kind) (RESERVED_WORDS_BEGIN + i));
+			if (strcmp(s, reserved_words[i]) == 0) {
+				return create_token((Token_Kind) (RESERVED_WORDS_BEGIN + i), builder.size());
 			}
 		}
 		
-		Token token = create_token(TOKEN_SYMBOL, strlen(buf));
-		token.values.symbol = Intern::intern(buf);
+		Token token = create_token(TOKEN_SYMBOL, builder.size());
+		token.values.symbol = Intern::intern(s);
 		return token;
 	}
 
 	if (isdigit(peek())) {
-		// TODO(pixlark): Buffer overflow
-		char buf[512];
-		size_t i = 0;
+		String_Builder builder;
 		while (isdigit(peek())) {
-			buf[i++] = next();
+			builder.add(next());
 		}
-		buf[i++] = '\0';
-		Token token = create_token(TOKEN_INTEGER_LITERAL, strlen(buf));
-		token.values.integer = strtol(buf, NULL, 10);
+		char * s = builder.final_string();
+		defer { free(s); };
+		Token token = create_token(TOKEN_INTEGER_LITERAL, builder.size());
+		token.values.integer = strtol(s, NULL, 10);
 		return token;
 	}
 	

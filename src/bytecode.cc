@@ -137,14 +137,14 @@ struct BC {
 		switch (kind) {
 		case BC_LOAD_CONST: {
 			char * s = arg.value.to_string();
+			defer { free(s); };
 			builder.append(s);
-			free(s);
 		} break;
 		case BC_JUMP:
 		case BC_POP_JUMP: {
 			char * s = itoa(arg.integer);
+			defer { free(s); };
 			builder.append(s);
-			free(s);
 		} break;
 		default:
 			break;

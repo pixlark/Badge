@@ -43,16 +43,16 @@ namespace Builtins {
 	{
 		PULL_ONE(v);
 		char * s = v.to_string();
+		defer { free(s); };
 		printf("%s", s);
-		free(s);
 		return Value::nothing();
 	}
 	DEFINE(println)
 	{
 		PULL_ONE(v);
 		char * s = v.to_string();
+		defer { free(s); };
 		printf("%s\n", s);
-		free(s);
 		return Value::nothing();
 	}	
 	// Bridge
