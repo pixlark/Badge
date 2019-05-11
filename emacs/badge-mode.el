@@ -83,6 +83,9 @@ font-lock-warning-face"
   (use-local-map badge-mode-map)
   
   (set (make-local-variable 'font-lock-defaults) '(badge-font-lock-keywords))
+  (set (make-local-variable 'indent-tabs-mode) nil)
+  ;;(setq-local 'indent-tabs-mode nil nil)
+  ;;(setq-local 'indent-local-function #'indent-relative) 
 
   (setq major-mode 'badge-mode)
   (setq mode-name "Badge")
