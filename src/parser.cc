@@ -110,6 +110,7 @@ Expr * Parser::parse_function_call()
 	auto left = parse_field_access();
 	while (match('(')) {
 		auto expr = create_expr(EXPR_FUNCALL);
+		expr->assoc = left->assoc;
 		expr->funcall.func = left;
 		expr->funcall.args.alloc();
 		while (true) {
