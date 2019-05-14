@@ -16,15 +16,15 @@ let printlist = lambda (list)
                     if list == nothing
                     then println("nil")
                     else {
-                        print(list'data).
+                        print(car(list)).
                         print(" ").
-                        this(list'next).
+                        this(cdr(list)).
                     }.
 
 let length = lambda (list)
                 if list == nothing
                 then 0
-                else 1 + this(list'next).
+                else 1 + this(cdr(list)).
 
 let largest_in_list = lambda (list) {
     if length(list) == 0
@@ -35,7 +35,7 @@ let largest_in_list = lambda (list) {
     let helper = lambda (largest, list)
                     if list == nothing
                     then largest
-                    else this(max(largest, list'data), list'next).
+                    else this(max(largest, car(list)), cdr(list)).
     
     helper(0, list)
 }.
@@ -43,9 +43,9 @@ let largest_in_list = lambda (list) {
 let filter = lambda (predicate, list)
                 if list == nothing
                 then nothing
-                else if predicate(list'data)
-                     then cons(list'data, this(predicate, list'next))
-                     else this(predicate, list'next).
+                else if predicate(car(list))
+                     then cons(car(list), this(predicate, cdr(list)))
+                     else this(predicate, cdr(list)).
 
 let runtests = lambda (name, list) {
     println(name).
