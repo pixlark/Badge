@@ -49,6 +49,7 @@ font-lock-warning-face"
   "Badge mode syntax table")
 (setq badge-mode-syntax-table
 	  (let ((table (make-syntax-table)))
+		(modify-syntax-entry ?' "." table)
 		(modify-syntax-entry ?% "<" table)
 		(modify-syntax-entry ?\n ">" table)
 		(modify-syntax-entry ?\" "\"" table)
