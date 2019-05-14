@@ -2,7 +2,7 @@
 
 Badge is a primarily functional programming language inspired variously by Scheme, OCaml, Python, and Rust.
 
-*If you want to see something a little more complex, check out*  [this test file](https://github.com/pixlark/Badge/blob/master/tests/samples/linked-list.bdg) *which implements a simple linked in Badge.*
+*If you want to see something a little more complex, check out*  [this test file](https://github.com/pixlark/Badge/blob/master/tests/samples/linked-list.bdg) *which implements a linked list in Badge.*
 
 ## The Language
 
