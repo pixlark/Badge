@@ -68,22 +68,27 @@ const char * load_and_compile_file(Blocks * blocks, const char * filename)
 	return source;
 }
 
-void run(Blocks * blocks, )
-{
-	
-}
-
-void repl()
-{
-	Blocks blocks;
-	blocks.init();
-
-	auto export_scope = Environment::alloc();
-	
-}
-
 void work_from_source(const char * path)
 {
+	/*
+	if (strcmp(path, "-") == 0) {
+		// Read from stdin
+		String_Builder builder;
+		const int chunk_size = 64;
+		char buf[chunk_size];
+		
+		size_t read;
+		while ((read = fread(buf, sizeof(char), chunk_size, stdin)) == chunk_size) {
+			builder.append_size(buf, chunk_size);
+		}
+		if (ferror(stdin)) {
+			fatal("Error reading from stdin");
+		}
+		assert(read <= chunk_size);
+		builder.append_size(buf, read);
+		source = builder.final_string();
+		}*/
+
 	Blocks blocks;
 	blocks.init();
 	const char * source = load_and_compile_file(&blocks, path);
@@ -166,10 +171,8 @@ void work_from_source(const char * path)
 }
 
 int main(int argc, char ** argv)
-{
-	bool repl = argc == 1;
-	
-	if (!repl && argc != 2) {
+{	
+	if (argc != 2) {
 		fatal("Provide one source file");
 	}
 
@@ -179,12 +182,8 @@ int main(int argc, char ** argv)
 	GC::init();
 	Builtins::init();
 	Assoc_Allocator::init();
-
-	if (repl) {
-		repl();
-	} else {
-		work_from_source(argv[1]);
-	}
+	
+	work_from_source(argv[1]);
 
 	Assoc_Allocator::destroy();
 	Builtins::destroy();
