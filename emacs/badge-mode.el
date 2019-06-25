@@ -20,7 +20,8 @@ font-lock-warning-face"
 (defconst badge-keywords
   (list "let" "set" "lambda" "return"
 		"if" "then" "elif"
-		"else" "loop" "break"))
+		"else" "loop" "break"
+		"func"))
 (defun get-badge-keywords ()
   (regexp-opt badge-keywords 'symbols))
 

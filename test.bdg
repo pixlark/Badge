@@ -1,0 +1,7 @@
+@import[prelude].
+
+func f(x) {
+    return x * x.
+}.
+
+println(f(12)).

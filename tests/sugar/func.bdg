@@ -1,0 +1,11 @@
+@import[prelude].
+
+func square(n) n * n.
+
+func print_wrap(str) {
+    println(str).
+}.
+
+println(square(12)).
+print_wrap(true).
+print_wrap(false).

@@ -39,7 +39,8 @@ struct Parser {
 	Expr * parse_scope();
 	Expr * parse_directive();
 	Expr * parse_expr();
-	
+    
+    Stmt * parse_func();
 	Stmt * parse_let();
 	Stmt * parse_set();
 	Stmt * parse_return();
@@ -364,6 +365,23 @@ Expr * Parser::parse_expr()
 	return parse_scope();
 }
 
+Stmt * Parser::parse_func()
+{
+    Stmt * stmt = create_stmt(STMT_LET);
+    advance();
+
+    weak_expect(TOKEN_SYMBOL);
+    stmt->let.left = peek.values.symbol;
+    advance();
+
+    stmt->let.right = create_expr(EXPR_LAMBDA);
+    stmt->let.right->lambda.parameters =
+        parse_symbol_list((Token_Kind) '(', (Token_Kind) ')');
+    stmt->let.right->lambda.body = parse_expr();
+
+    return stmt;
+}
+
 Stmt * Parser::parse_let()
 {
 	Stmt * stmt = create_stmt(STMT_LET);
@@ -423,7 +441,9 @@ Stmt * Parser::parse_stmt()
 		stmt = parse_return();
 	} else if (is(TOKEN_BREAK)) {
 		stmt = parse_break();
-	} else {
+	} else if (is(TOKEN_FUNC)) {
+        stmt = parse_func();
+    } else {
 		stmt = create_stmt(STMT_EXPR);
 		stmt->expr = parse_expr();
 	}
