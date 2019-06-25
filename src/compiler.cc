@@ -282,25 +282,6 @@ struct Compiler {
             int exit_pos = bytecode.size;
             push(BC::create(BC_NOP, expr->assoc));
             bytecode[push_body_pos].arg.integer = exit_pos;
-            
-            #if 0
-			/*
-			 * Infinite loop
-			 */
-			int push_body_pos = bytecode.size;
-			push(BC::create(BC_PUSH_BODY, expr->assoc));
-			
-			int jump_pos = bytecode.size;
-			compile_expr(expr->loop.body);
-			
-			push(BC::create(BC_POP_AND_DISCARD, expr->assoc));
-			push(BC::create(BC_JUMP, jump_pos, expr->assoc));
-			
-			int exit_pos = bytecode.size;
-			push(BC::create(BC_NOP, expr->assoc));
-			
-			bytecode[push_body_pos].arg.integer = exit_pos;
-            #endif
 		} break;
 		}
 	}

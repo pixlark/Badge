@@ -1,17 +1,2 @@
 let println = @builtin[println].
 
-func fibonacci(n) { % LOL that's fibonacci
-    let a = 0.
-    let b = 1.
-    let counter = 0.
-    loop {
-        let tmp = b.
-        set b = b + a.
-        set a = tmp.
-        set counter = counter + 1.
-        println(a).
-        counter == n
-    }.
-}.
-
-fibonacci(10).
