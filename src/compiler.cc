@@ -269,42 +269,21 @@ struct Compiler {
 			push(BC::create(BC_RESOLVE_FIELD, expr->assoc));
 		} break;
 		case EXPR_LOOP: {
-			#if 0
-			if (expr->loop.for_expr) {
-				/*
-				 * Limited loop
-				 */
-				auto fe_assoc = expr->loop.for_expr->assoc;
-				
-				// The for expression only gets evaluated *once*
-				compile_expr(expr->loop.for_expr);
+            int push_body_pos = bytecode.size;
+            push(BC::create(BC_PUSH_BODY, expr->assoc));
+            
+            int beginning = bytecode.size;
+            compile_expr(expr->loop.body);
 
-				// We want to jump here so that we're comparing our counter every time
-				int reset = bytecode.size;
-				push(BC::create(BC_DUPLICATE, fe_assoc));
-				push(BC::create(BC_LOAD_CONST, Value::raise(0), fe_assoc));
-				push(BC::create(BC_EQUAL, fe_assoc));
-				
-				int escape_jump = bytecode.size;
-				push(BC::create(BC_POP_JUMP, fe_assoc));
+            push(BC::create(BC_NOT, expr->assoc));
+            push(BC::create(BC_POP_JUMP, beginning, expr->assoc));
+            push(BC::create(BC_LOAD_CONST, Value::nothing(), expr->assoc));
 
-				compile_expr(expr->loop.body);
-
-				// Decrement counter
-				push(BC::create(BC_POP_AND_DISCARD, expr->assoc));
-				push(BC::create(BC_LOAD_CONST, Value::raise(1), fe_assoc));
-				push(BC::create(BC_SUBTRACT, fe_assoc));
-
-				// Jump back to beginning
-				push(BC::create(BC_JUMP, reset, fe_assoc));
-
-				int exit_pos = bytecode.size;
-				bytecode[escape_jump].arg.integer = exit_pos;
-				push(BC::create(BC_POP_AND_DISCARD, expr->assoc));
-				// If we exit without a break, the loop evaluates to `nothing`
-				push(BC::create(BC_LOAD_CONST, Value::nothing(), expr->assoc));
-			}
-			#endif
+            int exit_pos = bytecode.size;
+            push(BC::create(BC_NOP, expr->assoc));
+            bytecode[push_body_pos].arg.integer = exit_pos;
+            
+            #if 0
 			/*
 			 * Infinite loop
 			 */
@@ -321,6 +300,7 @@ struct Compiler {
 			push(BC::create(BC_NOP, expr->assoc));
 			
 			bytecode[push_body_pos].arg.integer = exit_pos;
+            #endif
 		} break;
 		}
 	}
