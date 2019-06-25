@@ -1,2 +1,4 @@
 let println = @builtin[println].
 
+println(loop 1). % should prob print '1'...
+

@@ -275,6 +275,12 @@ struct Compiler {
             int beginning = bytecode.size;
             compile_expr(expr->loop.body);
 
+            // TODO(pixlark): How do we make this keep the value
+            // around in case the loop exits? We need the jump
+            // instruction to pop ONLY if it actually
+            // branches. Perhaps a special bytecode instruction? That
+            // seems like overkill but I don't see another reasonable
+            // option...
             push(BC::create(BC_NOT, expr->assoc));
             push(BC::create(BC_POP_JUMP, beginning, expr->assoc));
             push(BC::create(BC_LOAD_CONST, Value::nothing(), expr->assoc));
