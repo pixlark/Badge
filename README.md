@@ -75,7 +75,7 @@ println(1 == 1). % Could be anything, in practice the default truth value is '1'
 
 The standard library defines two constants, `true` and `false`, which are equivalent to `1` and `nothing`, respectively.
 
-**Lambdas** are an important type of expression, and the only way to create new functions:
+**Lambdas** are the main form of functions in this language:
 
 ```
 let square = lambda (x) x * x.
@@ -100,6 +100,14 @@ The **this** keyword is used inside of lambda expressions to indicate recursion.
 let factorial = lambda (n) if   n == 0
                            then 1
                            else n * this(n - 1).
+```
+
+The **func** keyword provides syntactic sugar for creation of new functions:
+
+```
+func factorial(n) if   n == 0
+                  then 1
+				  else n * this(n - 1).
 ```
 
 **Loop expressions** are a simple looping control structure, for when recursion is a bit overkill. In general, however, recursion is the preferred way to do things. Loop expressions take the following simple form:
