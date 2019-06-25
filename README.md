@@ -107,7 +107,7 @@ The **func** keyword provides syntactic sugar for creation of new functions:
 ```
 func factorial(n) if   n == 0
                   then 1
-				  else n * this(n - 1).
+                  else n * this(n - 1).
 ```
 
 **Loop expressions** are a simple looping control structure, for when recursion is a bit overkill. In general, however, recursion is the preferred way to do things. Loop expressions take the following simple form:
