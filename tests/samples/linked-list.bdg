@@ -1,30 +1,21 @@
 @import[prelude].
 @import[math].
 
-let Node = @struct[data, next].
-
-let cons = lambda (head, tail)
-            Node(head, tail).
-
-let car = lambda (list)
-            list'data.
-
-let cdr = lambda (list)
-            list'next.
+let Node = @struct[head, tail].
 
 let printlist = lambda (list)
                     if list == nothing
                     then println("nil")
                     else {
-                        print(car(list)).
+                        print(list'head).
                         print(" ").
-                        this(cdr(list)).
+                        this(list'tail).
                     }.
 
 let length = lambda (list)
                 if list == nothing
                 then 0
-                else 1 + this(cdr(list)).
+                else 1 + this(list'tail).
 
 let largest_in_list = lambda (list) {
     if length(list) == 0
@@ -35,17 +26,17 @@ let largest_in_list = lambda (list) {
     let helper = lambda (largest, list)
                     if list == nothing
                     then largest
-                    else this(max(largest, car(list)), cdr(list)).
-    
+                    else this(max(largest, list'head), list'tail).
+                    
     helper(0, list)
 }.
 
 let filter = lambda (predicate, list)
                 if list == nothing
                 then nothing
-                else if predicate(car(list))
-                     then cons(car(list), this(predicate, cdr(list)))
-                     else this(predicate, cdr(list)).
+                else if predicate(list'head)
+                     then Node(list'head, this(predicate, list'tail))
+                     else this(predicate, list'tail).
 
 let runtests = lambda (name, list) {
     println(name).
@@ -65,10 +56,10 @@ let runtests = lambda (name, list) {
 }.
 
 runtests("Ascending",
-    cons(1, cons(2, cons(3, cons(4, cons(5, nothing)))))).
+    Node(1, Node(2, Node(3, Node(4, Node(5, nothing)))))).
 runtests("Descending",
-    cons(5, cons(4, cons(3, cons(2, cons(1, nothing)))))).
+    Node(5, Node(4, Node(3, Node(2, Node(1, nothing)))))).
 runtests("Arbitrary",
-    cons(10, cons(23, cons(5, cons(56, cons(17, nothing)))))).
+    Node(10, Node(23, Node(5, Node(56, Node(17, nothing)))))).
 runtests("Empty",
     nothing).
