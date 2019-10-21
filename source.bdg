@@ -7,4 +7,3 @@ func deepFunction(x, y) {
 }.
 
 %println(deepFunction(2, 3) $ flag: 15).
-println(deepFunction(2, 3)).

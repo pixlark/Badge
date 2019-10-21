@@ -3,6 +3,8 @@ struct Call_Frame {
 	
 	Environment * environment;
 	size_t block_reference;
+
+	Environment * call_flags;
 	
 	BC * bytecode;
 	size_t bc_pointer;
@@ -23,6 +25,8 @@ struct Call_Frame {
 		frame->environment->next_env = closure;
 		frame->block_reference = block_reference;
 
+		frame->call_flags = Environment::alloc();
+	
 		frame->bytecode = blocks->retrieve_block(block_reference);
 		frame->bc_pointer = 0;
 		frame->bc_length = blocks->size_block(block_reference);
@@ -36,9 +40,15 @@ struct Call_Frame {
 			GC::mark_opaque(origin);
 			origin->gc_mark();
 		}
+		// TODO(pixlark): Why do we check if this is marked opaque??
+		// The whole point is that we just do it regardless...
 		if (!GC::is_marked_opaque(environment)) {
 			GC::mark_opaque(environment);
 			environment->gc_mark();
+		}
+		if (!GC::is_marked_opaque(call_flags)) {
+			GC::mark_opaque(call_flags);
+			call_flags->gc_mark();
 		}
 	}
 	void destroy()
@@ -172,6 +182,17 @@ struct VM {
 		}
 		error("Variable '%s' is not bound", symbol);
 		assert(false); // @linter
+	}
+	Value lookup_call_flag(Symbol symbol)
+	{
+		for (int i = call_stack.size - 1; i >= 0; i--) {
+			auto frame = call_stack[i];
+			Value value;
+			if (frame->call_flags->resolve_binding(symbol, &value)) {
+				return value;
+			}
+		}
+		error("Call flag '%s' is not bound", symbol);
 	}
 	void do_halting_tasks()
 	{
@@ -519,7 +540,12 @@ struct VM {
 			push(Value::nothing());
 		} break;
 		case BC_GET_CALL_FLAG: {
-			fatal("`on` is unimplemented at this point");
+			auto symbol_val = bc.arg.value;
+			if (!symbol_val.is(TYPE_SYMBOL)) {
+				fatal("Can't lookup call-flag for non-symbol. (This error should never trigger!)");
+			}
+			auto symbol = symbol_val.symbol;
+			push(lookup_call_flag(symbol));
 		} break;
 		default: {
 			fatal("Internal error: VM ran unrecognized instruction");
