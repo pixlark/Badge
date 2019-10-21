@@ -116,9 +116,9 @@ func factorial(n) if   n == 0
 loop <expr>
 ```
 
-`<expr>` will repeat until it evaluates to something other than nothing. For example, `loop nothing.` will loop forever, but `loop 17.` will loop only once.
+`<expr>` will repeat until it evaluates to something other than nothing. For example, `loop nothing.` will loop forever, but `loop 17.` will loop only once (and evaluate to 17).
 
-You can also exit a loop through a `break` statement. `break` statements take a value argument, which is what the loop itself evaluates to. If it exist naturally, it just evaluates to `nothing`.
+You can also exit a loop through a `break` statement. `break` statements take a value argument, which is what the loop itself evaluates to.
 
 ```
 println(loop {
