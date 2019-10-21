@@ -50,3 +50,7 @@ func fibonacci(n) {
 }.
 
 fibonacci(10).
+
+%% new loop evaluation
+
+println(loop 17).

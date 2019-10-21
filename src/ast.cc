@@ -78,6 +78,7 @@ enum Expr_Kind {
 	EXPR_THIS,
 	EXPR_FIELD,
 	EXPR_LOOP,
+	EXPR_ON,
 };
 
 struct Expr_Unary {
@@ -141,6 +142,12 @@ struct Expr_Loop {
 	void destroy();
 };
 
+struct Expr_On {
+	Symbol to_bind;
+	Expr * body;
+	void destroy();
+};
+
 struct Expr {
 	Expr_Kind kind;
 	Assoc_Ptr assoc;
@@ -157,6 +164,7 @@ struct Expr {
 		Expr_Directive directive;
 		Expr_Field field;
 		Expr_Loop loop;
+		Expr_On on;
 	};
 	static Expr * with_kind(Expr_Kind kind, Assoc_Ptr assoc)
 	{
@@ -204,6 +212,9 @@ struct Expr {
 			break;
 		case EXPR_LOOP:
 			loop.destroy();
+			break;
+		case EXPR_ON:
+			on.destroy();
 			break;
 		}
 	}
@@ -296,6 +307,12 @@ void Expr_Field::destroy()
 }
 
 void Expr_Loop::destroy()
+{
+	body->destroy();
+	free(body);
+}
+
+void Expr_On::destroy()
 {
 	body->destroy();
 	free(body);

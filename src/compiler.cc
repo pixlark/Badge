@@ -271,23 +271,37 @@ struct Compiler {
 		case EXPR_LOOP: {
             int push_body_pos = bytecode.size;
             push(BC::create(BC_PUSH_BODY, expr->assoc));
-            
+
+			// Create a dummy value to be popped by first iteration
+			push(BC::create(BC_LOAD_CONST, Value::nothing(), expr->assoc));
             int beginning = bytecode.size;
+
+			push(BC::create(BC_POP_AND_DISCARD, expr->assoc));
             compile_expr(expr->loop.body);
 
-            // TODO(pixlark): How do we make this keep the value
-            // around in case the loop exits? We need the jump
-            // instruction to pop ONLY if it actually
-            // branches. Perhaps a special bytecode instruction? That
-            // seems like overkill but I don't see another reasonable
-            // option...
+			push(BC::create(BC_DUPLICATE, expr->assoc));
             push(BC::create(BC_NOT, expr->assoc));
             push(BC::create(BC_POP_JUMP, beginning, expr->assoc));
-            push(BC::create(BC_LOAD_CONST, Value::nothing(), expr->assoc));
+            //push(BC::create(BC_LOAD_CONST, Value::nothing(), expr->assoc));
 
             int exit_pos = bytecode.size;
             push(BC::create(BC_NOP, expr->assoc));
             bytecode[push_body_pos].arg.integer = exit_pos;
+		} break;
+		case EXPR_ON: {
+			push(BC::create(BC_GET_CALL_FLAG, Value::raise(expr->on.to_bind), expr->assoc));
+			push(BC::create(BC_NOT, expr->assoc));
+			
+			int jump_pos = bytecode.size;
+			push(BC::create(BC_POP_JUMP, expr->assoc));
+			
+			push(BC::create(BC_LOAD_CONST, Value::raise(expr->on.to_bind), expr->assoc));
+			push(BC::create(BC_CREATE_BINDING, expr->assoc));
+			compile_expr(expr->on.body);
+			
+			int exit_pos = bytecode.size;
+			push(BC::create(BC_NOP, expr->assoc));
+			bytecode[jump_pos].arg.integer = exit_pos;
 		} break;
 		}
 	}

@@ -36,6 +36,7 @@ struct Parser {
 	Expr * parse_lambda();
 	Expr * parse_loop();
 	Expr * parse_if();
+	Expr * parse_on();
 	Expr * parse_scope();
 	Expr * parse_directive();
 	Expr * parse_expr();
@@ -315,6 +316,18 @@ Expr * Parser::parse_if()
 	}
 }
 
+Expr * Parser::parse_on()
+{
+	if (match(TOKEN_ON)) {
+		auto expr = create_expr(EXPR_ON);
+		expr->on.to_bind = expect(TOKEN_SYMBOL).values.symbol;
+		expr->on.body = parse_expr();
+		return expr;
+	} else {
+		return parse_if();
+	}
+}
+
 Expr * Parser::parse_directive()
 {
 	if (match('@')) {
@@ -334,7 +347,7 @@ Expr * Parser::parse_directive()
 		}
 		return expr;
 	} else {
-		return parse_if();
+		return parse_on();
 	}
 }
 

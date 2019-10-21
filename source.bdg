@@ -1,9 +1,10 @@
 @import[prelude].
+@import[math].
 
-let f =
-    lambda (n) if n == 0
-               then 1 
-               else n * this(n - 1, 3).               
+func deepFunction(x, y) {
+    on flag println("Flag!").
+    x + (2 * y)
+}.
 
-println(f(7)).
-
+%println(deepFunction(2, 3) $ flag: 15).
+println(deepFunction(2, 3)).

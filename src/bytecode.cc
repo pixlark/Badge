@@ -48,6 +48,8 @@ enum BC_Kind {
 	// file units
 	BC_RUN_FILE_UNIT,
 	BC_EXPORT_SYMBOL,
+	// call flags
+	BC_GET_CALL_FLAG
 };
 
 static const char * BC_Kind_names[] = {
@@ -88,6 +90,7 @@ static const char * BC_Kind_names[] = {
 	"BREAK_BODY",
 	"RUN_FILE_UNIT",
 	"EXPORT_SYMBOL",
+	"GET_CALL_FLAG",
 };
 
 struct BC {

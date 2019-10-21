@@ -518,6 +518,12 @@ struct VM {
 			export_queue.push((Export) { symbol, bc.assoc });
 			push(Value::nothing());
 		} break;
+		case BC_GET_CALL_FLAG: {
+			fatal("`on` is unimplemented at this point");
+		} break;
+		default: {
+			fatal("Internal error: VM ran unrecognized instruction");
+		}
 		}
 
 		return VM_OK;
