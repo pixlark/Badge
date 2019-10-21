@@ -107,9 +107,15 @@ struct Expr_Lambda {
 	void destroy();
 };
 
+struct Flag_Pair {
+	Symbol name;
+	Expr * expr;
+};
+
 struct Expr_Funcall {
 	Expr * func;
 	List<Expr*> args;
+	List<Flag_Pair> flags;
 	void destroy();
 };
 
@@ -264,11 +270,18 @@ void Expr_Funcall::destroy()
 {
 	func->destroy();
 	free(func);
+	
 	for (int i = 0; i < args.size; i++) {
 		args[i]->destroy();
 		free(args[i]);
 	}
 	args.dealloc();
+	
+	for (int i = 0; i < flags.size; i++) {
+		flags[i].expr->destroy();
+		free(flags[i].expr);
+	}
+	flags.dealloc();
 }
 
 void Expr_If::destroy()

@@ -247,6 +247,8 @@ Token Lexer::next_token()
 	case '{':
 	case '}':
 	case '@':
+	case '$':
+	case ':':
 	case '\'':
 		return create_token((Token_Kind) next(), 1);
 		//return Token::with_kind((Token_Kind) next());

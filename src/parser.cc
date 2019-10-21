@@ -111,10 +111,13 @@ Expr * Parser::parse_function_call()
 {
 	auto left = parse_field_access();
 	while (match('(')) {
+		// Create our function
 		auto expr = create_expr(EXPR_FUNCALL);
 		expr->assoc = left->assoc;
 		expr->funcall.func = left;
 		expr->funcall.args.alloc();
+		expr->funcall.flags.alloc();
+		// Parse arguments
 		while (true) {
 			if (match(')')) {
 				break;
@@ -124,6 +127,19 @@ Expr * Parser::parse_function_call()
 				expect(')');
 				break;
 			}
+		}
+		// Parse flags
+		if (match('$')) {
+			do {
+				auto name = expect(TOKEN_SYMBOL).values.symbol;
+				expect(':');
+				auto flag_expr = parse_expr();
+				auto pair = (Flag_Pair) {
+					.name = name,
+					.expr = flag_expr,
+				};
+				expr->funcall.flags.push(pair);
+			} while (match(','));
 		}
 		left = expr;
 	}
